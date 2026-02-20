@@ -16,7 +16,7 @@ const features = [
 const howItWorks = [
   { step: "1", title: "Inscrivez-vous", desc: "Remplissez notre formulaire rapide — c'est gratuit !" },
   { step: "2", title: "On planifie", desc: "Nous choisissons ensemble le meilleur horaire pour vous." },
-  { step: "3", title: "On ramasse !", desc: "Notre équipe s'occupe de tout. Profitez de votre cour propre ! 🐾" },
+  { step: "3", title: "On ramasse !", desc: "Notre équipe s'occupe de tout. Profitez de votre jardin propre ! 🐾" },
 ];
 
 const Index = () => {
@@ -32,7 +32,7 @@ const Index = () => {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImage} alt="Belle cour verte propre" className="w-full h-full object-cover" />
+          <img src={heroImage} alt="Beau jardin vert et propre" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/55 to-transparent" />
         </div>
         <div className="relative container mx-auto px-4 py-24 md:py-40">
@@ -52,11 +52,11 @@ const Index = () => {
               <span className="font-display font-bold text-accent text-sm uppercase tracking-widest">Poop Buster</span>
             </motion.div>
             <h1 className="font-display text-4xl md:text-6xl font-black text-primary-foreground leading-tight mb-4">
-              Votre cour, <br />
+              Votre jardin, <br />
               <span className="text-accent">propre & fraîche !</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-lg font-body">
-              Service professionnel de ramassage de crottes de chien et désodorisation de cour. On fait le sale boulot pour que vous n'ayez pas à le faire ! 💩✨
+              Service professionnel de ramassage de crottes de chien et désodorisation de jardin. On fait le sale boulot pour que vous n'ayez pas à le faire ! 💩✨
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="#signup">
@@ -93,7 +93,7 @@ const Index = () => {
               Comment ça fonctionne ?
             </h2>
             <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto">
-              En 3 étapes simples, votre cour sera impeccable.
+              En 3 étapes simples, votre jardin sera impeccable.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
@@ -131,7 +131,7 @@ const Index = () => {
               Pourquoi les proprios d'animaux nous adorent
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              On prend soin de garder votre cour propre, sécuritaire et sans odeur.
+              On prend soin de garder votre jardin propre, sécuritaire et sans odeur.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -165,7 +165,7 @@ const Index = () => {
           >
             <Heart className="w-8 h-8 text-destructive mx-auto mb-4" />
             <blockquote className="font-display text-2xl md:text-3xl font-bold text-foreground max-w-3xl mx-auto mb-4">
-              « Depuis que Poop Buster s'occupe de notre cour, mes enfants peuvent jouer dehors sans souci. Merci ! »
+              « Depuis que Poop Buster s'occupe de notre jardin, mes enfants peuvent jouer dehors sans souci. Merci ! »
             </blockquote>
             <p className="text-muted-foreground">— Marie-Claude, maman de Buddy 🐕 et Luna 🐕</p>
           </motion.div>
@@ -193,7 +193,7 @@ const Index = () => {
             Poop Buster
           </div>
           <p className="text-sm text-muted-foreground text-center">
-            © {new Date().getFullYear()} Poop Buster. On garde vos cours propres, une crotte à la fois. 🐾
+            © {new Date().getFullYear()} Poop Buster. On garde vos jardins propres, une crotte à la fois. 🐾
           </p>
           <div className="flex items-center gap-4 text-sm">
             <a href="/login" className="text-muted-foreground hover:text-primary transition-colors">Admin</a>
