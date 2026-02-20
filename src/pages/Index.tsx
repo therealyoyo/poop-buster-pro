@@ -4,13 +4,19 @@ import Navbar from "@/components/Navbar";
 import OnboardingForm from "@/components/OnboardingForm";
 import PawIcon from "@/components/PawIcon";
 import heroImage from "@/assets/hero-yard.jpg";
-import { CheckCircle, Shield, Leaf, Clock, Star } from "lucide-react";
+import { CheckCircle, Shield, Leaf, Clock, Star, Heart, Sparkles } from "lucide-react";
 
 const features = [
-  { icon: Shield, title: "Reliable & Insured", desc: "Professional service you can count on every visit." },
-  { icon: Leaf, title: "Eco-Friendly", desc: "Biodegradable products safe for your whole family." },
-  { icon: Clock, title: "Flexible Scheduling", desc: "Weekly, bi-weekly, monthly, or one-time cleanups." },
-  { icon: Star, title: "5-Star Rated", desc: "Loved by pet owners across the neighborhood." },
+  { icon: Shield, title: "Fiable & assuré", desc: "Un service professionnel sur lequel vous pouvez compter à chaque visite." },
+  { icon: Leaf, title: "Écoresponsable", desc: "Produits biodégradables, sans danger pour toute la famille." },
+  { icon: Clock, title: "Horaire flexible", desc: "Hebdomadaire, aux 2 semaines, mensuel ou ponctuel." },
+  { icon: Star, title: "Noté 5 étoiles", desc: "Adoré par les propriétaires d'animaux du quartier." },
+];
+
+const howItWorks = [
+  { step: "1", title: "Inscrivez-vous", desc: "Remplissez notre formulaire rapide — c'est gratuit !" },
+  { step: "2", title: "On planifie", desc: "Nous choisissons ensemble le meilleur horaire pour vous." },
+  { step: "3", title: "On ramasse !", desc: "Notre équipe s'occupe de tout. Profitez de votre cour propre ! 🐾" },
 ];
 
 const Index = () => {
@@ -18,52 +24,100 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
+      {/* Announcement Bar */}
+      <div className="bg-hero-gradient text-primary-foreground text-center py-2.5 text-sm font-display font-bold tracking-wide paw-pattern-dense">
+        🐾 RÉCLAMEZ VOTRE PREMIER NETTOYAGE GRATUIT AUJOURD'HUI ! 🐾
+      </div>
+
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImage} alt="Clean green yard" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/30" />
+          <img src={heroImage} alt="Belle cour verte propre" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/55 to-transparent" />
         </div>
-        <div className="relative container mx-auto px-4 py-24 md:py-36">
+        <div className="relative container mx-auto px-4 py-24 md:py-40">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
             className="max-w-2xl"
           >
-            <div className="flex items-center gap-2 mb-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex items-center gap-2 mb-4"
+            >
               <PawIcon className="w-8 h-8 text-accent animate-paw-bounce" />
-              <span className="font-display font-bold text-accent text-sm uppercase tracking-wider">Poop Buster</span>
-            </div>
+              <span className="font-display font-bold text-accent text-sm uppercase tracking-widest">Poop Buster</span>
+            </motion.div>
             <h1 className="font-display text-4xl md:text-6xl font-black text-primary-foreground leading-tight mb-4">
-              Your Yard, <br />Poop-Free & Fresh!
+              Votre cour, <br />
+              <span className="text-accent">propre & fraîche !</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-lg font-body">
-              Professional dog poop scooping & yard deodorizing. We do the dirty work so you don't have to. 🐾
+              Service professionnel de ramassage de crottes de chien et désodorisation de cour. On fait le sale boulot pour que vous n'ayez pas à le faire ! 💩✨
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="#signup">
-                <Button variant="hero" size="lg" className="text-lg px-8 py-6">
+                <Button variant="cta" size="lg" className="text-lg px-8 py-6 rounded-full">
                   <PawIcon className="w-5 h-5" />
-                  Get My Free Cleanup
+                  Mon nettoyage gratuit
                 </Button>
               </a>
-              <a href="#features">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground">
-                  Learn More
+              <a href="#how">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6 rounded-full bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground">
+                  Comment ça marche ?
                 </Button>
               </a>
             </div>
             <div className="flex items-center gap-4 mt-6 text-primary-foreground/70 text-sm">
-              <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4" /> First cleanup free</span>
-              <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4" /> No contracts</span>
-              <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Cancel anytime</span>
+              <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4" /> 1er nettoyage gratuit</span>
+              <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Sans contrat</span>
+              <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Annulez quand vous voulez</span>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features */}
+      {/* How It Works */}
+      <section id="how" className="py-20 bg-hero-gradient paw-pattern-dense">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-3">
+              Comment ça fonctionne ?
+            </h2>
+            <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto">
+              En 3 étapes simples, votre cour sera impeccable.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {howItWorks.map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="text-center"
+              >
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-foreground/20 backdrop-blur-sm mb-4 text-primary-foreground font-display text-2xl font-black border-2 border-primary-foreground/30">
+                  {item.step}
+                </div>
+                <h3 className="font-display text-xl font-bold text-primary-foreground mb-2">{item.title}</h3>
+                <p className="text-primary-foreground/80">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features / Promesse client */}
       <section id="features" className="py-20 paw-pattern">
         <div className="container mx-auto px-4">
           <motion.div
@@ -72,11 +126,12 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
+            <p className="text-primary font-display font-bold text-sm uppercase tracking-widest mb-2">Notre promesse</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-              Why Pet Parents Love Us
+              Pourquoi les proprios d'animaux nous adorent
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              We take pride in keeping your yard clean, safe, and smelling fresh.
+              On prend soin de garder votre cour propre, sécuritaire et sans odeur.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -87,12 +142,12 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-card rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300 text-center"
+                className="bg-card rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 text-center group hover:-translate-y-1"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent mb-4">
-                  <f.icon className="w-6 h-6 text-accent-foreground" />
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent mb-4 group-hover:scale-110 transition-transform">
+                  <f.icon className="w-7 h-7 text-accent-foreground" />
                 </div>
-                <h3 className="font-display font-bold text-foreground mb-1">{f.title}</h3>
+                <h3 className="font-display font-bold text-foreground mb-1 text-lg">{f.title}</h3>
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
               </motion.div>
             ))}
@@ -100,8 +155,25 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Testimonial-style banner */}
+      <section className="py-16 bg-accent/50">
+        <div className="container mx-auto px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <Heart className="w-8 h-8 text-destructive mx-auto mb-4" />
+            <blockquote className="font-display text-2xl md:text-3xl font-bold text-foreground max-w-3xl mx-auto mb-4">
+              « Depuis que Poop Buster s'occupe de notre cour, mes enfants peuvent jouer dehors sans souci. Merci ! »
+            </blockquote>
+            <p className="text-muted-foreground">— Marie-Claude, maman de Buddy 🐕 et Luna 🐕</p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Signup Form */}
-      <section id="signup" className="py-20 bg-muted/50">
+      <section id="signup" className="py-20 bg-muted/50 paw-pattern">
         <div className="container mx-auto px-4 max-w-2xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -121,11 +193,11 @@ const Index = () => {
             Poop Buster
           </div>
           <p className="text-sm text-muted-foreground text-center">
-            © {new Date().getFullYear()} Poop Buster. Keeping yards clean, one scoop at a time. 🐾
+            © {new Date().getFullYear()} Poop Buster. On garde vos cours propres, une crotte à la fois. 🐾
           </p>
           <div className="flex items-center gap-4 text-sm">
             <a href="/login" className="text-muted-foreground hover:text-primary transition-colors">Admin</a>
-            <a href="/portal" className="text-muted-foreground hover:text-primary transition-colors">Client Portal</a>
+            <a href="/portal" className="text-muted-foreground hover:text-primary transition-colors">Portail client</a>
           </div>
         </div>
       </footer>

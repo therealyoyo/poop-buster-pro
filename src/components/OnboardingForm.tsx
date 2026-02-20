@@ -17,9 +17,8 @@ const OnboardingForm = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Will connect to Supabase later
     setSubmitted(true);
-    toast.success("Welcome to Poop Buster! 🐾 We'll be in touch soon.");
+    toast.success("Bienvenue chez Poop Buster ! 🐾 On vous contacte très vite.");
   };
 
   if (submitted) {
@@ -32,9 +31,9 @@ const OnboardingForm = () => {
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent mb-6">
           <CheckCircle className="w-10 h-10 text-primary" />
         </div>
-        <h3 className="font-display text-2xl font-bold text-foreground mb-2">You're All Set! 🎉</h3>
+        <h3 className="font-display text-2xl font-bold text-foreground mb-2">C'est tout bon ! 🎉</h3>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Thanks for signing up! We'll reach out shortly to confirm your first free cleanup. Your pup's yard is about to get a whole lot cleaner!
+          Merci pour votre inscription ! Nous vous contacterons rapidement pour planifier votre premier nettoyage gratuit. La cour de votre toutou va briller ! ✨
         </p>
       </motion.div>
     );
@@ -46,56 +45,56 @@ const OnboardingForm = () => {
         <div className="flex justify-center mb-2">
           <PawIcon className="w-8 h-8 text-primary" />
         </div>
-        <CardTitle className="font-display text-2xl">Get Your Free First Cleanup!</CardTitle>
-        <CardDescription>Fill out the form below and we'll take care of the rest 🐾</CardDescription>
+        <CardTitle className="font-display text-2xl">Obtenez votre premier nettoyage gratuit !</CardTitle>
+        <CardDescription>Remplissez le formulaire et on s'occupe du reste 🐾</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" placeholder="John" required />
+              <Label htmlFor="firstName">Prénom</Label>
+              <Input id="firstName" placeholder="Jean" required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" placeholder="Smith" required />
+              <Label htmlFor="lastName">Nom</Label>
+              <Input id="lastName" placeholder="Dupont" required />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" required />
+              <Label htmlFor="email">Courriel</Label>
+              <Input id="email" type="email" placeholder="jean@exemple.com" required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" type="tel" placeholder="(555) 123-4567" required />
+              <Label htmlFor="phone">Téléphone</Label>
+              <Input id="phone" type="tel" placeholder="(514) 123-4567" required />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="street">Street Address</Label>
-            <Input id="street" placeholder="123 Green Lawn Dr" required />
+            <Label htmlFor="street">Adresse</Label>
+            <Input id="street" placeholder="123 rue des Érables" required />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Springfield" required />
+              <Label htmlFor="city">Ville</Label>
+              <Input id="city" placeholder="Montréal" required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="postalCode">Postal Code</Label>
-              <Input id="postalCode" placeholder="12345" required />
+              <Label htmlFor="postalCode">Code postal</Label>
+              <Input id="postalCode" placeholder="H2X 1Y4" required />
             </div>
             <div className="space-y-1.5 col-span-2 sm:col-span-1">
-              <Label htmlFor="dogs">Number of Dogs</Label>
+              <Label htmlFor="dogs">Nombre de chiens</Label>
               <Select required>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
                 <SelectContent>
                   {[1, 2, 3, 4, 5].map(n => (
-                    <SelectItem key={n} value={String(n)}>{n} {n === 1 ? "dog" : "dogs"}</SelectItem>
+                    <SelectItem key={n} value={String(n)}>{n} {n === 1 ? "chien" : "chiens"}</SelectItem>
                   ))}
-                  <SelectItem value="6+">6+ dogs</SelectItem>
+                  <SelectItem value="6+">6+ chiens</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -103,26 +102,26 @@ const OnboardingForm = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Yard Size</Label>
+              <Label>Taille de la cour</Label>
               <Select required>
-                <SelectTrigger><SelectValue placeholder="Select yard size" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="small">Small</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="large">Large</SelectItem>
-                  <SelectItem value="xl">Extra Large</SelectItem>
+                  <SelectItem value="small">Petite</SelectItem>
+                  <SelectItem value="medium">Moyenne</SelectItem>
+                  <SelectItem value="large">Grande</SelectItem>
+                  <SelectItem value="xl">Très grande</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Service Frequency</Label>
+              <Label>Fréquence du service</Label>
               <Select required>
-                <SelectTrigger><SelectValue placeholder="How often?" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="À quelle fréquence ?" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="biweekly">Bi-Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="onetime">One-Time</SelectItem>
+                  <SelectItem value="weekly">Hebdomadaire</SelectItem>
+                  <SelectItem value="biweekly">Aux 2 semaines</SelectItem>
+                  <SelectItem value="monthly">Mensuel</SelectItem>
+                  <SelectItem value="onetime">Ponctuel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -135,17 +134,17 @@ const OnboardingForm = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <Leaf className="w-4 h-4 text-primary" />
                   <Label htmlFor="deodorizing" className="font-display font-bold text-foreground">
-                    Add Yard Deodorizing Service
+                    Ajouter la désodorisation de cour
                   </Label>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Our safe, non-toxic, biodegradable enzyme formula neutralizes pet waste odors. 
-                  100% safe for pets, kids, and the environment. 🌿
+                  Notre formule enzymatique biodégradable, non toxique et sécuritaire neutralise les odeurs de déjections. 
+                  100 % sans danger pour les animaux, les enfants et l'environnement. 🌿
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Pet Safe</span>
-                  <span className="flex items-center gap-1"><Dog className="w-3 h-3" /> Kid Safe</span>
-                  <span className="flex items-center gap-1"><Leaf className="w-3 h-3" /> Eco-Friendly</span>
+                  <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Sans danger pour les animaux</span>
+                  <span className="flex items-center gap-1"><Dog className="w-3 h-3" /> Sans danger pour les enfants</span>
+                  <span className="flex items-center gap-1"><Leaf className="w-3 h-3" /> Écoresponsable</span>
                 </div>
               </div>
               <Switch id="deodorizing" checked={deodorizing} onCheckedChange={setDeodorizing} />
@@ -153,26 +152,26 @@ const OnboardingForm = () => {
           </div>
 
           <div className="space-y-1.5">
-            <Label>How did you hear about us?</Label>
+            <Label>Comment avez-vous entendu parler de nous ?</Label>
             <Select>
-              <SelectTrigger><SelectValue placeholder="Select one" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Choisir une option" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="google">Google</SelectItem>
-                <SelectItem value="referral">Referral</SelectItem>
-                <SelectItem value="social">Social Media</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="referral">Recommandation</SelectItem>
+                <SelectItem value="social">Réseaux sociaux</SelectItem>
+                <SelectItem value="other">Autre</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="notes">Special Instructions / Gate Code</Label>
-            <Textarea id="notes" placeholder="e.g., Gate code is #1234, dogs are friendly..." rows={3} />
+            <Label htmlFor="notes">Instructions spéciales / Code de portail</Label>
+            <Textarea id="notes" placeholder="Ex. : Code du portail #1234, les chiens sont gentils..." rows={3} />
           </div>
 
-          <Button type="submit" variant="hero" size="lg" className="w-full text-lg py-6">
+          <Button type="submit" variant="cta" size="lg" className="w-full text-lg py-6">
             <PawIcon className="w-5 h-5 mr-1" />
-            Get My Free First Cleanup!
+            Obtenir mon premier nettoyage gratuit !
           </Button>
         </form>
       </CardContent>

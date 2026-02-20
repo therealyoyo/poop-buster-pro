@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const ClientSettings = () => {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Settings updated! 🐾");
+    toast.success("Paramètres mis à jour ! 🐾");
   };
 
   return (
@@ -19,44 +19,44 @@ const ClientSettings = () => {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="font-display text-3xl font-bold text-foreground flex items-center gap-2 mb-6">
           <SettingsIcon className="w-7 h-7 text-primary" />
-          Account Settings
+          Paramètres du compte
         </h1>
 
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle className="font-display">Contact Information</CardTitle>
+            <CardTitle className="font-display">Coordonnées</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>First Name</Label>
-                  <Input defaultValue="Sarah" />
+                  <Label>Prénom</Label>
+                  <Input defaultValue="Sophie" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Last Name</Label>
-                  <Input defaultValue="Johnson" />
+                  <Label>Nom</Label>
+                  <Input defaultValue="Tremblay" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Email</Label>
-                  <Input type="email" defaultValue="sarah@email.com" />
+                  <Label>Courriel</Label>
+                  <Input type="email" defaultValue="sophie@courriel.com" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Phone</Label>
-                  <Input type="tel" defaultValue="(555) 123-4567" />
+                  <Label>Téléphone</Label>
+                  <Input type="tel" defaultValue="(514) 123-4567" />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Service Address</Label>
-                <Input defaultValue="123 Oak St, Springfield, 12345" />
+                <Label>Adresse de service</Label>
+                <Input defaultValue="123 rue des Chênes, Montréal, H2X 1Y4" />
               </div>
               <div className="space-y-1.5">
-                <Label>Special Instructions / Gate Code</Label>
-                <Textarea defaultValue="Gate code #1234. Dogs are friendly, usually in the backyard." rows={3} />
+                <Label>Instructions spéciales / Code de portail</Label>
+                <Textarea defaultValue="Code du portail #1234. Les chiens sont gentils, généralement dans la cour arrière." rows={3} />
               </div>
-              <Button type="submit" variant="hero">Save Changes</Button>
+              <Button type="submit" variant="cta" className="rounded-full">Enregistrer les modifications</Button>
             </form>
           </CardContent>
         </Card>
