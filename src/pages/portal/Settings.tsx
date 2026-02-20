@@ -54,7 +54,7 @@ const ClientSettings = () => {
               </div>
               <div className="space-y-1.5">
                 <Label>Instructions spéciales / Code de portail</Label>
-                <Textarea defaultValue="Code du portail #1234. Les chiens sont gentils, généralement dans la cour arrière." rows={3} />
+                <Textarea defaultValue="Code du portail #1234. Les chiens sont gentils, généralement dans le jardin arrière." rows={3} />
               </div>
               <Button type="submit" variant="cta" className="rounded-full">Enregistrer les modifications</Button>
             </form>

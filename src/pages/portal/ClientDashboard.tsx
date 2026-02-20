@@ -28,10 +28,10 @@ const ClientDashboard = () => {
             <CardContent className="pt-8 pb-8">
               <div className="flex items-center gap-3 mb-2">
                 <Star className="w-6 h-6" />
-                <h2 className="font-display text-xl font-bold">Votre bilan de cour</h2>
+                <h2 className="font-display text-xl font-bold">Votre bilan de jardin</h2>
               </div>
               <p className="text-primary-foreground/90 text-lg">
-                Votre cour a été nettoyée <span className="font-bold text-primary-foreground">47 fois</span> cette année ! C'est plus de <span className="font-bold text-primary-foreground">43 kg</span> de crottes qu'on a ramassées ! 💪🐕
+                Votre jardin a été nettoyé <span className="font-bold text-primary-foreground">47 fois</span> cette année ! C'est plus de <span className="font-bold text-primary-foreground">43 kg</span> de crottes qu'on a ramassées ! 💪🐕
               </p>
             </CardContent>
           </Card>
@@ -117,7 +117,7 @@ const ClientDashboard = () => {
               {[
                 { date: "15 fév. 2026", notes: "Nettoyage complet + désodorisation ✨", tech: "Marc" },
                 { date: "8 fév. 2026", notes: "Nettoyage régulier, code du portail OK 🐾", tech: "Marc" },
-                { date: "1 fév. 2026", notes: "Nettoyage complet + désodo, attention particulière à la cour arrière", tech: "Julie" },
+                { date: "1 fév. 2026", notes: "Nettoyage complet + désodo, attention particulière au jardin arrière", tech: "Julie" },
                 { date: "25 jan. 2026", notes: "Nettoyage hebdomadaire régulier 🐕", tech: "Marc" },
               ].map((v, i) => (
                 <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">

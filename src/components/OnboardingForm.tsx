@@ -33,7 +33,7 @@ const OnboardingForm = () => {
         </div>
         <h3 className="font-display text-2xl font-bold text-foreground mb-2">C'est tout bon ! 🎉</h3>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Merci pour votre inscription ! Nous vous contacterons rapidement pour planifier votre premier nettoyage gratuit. La cour de votre toutou va briller ! ✨
+          Merci pour votre inscription ! Nous vous contacterons rapidement pour planifier votre premier nettoyage gratuit. Le jardin de votre toutou va briller ! ✨
         </p>
       </motion.div>
     );
@@ -102,7 +102,7 @@ const OnboardingForm = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Taille de la cour</Label>
+              <Label>Taille du jardin</Label>
               <Select required>
                 <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                 <SelectContent>
@@ -134,7 +134,7 @@ const OnboardingForm = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <Leaf className="w-4 h-4 text-primary" />
                   <Label htmlFor="deodorizing" className="font-display font-bold text-foreground">
-                    Ajouter la désodorisation de cour
+                    Ajouter la désodorisation de jardin
                   </Label>
                 </div>
                 <p className="text-sm text-muted-foreground">
