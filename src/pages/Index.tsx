@@ -49,7 +49,7 @@ const Index = () => {
               className="flex items-center gap-2 mb-4"
             >
               <PawIcon className="w-8 h-8 text-accent animate-paw-bounce" />
-              <span className="font-display font-bold text-accent text-sm uppercase tracking-widest">Poop Buster</span>
+              <span className="font-display font-bold text-accent text-sm uppercase tracking-widest">Crotte & Go</span>
             </motion.div>
             <h1 className="font-display text-4xl md:text-6xl font-black text-primary-foreground leading-tight mb-4">
               Votre jardin, <br />
@@ -165,7 +165,7 @@ const Index = () => {
           >
             <Heart className="w-8 h-8 text-destructive mx-auto mb-4" />
             <blockquote className="font-display text-2xl md:text-3xl font-bold text-foreground max-w-3xl mx-auto mb-4">
-              « Depuis que Poop Buster s'occupe de notre jardin, mes enfants peuvent jouer dehors sans souci. Merci ! »
+              « Depuis que Crotte & Go s'occupe de notre jardin, mes enfants peuvent jouer dehors sans souci. Merci ! »
             </blockquote>
             <p className="text-muted-foreground">— Marie-Claude, maman de Buddy 🐕 et Luna 🐕</p>
           </motion.div>
@@ -190,10 +190,10 @@ const Index = () => {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 font-display font-bold text-primary">
             <PawIcon className="w-5 h-5" />
-            Poop Buster
+            Crotte & Go
           </div>
           <p className="text-sm text-muted-foreground text-center">
-            © {new Date().getFullYear()} Poop Buster. On garde vos jardins propres, une crotte à la fois. 🐾
+            © {new Date().getFullYear()} Crotte & Go. On garde vos jardins propres, une crotte à la fois. 🐾
           </p>
           <div className="flex items-center gap-4 text-sm">
             <a href="/login" className="text-muted-foreground hover:text-primary transition-colors">Admin</a>
