@@ -18,7 +18,7 @@ const OnboardingForm = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitted(true);
-    toast.success("Bienvenue chez Poop Buster ! 🐾 On vous contacte très vite.");
+    toast.success("Bienvenue chez Crotte & Go ! 🐾 On vous contacte très vite.");
   };
 
   if (submitted) {

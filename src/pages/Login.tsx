@@ -33,7 +33,7 @@ const Login = () => {
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2 font-display text-2xl font-bold text-primary">
             <PawIcon className="w-8 h-8 animate-paw-bounce" />
-            Poop Buster
+            Crotte & Go
           </Link>
         </div>
 

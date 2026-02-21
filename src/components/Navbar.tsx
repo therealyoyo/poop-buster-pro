@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold text-primary">
           <PawIcon className="w-7 h-7 animate-paw-bounce" />
-          Poop Buster
+          Crotte & Go
         </Link>
 
         <div className="hidden md:flex items-center gap-2">
