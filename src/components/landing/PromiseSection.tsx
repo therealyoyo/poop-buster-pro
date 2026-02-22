@@ -18,7 +18,7 @@ const promises = [
   {
     icon: Leaf,
     title: "Engagement Santé & Sécurité",
-    desc: "Pratiques sanitaires strictes et élimination écologique des déchets pour protéger votre famille et vos animaux.",
+    desc: "Crotte & Go® fait de la santé et de la sécurité sa priorité en utilisant des pratiques sanitaires et des méthodes d'élimination écoresponsables, garantissant ainsi un environnement propre et sûr pour les animaux et leurs familles.",
     isPaw: false,
   },
 ];
