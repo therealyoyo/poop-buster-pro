@@ -3,7 +3,7 @@ import { Search, Shield, Monitor, FileText, Camera, Smartphone } from "lucide-re
 
 const reasons = [
   { icon: Search, title: "Employés Vérifiés", desc: "Notre équipe est soumise à des vérifications rigoureuses pour garantir une fiabilité et une confiance totales." },
-  { icon: Shield, title: "Sécurité des Animaux", desc: "Désinfectant de qualité vétérinaire entre chaque jardin." },
+  { icon: Shield, title: "Sécurité des Animaux", desc: "Nous nettoyons tout notre équipement et nos chaussures avec un désinfectant professionnel après chaque intervention, minimisant ainsi la propagation des germes et des maladies." },
   { icon: Monitor, title: "Portail Client", desc: "Paiements automatiques, factures et gestion en ligne." },
   { icon: FileText, title: "Sans Contrat", desc: "Commencez, pausez ou annulez quand vous voulez." },
   { icon: Camera, title: "Photo du Portail", desc: "Une photo de votre portail fermé après chaque visite." },
