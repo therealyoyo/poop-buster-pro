@@ -17,7 +17,7 @@ const HeroSection = () => (
           </span>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-tight mb-4">
             Service de Ramassage de{" "}
-            <span className="text-primary">Crottes de Chien</span>
+            <span className="text-primary">Déjections canines</span>
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-lg">
             Obtenez votre devis gratuit dès aujourd'hui !
