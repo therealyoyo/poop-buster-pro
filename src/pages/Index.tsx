@@ -52,8 +52,8 @@ const Index = () => {
               <span className="font-display font-bold text-accent text-sm uppercase tracking-widest">Crotte & Go</span>
             </motion.div>
             <h1 className="font-display text-4xl md:text-6xl font-black text-primary-foreground leading-tight mb-4">
-              Votre jardin, <br />
-              <span className="text-accent">propre & fraîche !</span>
+              On ramasse, <br />
+              <span className="text-accent">vous profitez !</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-lg font-body">
               Service professionnel de ramassage de crottes de chien et désodorisation de jardin. On fait le sale boulot pour que vous n'ayez pas à le faire ! 💩✨
