@@ -8,7 +8,7 @@ import ResidentialSection from "@/components/landing/ResidentialSection";
 import PromoSection from "@/components/landing/PromoSection";
 import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
 import ServiceAreasSection from "@/components/landing/ServiceAreasSection";
-import ReviewsSection from "@/components/landing/ReviewsSection";
+
 import ReferralSection from "@/components/landing/ReferralSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
@@ -46,8 +46,6 @@ const Index = () => {
       {/* 9. Zones desservies */}
       <ServiceAreasSection />
 
-      {/* 10. Avis clients */}
-      <ReviewsSection />
 
       {/* 11. Parrainage */}
       <ReferralSection />
