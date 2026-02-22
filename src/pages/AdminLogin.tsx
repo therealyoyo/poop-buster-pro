@@ -20,7 +20,7 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -31,10 +31,27 @@ const AdminLogin = () => {
         description: "Email ou mot de passe incorrect.",
         variant: "destructive",
       });
-    } else {
-      navigate("/admin");
+      setLoading(false);
+      return;
     }
 
+    // Check if user has admin role
+    const { data: roleData, error: roleError } = await supabase
+      .rpc('has_role', { _user_id: data.user.id, _role: 'admin' });
+
+    if (roleError || !roleData) {
+      await supabase.auth.signOut();
+      toast({
+        title: "Accès refusé",
+        description: "Vous n'avez pas les droits administrateur.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      navigate("/");
+      return;
+    }
+
+    navigate("/admin");
     setLoading(false);
   };
 
