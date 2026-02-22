@@ -5,7 +5,7 @@ import { CheckCircle, Star } from "lucide-react";
 const bullets = [
   "Options flexibles : 2x par semaine, hebdomadaire, toutes les deux semaines, mensuel et ponctuel",
   "Avis 5 étoiles de clients satisfaits en Belgique",
-  "Service de désodorisation pour un jardin frais et sans odeurs",
+  "Service complémentaire de désodorisation pour un jardin frais et sans odeurs",
 ];
 
 const ResidentialSection = () => (
