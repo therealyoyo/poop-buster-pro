@@ -12,7 +12,7 @@ const promises = [
   {
     icon: CheckCircle,
     title: "Satisfaction Garantie",
-    desc: "Si vous n'êtes pas satisfait, on arrange ça. Votre bonheur est notre priorité absolue.",
+    desc: "Chez Crotte & Go®, nous garantissons votre entière satisfaction avec notre service de ramassage de déjections canines. Si vous n'êtes pas satisfait, on s'en occupe car votre tranquillité d'esprit est notre priorité.",
     isPaw: false,
   },
   {
