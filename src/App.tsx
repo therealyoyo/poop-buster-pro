@@ -11,6 +11,7 @@ import AdminBilling from "./pages/admin/Billing";
 import AdminRoute from "./components/AdminRoute";
 import ClientDetail from "./pages/admin/ClientDetail";
 import Pipeline from "./pages/admin/Pipeline";
+import ZonesService from "./pages/admin/ZonesService";
 import ClientDashboard from "./pages/portal/ClientDashboard";
 import ClientInvoices from "./pages/portal/Invoices";
 import ClientSettings from "./pages/portal/Settings";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/admin/clients/:id" element={<AdminRoute><ClientDetail /></AdminRoute>} />
           <Route path="/admin/pipeline" element={<AdminRoute><Pipeline /></AdminRoute>} />
           <Route path="/admin/billing" element={<AdminRoute><AdminBilling /></AdminRoute>} />
+          <Route path="/admin/zones" element={<AdminRoute><ZonesService /></AdminRoute>} />
           <Route path="/portal" element={<ClientDashboard />} />
           <Route path="/portal/messages" element={<ClientMessages />} />
           <Route path="/portal/invoices" element={<ClientInvoices />} />
