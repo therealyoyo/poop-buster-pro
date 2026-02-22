@@ -29,11 +29,6 @@ const HeroSection = () => (
                 Devis gratuit
               </Button>
             </a>
-            <a href="#how">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 rounded-full">
-                Voir comment ça marche ▶
-              </Button>
-            </a>
           </div>
         </motion.div>
 
