@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Search, Shield, Monitor, FileText, Camera, Smartphone } from "lucide-react";
 
 const reasons = [
-  { icon: Search, title: "Employés Vérifiés", desc: "Vérification d'antécédents pour chaque membre de l'équipe." },
+  { icon: Search, title: "Employés Vérifiés", desc: "Notre équipe est soumise à des vérifications rigoureuses pour garantir une fiabilité et une confiance totales." },
   { icon: Shield, title: "Sécurité des Animaux", desc: "Désinfectant de qualité vétérinaire entre chaque jardin." },
   { icon: Monitor, title: "Portail Client", desc: "Paiements automatiques, factures et gestion en ligne." },
   { icon: FileText, title: "Sans Contrat", desc: "Commencez, pausez ou annulez quand vous voulez." },
