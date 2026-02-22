@@ -33,15 +33,12 @@ const ServiceAreasSection = () => (
           >
             <MapPin className="w-10 h-10 text-primary mx-auto mb-4" />
             <h3 className="font-display text-xl font-bold text-foreground mb-3">{a.name}</h3>
-            <p className="text-muted-foreground text-sm">Ramassage résidentiel · Désodorisation</p>
+            
           </motion.div>
         ))}
       </div>
-      <div className="text-center mt-8">
-        <a href="#signup">
-          <Button variant="default" size="lg">Voir les zones</Button>
-        </a>
-      </div>
+
+
     </div>
   </section>
 );
