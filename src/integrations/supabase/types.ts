@@ -82,6 +82,42 @@ export type Database = {
           },
         ]
       }
+      contact_requests: {
+        Row: {
+          code_postal: string
+          commentaire: string | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          code_postal: string
+          commentaire?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          code_postal?: string
+          commentaire?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       interventions: {
         Row: {
           admin_id: string | null
@@ -213,6 +249,30 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      zones_service: {
+        Row: {
+          actif: boolean
+          code_postal: string
+          created_at: string
+          id: string
+          zone: string
+        }
+        Insert: {
+          actif?: boolean
+          code_postal: string
+          created_at?: string
+          id?: string
+          zone: string
+        }
+        Update: {
+          actif?: boolean
+          code_postal?: string
+          created_at?: string
+          id?: string
+          zone?: string
         }
         Relationships: []
       }

@@ -17,6 +17,7 @@ const Navbar = () => {
     { to: "/admin/clients", label: "CRM" },
     { to: "/admin/pipeline", label: "Pipeline" },
     { to: "/admin/billing", label: "Facturation" },
+    { to: "/admin/zones", label: "Zones" },
   ];
 
   const portalLinks = [
