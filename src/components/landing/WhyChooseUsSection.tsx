@@ -6,7 +6,7 @@ const reasons = [
   { icon: Shield, title: "Sécurité des Animaux", desc: "Nous nettoyons tout notre équipement et nos chaussures avec un désinfectant professionnel après chaque intervention, minimisant ainsi la propagation des germes et des maladies." },
   { icon: Monitor, title: "Portail Client", desc: "Profitez d'un service sans tracas grâce à votre propre portail client. Il vous permet de configurer des paiements automatiques, de suivre vos factures et de gérer vos services en ligne." },
   { icon: FileText, title: "Sans Contrat", desc: "Commencez, pausez ou annulez quand vous voulez." },
-  { icon: Camera, title: "Photos des barrières", desc: "Après chaque visite, vous recevrez une photo de votre portail de jardin bien fermé, vous offrant une tranquillité d'esprit totale lorsque vos compagnons à quatre pattes retournent dans leur jardin propre" },
+  { icon: Camera, title: "Photos du portail de jardin", desc: "Après chaque visite, vous recevrez une photo de votre portail de jardin bien fermé, vous offrant une tranquillité d'esprit totale lorsque vos compagnons à quatre pattes retournent dans leur jardin propre" },
   { icon: Smartphone, title: "Notifications SMS", desc: "SMS 60 min avant l'arrivée + email de confirmation." },
 ];
 
