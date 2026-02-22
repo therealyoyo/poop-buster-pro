@@ -21,7 +21,7 @@ const ResidentialSection = () => (
             Dites adieu aux déjections canines
           </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-6">
-            Services Résidentiels de Ramassage
+            Services de Ramassage à Domicile
           </h2>
           <ul className="space-y-4 mb-8">
             {bullets.map((b) => (
