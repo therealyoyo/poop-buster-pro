@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
-const AboutSection = () => (
-  <section id="about" className="py-20 bg-background">
+const AboutSection = () =>
+<section id="about" className="py-20 bg-background">
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
         {/* Image placeholder */}
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="relative"
-        >
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        className="relative">
+
           <div className="aspect-[4/3] rounded-2xl bg-accent flex items-center justify-center overflow-hidden">
             <svg viewBox="0 0 300 220" className="w-3/4" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* Happy dog with person */}
@@ -43,13 +43,13 @@ const AboutSection = () => (
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
+        initial={{ opacity: 0, x: 20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}>
+
           <span className="font-display font-bold text-primary text-sm uppercase tracking-widest mb-2 block">Crotte & Go</span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Notre Entreprise de Ramassage de Déjections Canines
+            Entreprise de Ramassage de Déjections Canines
           </h2>
           <p className="text-muted-foreground mb-6 leading-relaxed">
             Fondée avec la mission d'améliorer la vie des propriétaires de chiens en Belgique, Crotte & Go offre un service de ramassage de déjections canines de haute qualité en région Bruxelloise et  Brabant Wallon. Nous nous occupons du sale boulot pour que vous puissiez profiter de votre jardin sereinement.
@@ -60,7 +60,7 @@ const AboutSection = () => (
         </motion.div>
       </div>
     </div>
-  </section>
-);
+  </section>;
+
 
 export default AboutSection;
