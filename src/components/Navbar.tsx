@@ -1,14 +1,32 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import PawIcon from "@/components/PawIcon";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import { useUnreadCount } from "@/hooks/useMessages";
 
 const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isAdmin = location.pathname.startsWith("/admin");
   const isPortal = location.pathname.startsWith("/portal");
+  const { data: unreadCount = 0 } = useUnreadCount();
+
+  const adminLinks = [
+    { to: "/admin", label: "Tableau de bord" },
+    { to: "/admin/clients", label: "CRM" },
+    { to: "/admin/pipeline", label: "Pipeline" },
+    { to: "/admin/billing", label: "Facturation" },
+  ];
+
+  const portalLinks = [
+    { to: "/portal", label: "Mon espace" },
+    { to: "/portal/messages", label: "Messages" },
+    { to: "/portal/invoices", label: "Factures" },
+    { to: "/portal/settings", label: "Paramètres" },
+  ];
+
+  const links = isAdmin ? adminLinks : isPortal ? portalLinks : [];
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
@@ -19,19 +37,16 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-2">
-          {isAdmin ? (
-            <>
-              <Link to="/admin"><Button variant={location.pathname === "/admin" ? "default" : "ghost"} size="sm">Tableau de bord</Button></Link>
-              <Link to="/admin/clients"><Button variant={location.pathname === "/admin/clients" ? "default" : "ghost"} size="sm">Clients</Button></Link>
-              <Link to="/admin/billing"><Button variant={location.pathname === "/admin/billing" ? "default" : "ghost"} size="sm">Facturation</Button></Link>
-            </>
-          ) : isPortal ? (
-            <>
-              <Link to="/portal"><Button variant={location.pathname === "/portal" ? "default" : "ghost"} size="sm">Mon espace</Button></Link>
-              <Link to="/portal/invoices"><Button variant={location.pathname === "/portal/invoices" ? "default" : "ghost"} size="sm">Factures</Button></Link>
-              <Link to="/portal/settings"><Button variant={location.pathname === "/portal/settings" ? "default" : "ghost"} size="sm">Paramètres</Button></Link>
-            </>
-          ) : (
+          {links.length > 0 ? links.map(l => (
+            <Link key={l.to} to={l.to}>
+              <Button variant={location.pathname === l.to ? "default" : "ghost"} size="sm" className="relative">
+                {l.label}
+                {l.label === "CRM" && isAdmin && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>
+                )}
+              </Button>
+            </Link>
+          )) : (
             <>
               <Link to="/login"><Button variant="ghost" size="sm">Connexion</Button></Link>
               <Link to="/#signup"><Button variant="cta" size="sm">Commencer</Button></Link>
@@ -46,19 +61,11 @@ const Navbar = () => {
 
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-card p-4 flex flex-col gap-2">
-          {isAdmin ? (
-            <>
-              <Link to="/admin" onClick={() => setMobileOpen(false)}><Button variant="ghost" className="w-full justify-start">Tableau de bord</Button></Link>
-              <Link to="/admin/clients" onClick={() => setMobileOpen(false)}><Button variant="ghost" className="w-full justify-start">Clients</Button></Link>
-              <Link to="/admin/billing" onClick={() => setMobileOpen(false)}><Button variant="ghost" className="w-full justify-start">Facturation</Button></Link>
-            </>
-          ) : isPortal ? (
-            <>
-              <Link to="/portal" onClick={() => setMobileOpen(false)}><Button variant="ghost" className="w-full justify-start">Mon espace</Button></Link>
-              <Link to="/portal/invoices" onClick={() => setMobileOpen(false)}><Button variant="ghost" className="w-full justify-start">Factures</Button></Link>
-              <Link to="/portal/settings" onClick={() => setMobileOpen(false)}><Button variant="ghost" className="w-full justify-start">Paramètres</Button></Link>
-            </>
-          ) : (
+          {links.length > 0 ? links.map(l => (
+            <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">{l.label}</Button>
+            </Link>
+          )) : (
             <>
               <Link to="/login" onClick={() => setMobileOpen(false)}><Button variant="ghost" className="w-full justify-start">Connexion</Button></Link>
               <Link to="/#signup" onClick={() => setMobileOpen(false)}><Button variant="cta" className="w-full">Commencer</Button></Link>

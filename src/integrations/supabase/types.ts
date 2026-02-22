@@ -14,6 +14,190 @@ export type Database = {
   }
   public: {
     Tables: {
+      clients: {
+        Row: {
+          address: string | null
+          created_at: string
+          dog_count: number
+          email: string | null
+          first_name: string
+          garden_size: string | null
+          gate_code: string | null
+          id: string
+          internal_notes: string | null
+          last_name: string
+          phone: string | null
+          pipeline_stage: string
+          service_frequency: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+          zone_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          dog_count?: number
+          email?: string | null
+          first_name: string
+          garden_size?: string | null
+          gate_code?: string | null
+          id?: string
+          internal_notes?: string | null
+          last_name: string
+          phone?: string | null
+          pipeline_stage?: string
+          service_frequency?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          zone_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          dog_count?: number
+          email?: string | null
+          first_name?: string
+          garden_size?: string | null
+          gate_code?: string | null
+          id?: string
+          internal_notes?: string | null
+          last_name?: string
+          phone?: string | null
+          pipeline_stage?: string
+          service_frequency?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "service_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interventions: {
+        Row: {
+          admin_id: string | null
+          client_id: string
+          completed_at: string | null
+          completion_message: string | null
+          created_at: string
+          id: string
+          photo_url: string | null
+          scheduled_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string | null
+          client_id: string
+          completed_at?: string | null
+          completion_message?: string | null
+          created_at?: string
+          id?: string
+          photo_url?: string | null
+          scheduled_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string | null
+          client_id?: string
+          completed_at?: string | null
+          completion_message?: string | null
+          created_at?: string
+          id?: string
+          photo_url?: string | null
+          scheduled_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interventions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          client_id: string
+          content: string
+          created_at: string
+          id: string
+          intervention_id: string | null
+          is_read: boolean
+          photo_url: string | null
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          client_id: string
+          content: string
+          created_at?: string
+          id?: string
+          intervention_id?: string | null
+          is_read?: boolean
+          photo_url?: string | null
+          sender_id: string
+          sender_role: string
+        }
+        Update: {
+          client_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          intervention_id?: string | null
+          is_read?: boolean
+          photo_url?: string | null
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_intervention_id_fkey"
+            columns: ["intervention_id"]
+            isOneToOne: false
+            referencedRelation: "interventions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_zones: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
