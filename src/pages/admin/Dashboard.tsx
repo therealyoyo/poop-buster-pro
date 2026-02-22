@@ -24,8 +24,7 @@ const revenueData = [
 ];
 
 const serviceBreakdown = [
-  { name: "Ramassage", value: 6800, color: "hsl(174, 62%, 42%)" },
-  { name: "Désodorisation", value: 1620, color: "hsl(25, 55%, 48%)" },
+  { name: "Ramassage", value: 8420, color: "hsl(174, 62%, 42%)" },
 ];
 
 const recentClients = [

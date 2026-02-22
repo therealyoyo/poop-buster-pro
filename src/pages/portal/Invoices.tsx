@@ -6,9 +6,9 @@ import { FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 
 const invoices = [
-  { id: "FAC-087", date: "1 fév. 2026", amount: 180, status: "Payée", items: "Ramassage hebdo + Désodorisation" },
-  { id: "FAC-074", date: "1 jan. 2026", amount: 180, status: "Payée", items: "Ramassage hebdo + Désodorisation" },
-  { id: "FAC-061", date: "1 déc. 2025", amount: 180, status: "Payée", items: "Ramassage hebdo + Désodorisation" },
+  { id: "FAC-087", date: "1 fév. 2026", amount: 150, status: "Payée", items: "Ramassage hebdo" },
+  { id: "FAC-074", date: "1 jan. 2026", amount: 150, status: "Payée", items: "Ramassage hebdo" },
+  { id: "FAC-061", date: "1 déc. 2025", amount: 150, status: "Payée", items: "Ramassage hebdo" },
   { id: "FAC-048", date: "1 nov. 2025", amount: 150, status: "Payée", items: "Ramassage hebdo" },
   { id: "FAC-035", date: "1 oct. 2025", amount: 150, status: "Payée", items: "Ramassage hebdo" },
 ];

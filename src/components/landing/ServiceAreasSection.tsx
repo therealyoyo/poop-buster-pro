@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 
 const areas = [
-  { name: "Bruxelles", services: ["Ramassage résidentiel", "Désodorisation"] },
-  { name: "Brabant Wallon", services: ["Ramassage résidentiel", "Désodorisation"] },
+  { name: "Bruxelles", services: ["Ramassage résidentiel"] },
+  { name: "Brabant Wallon", services: ["Ramassage résidentiel"] },
 ];
 
 const ServiceAreasSection = () => (
