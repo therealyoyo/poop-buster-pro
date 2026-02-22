@@ -68,23 +68,23 @@ const OnboardingForm = () => {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="phone">Téléphone</Label>
-              <Input id="phone" type="tel" placeholder="(514) 123-4567" required />
+              <Input id="phone" type="tel" placeholder="+32 470 12 34 56" required />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="street">Adresse</Label>
-            <Input id="street" placeholder="123 rue des Érables" required />
+            <Input id="street" placeholder="123 rue de la Loi" required />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="city">Ville</Label>
-              <Input id="city" placeholder="Montréal" required />
+              <Input id="city" placeholder="Bruxelles" required />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="postalCode">Code postal</Label>
-              <Input id="postalCode" placeholder="H2X 1Y4" required />
+              <Input id="postalCode" placeholder="1000" required />
             </div>
             <div className="space-y-1.5 col-span-2 sm:col-span-1">
               <Label htmlFor="dogs">Nombre de chiens</Label>
