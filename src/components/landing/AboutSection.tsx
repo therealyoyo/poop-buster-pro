@@ -49,7 +49,7 @@ const AboutSection = () => (
         >
           <span className="font-display font-bold text-primary text-sm uppercase tracking-widest mb-2 block">Crotte & Go</span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Notre Entreprise de Ramassage de Déjections canines
+            Notre Entreprise de Ramassage de Déjections Canines
           </h2>
           <p className="text-muted-foreground mb-6 leading-relaxed">
             Fondée avec la mission d'améliorer la vie des propriétaires de chiens en Belgique, Crotte & Go offre un service de ramassage de déjections canines de haute qualité en région Bruxelloise et  Brabant Wallon. Nous nous occupons du sale boulot pour que vous puissiez profiter de votre jardin sereinement.
