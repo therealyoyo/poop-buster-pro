@@ -6,7 +6,7 @@ const promises = [
   {
     icon: PawIcon,
     title: "Service Fiable & Sans Souci",
-    desc: "Des visites ponctuelles et efficaces pour que votre jardin reste impeccable. Profitez de plus de temps avec votre chien !",
+    desc: "Notre service de ramassage vous garantit des passages ponctuels et sans tracas pour un jardin impeccable. Profitez de plus de temps avec votre chien pendant que nous nous occupons du reste !",
     isPaw: true,
   },
   {
