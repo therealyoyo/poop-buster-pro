@@ -33,11 +33,7 @@ const ServiceAreasSection = () => (
           >
             <MapPin className="w-10 h-10 text-primary mx-auto mb-4" />
             <h3 className="font-display text-xl font-bold text-foreground mb-3">{a.name}</h3>
-            <div className="flex flex-wrap justify-center gap-2">
-              {a.services.map((s) => (
-                <span key={s} className="inline-block bg-accent text-accent-foreground text-sm px-3 py-1 rounded-full font-medium">{s}</span>
-              ))}
-            </div>
+            <p className="text-muted-foreground text-sm">Ramassage résidentiel · Désodorisation</p>
           </motion.div>
         ))}
       </div>
