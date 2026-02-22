@@ -37,7 +37,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [deodorisation, setDeodorisation] = useState(false);
+  
   const [gateCode, setGateCode] = useState("");
   const [rgpd, setRgpd] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -62,7 +62,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     setEmail("");
     setPhone("");
     setAddress("");
-    setDeodorisation(false);
+    
     setGateCode("");
     setRgpd(false);
     setOozFirstName("");
@@ -99,7 +99,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
         dog_count: dogCount[0],
         service_frequency: frequencies[freqIndex[0]],
         gate_code: gateCode || null,
-        garden_size: deodorisation ? "désodorisation" : null,
+        garden_size: null,
         status: "prospect",
         pipeline_stage: "new",
         internal_notes: promoCode ? `Code promo: ${promoCode}` : null,
@@ -243,13 +243,6 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
               <div>
                 <Label>Adresse complète (Rue, numéro) *</Label>
                 <Input value={address} onChange={(e) => setAddress(e.target.value)} />
-              </div>
-              <div>
-                <Label>Option désodorisation</Label>
-                <div className="flex gap-4 mt-1">
-                  <Button type="button" variant={deodorisation ? "default" : "outline"} size="sm" onClick={() => setDeodorisation(true)}>Oui</Button>
-                  <Button type="button" variant={!deodorisation ? "default" : "outline"} size="sm" onClick={() => setDeodorisation(false)}>Non</Button>
-                </div>
               </div>
               <div>
                 <Label>Code de portail / instructions spéciales</Label>

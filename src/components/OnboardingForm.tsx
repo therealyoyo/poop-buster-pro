@@ -4,15 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import PawIcon from "@/components/PawIcon";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { CheckCircle, Dog, Leaf, Shield } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 const OnboardingForm = () => {
-  const [deodorizing, setDeodorizing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -124,30 +122,6 @@ const OnboardingForm = () => {
                   <SelectItem value="onetime">Ponctuel</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          {/* Deodorizing add-on */}
-          <div className="rounded-lg border border-primary/20 bg-accent/50 p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <Leaf className="w-4 h-4 text-primary" />
-                  <Label htmlFor="deodorizing" className="font-display font-bold text-foreground">
-                    Ajouter la désodorisation de jardin
-                  </Label>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Notre formule enzymatique biodégradable, non toxique et sécuritaire neutralise les odeurs de déjections. 
-                  100 % sans danger pour les animaux, les enfants et l'environnement. 🌿
-                </p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Sans danger pour les animaux</span>
-                  <span className="flex items-center gap-1"><Dog className="w-3 h-3" /> Sans danger pour les enfants</span>
-                  <span className="flex items-center gap-1"><Leaf className="w-3 h-3" /> Écoresponsable</span>
-                </div>
-              </div>
-              <Switch id="deodorizing" checked={deodorizing} onCheckedChange={setDeodorizing} />
             </div>
           </div>
 

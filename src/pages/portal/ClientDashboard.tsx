@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import PawIcon from "@/components/PawIcon";
-import { Calendar, DollarSign, Leaf, Star, MapPin, Dog } from "lucide-react";
+import { Calendar, DollarSign, Star, MapPin, Dog } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ClientDashboard = () => {
@@ -60,10 +60,6 @@ const ClientDashboard = () => {
                   <span className="font-medium text-foreground">2 chiens</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-1"><Leaf className="w-4 h-4" /> Désodorisation</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent text-accent-foreground">Active ✅</span>
-                </div>
-                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground flex items-center gap-1"><MapPin className="w-4 h-4" /> Adresse</span>
                   <span className="text-sm text-foreground">123 rue des Chênes</span>
                 </div>
@@ -82,15 +78,11 @@ const ClientDashboard = () => {
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Coût mensuel</span>
-                  <span className="font-bold text-foreground text-lg">180 $/mois</span>
+                  <span className="font-bold text-foreground text-lg">150 $/mois</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Ramassage</span>
                   <span className="text-foreground">150 $</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Désodorisation</span>
-                  <span className="text-foreground">30 $</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Prochaine facture</span>
@@ -115,9 +107,9 @@ const ClientDashboard = () => {
           <CardContent>
             <div className="space-y-3">
               {[
-                { date: "15 fév. 2026", notes: "Nettoyage complet + désodorisation ✨", tech: "Marc" },
+                { date: "15 fév. 2026", notes: "Nettoyage complet ✨", tech: "Marc" },
                 { date: "8 fév. 2026", notes: "Nettoyage régulier, code du portail OK 🐾", tech: "Marc" },
-                { date: "1 fév. 2026", notes: "Nettoyage complet + désodo, attention particulière au jardin arrière", tech: "Julie" },
+                { date: "1 fév. 2026", notes: "Nettoyage complet, attention particulière au jardin arrière", tech: "Julie" },
                 { date: "25 jan. 2026", notes: "Nettoyage hebdomadaire régulier 🐕", tech: "Marc" },
               ].map((v, i) => (
                 <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
