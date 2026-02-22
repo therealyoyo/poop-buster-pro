@@ -4,21 +4,35 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [state, setState] = useState<"loading" | "authorized" | "unauthorized">("loading");
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setSession(session)
-    );
+    const checkAdmin = async (session: Session | null) => {
+      if (!session) {
+        setState("unauthorized");
+        return;
+      }
+
+      const { data } = await supabase.rpc('has_role', {
+        _user_id: session.user.id,
+        _role: 'admin' as const,
+      });
+
+      setState(data ? "authorized" : "unauthorized");
+    };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+      checkAdmin(session);
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => checkAdmin(session)
+    );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (session === undefined) {
+  if (state === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -26,7 +40,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!session) {
+  if (state === "unauthorized") {
     return <Navigate to="/admin-login" replace />;
   }
 
