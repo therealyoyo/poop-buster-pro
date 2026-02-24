@@ -2,6 +2,7 @@ import TopBar from "@/components/landing/TopBar";
 import SiteNavbar from "@/components/landing/SiteNavbar";
 import SiteFooter from "@/components/landing/SiteFooter";
 import ResidentialDetailSection from "@/components/landing/ResidentialDetailSection";
+import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
 import ReviewsSection from "@/components/landing/ReviewsSection";
 import StatsSection from "@/components/landing/StatsSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
@@ -14,6 +15,7 @@ const Residential = () => {
       <TopBar />
       <SiteNavbar />
       <ResidentialDetailSection />
+      <WhyChooseUsSection />
       <ReviewsSection />
       <StatsSection />
       <FinalCTASection />
