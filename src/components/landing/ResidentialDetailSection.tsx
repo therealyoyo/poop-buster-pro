@@ -202,10 +202,11 @@ const ResidentialDetailSection = () => (
             L'importance du ramassage : Protégez votre environnement
           </h3>
         </div>
+        <p className="text-muted-foreground leading-relaxed text-lg mb-4">
+          Les déjections canines ne sont pas seulement une nuisance visuelle ; elles sont considérées comme des déchets dangereux en raison des bactéries et des parasites nocifs qu'elles peuvent contenir.
+        </p>
         <p className="text-muted-foreground leading-relaxed text-lg">
-          Les déjections canines sont des déchets dangereux. Elles abritent des bactéries et parasites
-          qui contaminent les sols et les eaux locales. Notre service régulier protège la santé de
-          votre famille, de vos animaux et de votre communauté.
+          Lorsqu'elles ne sont pas ramassées, elles peuvent contaminer le sol et même polluer les cours d'eau locaux, posant de graves risques pour la santé des humains comme des animaux. En éliminant régulièrement ces déchets, un service professionnel aide à prévenir la propagation de maladies et garantit un environnement plus propre et plus sûr pour votre famille, vos animaux et votre communauté.
         </p>
       </motion.div>
 
