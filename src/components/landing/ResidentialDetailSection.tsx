@@ -13,7 +13,7 @@ const services = [
   {
     icon: CalendarCheck,
     title: "2x par semaine",
-    desc: "Idéal pour les foyers avec plusieurs chiens ou une accumulation importante. Un jardin toujours impeccable.",
+    desc: "Idéal pour les foyers avec plusieurs chiens ou en cas d'accumulation importante de déjections.\nPermet de maintenir un jardin propre et agréable en permanence.\nRéduit plus rapidement les odeurs et la prolifération des bactéries grâce à des interventions plus fréquente",
   },
   {
     icon: Clock,
@@ -102,7 +102,7 @@ const ResidentialDetailSection = () => (
               <s.icon className="w-6 h-6 text-accent-foreground" />
             </div>
             <h4 className="font-display font-bold text-foreground mb-2">{s.title}</h4>
-            <p className="text-sm text-muted-foreground">{s.desc}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-line">{s.desc}</p>
           </motion.div>
         ))}
       </div>
