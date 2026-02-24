@@ -18,7 +18,7 @@ const services = [
   {
     icon: Clock,
     title: "Hebdomadaire",
-    desc: "Notre service le plus populaire. Parfait pour les foyers avec 1 à 2 chiens qui souhaitent un jardin propre sans effort.",
+    desc: "Notre service le plus populaire, parfait  pour les propriétaires d'animaux au quotidien bien rempli. Garantit une hygiène optimale en limitant les bactéries et les mauvaises odeurs. Parfaitement adapté aux foyers comptant 1 à 2 chiens.",
   },
   {
     icon: Sparkles,
