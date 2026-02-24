@@ -29,7 +29,7 @@ const SiteNavbar = () => {
           </div>
 
           <a href="#faq" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">FAQ</a>
-          <a href="#about" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">À propos</a>
+          <Link to="/about" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">À propos</Link>
 
           {/* Zones dropdown */}
           <div className="relative group">
@@ -65,7 +65,7 @@ const SiteNavbar = () => {
             </div>
           )}
           <a href="#faq" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">FAQ</a>
-          <a href="#about" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">À propos</a>
+          <Link to="/about" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">À propos</Link>
           <button onClick={() => setZonesOpen(!zonesOpen)} className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-foreground">
             Zones desservies <ChevronDown className={`w-3 h-3 transition-transform ${zonesOpen ? 'rotate-180' : ''}`} />
           </button>
