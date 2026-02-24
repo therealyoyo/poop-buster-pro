@@ -227,7 +227,7 @@ const ResidentialDetailSection = () => (
           </div>
         </div>
         <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-          Pourquoi Faire Appel à Nous ?
+          Détendez-vous, on s'occupe du ramassage
         </h3>
         <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl mx-auto mb-8">
           Que vous ayez un emploi du temps chargé, des problèmes de mobilité ou que vous souhaitiez
