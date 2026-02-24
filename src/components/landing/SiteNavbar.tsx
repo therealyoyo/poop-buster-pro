@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import PawIcon from "@/components/PawIcon";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import logo from "@/assets/logo.png";
 
 const SiteNavbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -12,9 +12,8 @@ const SiteNavbar = () => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold text-primary">
-          <PawIcon className="w-7 h-7 animate-paw-bounce" />
-          Crotte & Go
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logo} alt="Crotte & Go" className="h-10" />
         </Link>
 
         <div className="hidden lg:flex items-center gap-1">
