@@ -23,7 +23,7 @@ const services = [
   {
     icon: Sparkles,
     title: "Toutes les 2 semaines",
-    desc: "Une option économique pour les jardins avec une accumulation moins fréquente, tout en gardant un espace sain.",
+    desc: "Une excellente option pour les habitations avec une accumulation de déjections modérée. Parfait pour les propriétaires qui souhaitent un nettoyage régulier sans avoir besoin d'un passage hebdomadaire",
   },
   {
     icon: Shield,
