@@ -72,11 +72,6 @@ const steps = [
     title: "Élimination des déjections",
     desc: "Votre technicien Crotte&Go® emballe les déjections dans un double sac avant de les déposer dans votre poubelle. Si vous n'avez pas de poubelle ou de benne accessible, les sacs doublés seront simplement déposés sur le côté de votre domicile. Ce processus garantit une élimination conforme aux normes d'hygiène et aux directives locales.",
   },
-  {
-    icon: Mail,
-    title: "Notification de fin",
-    desc: "Un rapport de visite vous est envoyé dès que le travail est terminé.",
-  },
 ];
 
 const benefits = [
