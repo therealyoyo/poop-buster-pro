@@ -199,7 +199,7 @@ const ResidentialDetailSection = () => (
             <AlertTriangle className="w-6 h-6 text-destructive" />
           </div>
           <h3 className="font-display text-2xl font-bold text-foreground">
-            Plus qu'une simple nuisance visuelle
+            L'importance du ramassage : Protégez votre environnement
           </h3>
         </div>
         <p className="text-muted-foreground leading-relaxed text-lg">
