@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import TopBar from "@/components/landing/TopBar";
 import SiteNavbar from "@/components/landing/SiteNavbar";
 import HeroSection from "@/components/landing/HeroSection";
+import IntroSection from "@/components/landing/IntroSection";
 import PromiseSection from "@/components/landing/PromiseSection";
 import AboutSection from "@/components/landing/AboutSection";
 import ResidentialSection from "@/components/landing/ResidentialSection";
@@ -28,7 +29,10 @@ const Index = () => {
       {/* 3. Hero */}
       <HeroSection />
 
-      {/* 4. Promesse client */}
+      {/* 4. Intro */}
+      <IntroSection />
+
+      {/* 5. Promesse client */}
       <PromiseSection />
 
       {/* 5. À propos */}
