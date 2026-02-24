@@ -13,7 +13,7 @@ const SiteNavbar = () => {
     <nav className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Crotte & Go" className="h-14" />
+          <img src={logo} alt="Crotte & Go" className="h-20" />
         </Link>
 
         <div className="hidden lg:flex items-center gap-1">
