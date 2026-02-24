@@ -20,7 +20,7 @@ const HeroSection = () =>
             <span className="text-primary">déjections canines</span>
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-lg">
-            Obtenez votre devis gratuit dès aujourd'hui !
+            Fini le ramassage de crottes, recevez votre devis gratuit dès aujourd'hui !
           </p>
           <div className="flex flex-wrap gap-3">
             <a href="#signup">
