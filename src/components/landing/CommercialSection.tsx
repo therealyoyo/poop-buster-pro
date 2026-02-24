@@ -31,7 +31,7 @@ const advantages = [
 ];
 
 const CommercialSection = () => (
-  <section className="py-20 bg-hero-gradient relative overflow-hidden">
+  <section id="commercial" className="py-20 bg-hero-gradient relative overflow-hidden">
     <div className="absolute inset-0 paw-pattern-dense opacity-20" />
     <div className="container mx-auto px-4 max-w-5xl relative z-10">
       {/* Header */}
