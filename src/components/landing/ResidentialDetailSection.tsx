@@ -37,7 +37,7 @@ const benefits = [
   "Réduction des risques sanitaires liés aux déjections",
   "Plus de temps libre pour profiter de votre extérieur",
   "Service flexible, sans contrat ni engagement",
-  "Équipe vérifiée, professionnelle et discrète",
+  "SMS de notification 60 minutes avant notre arrivée",
   "Photo de confirmation après chaque passage",
 ];
 
