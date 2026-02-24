@@ -22,7 +22,7 @@ const sectors = [
 
 
 const advantages = [
-"Plans sur mesure adaptés à la taille et la fréquence de vos besoins",
+"Services sur mesure adaptés à la taille et la fréquence de vos besoins",
 "Visites régulières programmées (quotidiennes, hebdomadaires, etc.)",
 "Réactivité et flexibilité pour les événements ponctuels",
 "Amélioration de l'image de marque de vos espaces",
