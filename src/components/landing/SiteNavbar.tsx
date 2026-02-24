@@ -23,8 +23,8 @@ const SiteNavbar = () => {
               Services <ChevronDown className="w-3 h-3" />
             </button>
             <div className="absolute top-full left-0 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all bg-card border border-border rounded-lg shadow-lg py-2 min-w-[180px]">
-              <a href="#services" className="block px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">Résidentiel</a>
-              <a href="#commercial" className="block px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">Professionnel / B2B</a>
+              <Link to="/services/residential" className="block px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">Résidentiel</Link>
+              <Link to="/services/commercial" className="block px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">Professionnel / B2B</Link>
             </div>
           </div>
 
@@ -60,8 +60,8 @@ const SiteNavbar = () => {
           </button>
           {servicesOpen && (
             <div className="pl-6 flex flex-col gap-1">
-              <a href="#services" onClick={() => setMobileOpen(false)} className="px-3 py-1.5 text-sm text-muted-foreground">Résidentiel</a>
-              <a href="#commercial" onClick={() => setMobileOpen(false)} className="px-3 py-1.5 text-sm text-muted-foreground">Professionnel / B2B</a>
+              <Link to="/services/residential" onClick={() => setMobileOpen(false)} className="px-3 py-1.5 text-sm text-muted-foreground">Résidentiel</Link>
+              <Link to="/services/commercial" onClick={() => setMobileOpen(false)} className="px-3 py-1.5 text-sm text-muted-foreground">Professionnel / B2B</Link>
             </div>
           )}
           <a href="#faq" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">FAQ</a>
