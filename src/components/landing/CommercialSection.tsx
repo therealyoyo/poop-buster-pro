@@ -6,7 +6,7 @@ import {
   Dog,
   Hotel,
   Tent,
-  Home,
+  Landmark,
   CheckCircle,
   ArrowRight } from
 "lucide-react";
@@ -14,7 +14,7 @@ import PawIcon from "@/components/PawIcon";
 
 const sectors = [
 { icon: Building2, label: "Copropriétés & Syndics" },
-{ icon: Home, label: "Promoteurs immobiliers" },
+{ icon: Landmark, label: "Communes & Services publics" },
 { icon: Trees, label: "Parcs & Espaces verts" },
 { icon: Dog, label: "Centres & Éducateurs canins" },
 { icon: Hotel, label: "Hôtels & Gîtes" },
