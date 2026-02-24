@@ -17,9 +17,6 @@ const ResidentialSection = () => (
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
         >
-          <span className="font-display font-bold text-primary text-sm uppercase tracking-widest mb-2 block">
-            Dites adieu aux déjections canines
-          </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-6">
             Services de Ramassage à Domicile
           </h2>
