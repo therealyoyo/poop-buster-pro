@@ -17,6 +17,7 @@ import ClientInvoices from "./pages/portal/Invoices";
 import ClientSettings from "./pages/portal/Settings";
 import ClientMessages from "./pages/portal/Messages";
 import NotFound from "./pages/NotFound";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/about" element={<About />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/clients" element={<AdminRoute><AdminCRM /></AdminRoute>} />

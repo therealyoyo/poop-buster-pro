@@ -36,7 +36,7 @@ const SiteFooter = () => (
         <div>
           <h4 className="font-display font-bold text-foreground mb-4">À propos</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><a href="#about" className="hover:text-primary transition-colors">À propos</a></li>
+            <li><Link to="/about" className="hover:text-primary transition-colors">À propos</Link></li>
             <li><a href="#faq" className="hover:text-primary transition-colors">FAQ</a></li>
             <li><a href="#signup" className="hover:text-primary transition-colors">Contact</a></li>
             <li><Link to="/login" className="hover:text-primary transition-colors">Connexion client</Link></li>
