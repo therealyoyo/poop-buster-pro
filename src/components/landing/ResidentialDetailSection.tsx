@@ -229,9 +229,11 @@ const ResidentialDetailSection = () => (
         <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
           Détendez-vous, on s'occupe du ramassage
         </h3>
+        <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl mx-auto mb-4">
+          Au lieu de consacrer votre précieux temps libre à ramasser les crottes de votre chien, profitez de moments de qualité avec votre fidèle compagnon et votre famille. Notre service professionnel garantit un jardin propre et hygiénique, sans aucun effort de votre part.
+        </p>
         <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl mx-auto mb-8">
-          Que vous ayez un emploi du temps chargé, des problèmes de mobilité ou que vous souhaitiez
-          simplement éviter cette corvée, nous sommes votre solution de confiance pour un extérieur impeccable.
+          Que vous ayez un emploi du temps chargé, des problèmes de mobilité ou que vous préfériez simplement éviter cette corvée désagréable, notre service de ramassage est la solution fiable qu'il vous faut.
         </p>
         <a href="#signup">
           <Button variant="cta" size="lg" className="rounded-full px-10 py-6 text-lg">
