@@ -40,8 +40,8 @@ const Index = () => {
       {/* 5. À propos */}
       <AboutSection />
 
-      {/* 6. Services résidentiels */}
-      <ResidentialSection />
+
+
 
       {/* 6b. Détail résidentiel */}
       <ResidentialDetailSection />
