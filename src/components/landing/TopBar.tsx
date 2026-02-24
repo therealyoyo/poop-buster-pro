@@ -8,7 +8,7 @@ const TopBar = () => {
     <>
       <div className="bg-hero-gradient text-primary-foreground text-center py-2 text-sm font-display font-bold tracking-wide relative">
         <button onClick={() => setModalOpen(true)} className="hover:underline underline-offset-2 transition-all">
-          🐾 Réclamez votre premier ramassage GRATUIT !
+           🐾 Profitez de votre premier ramassage GRATUIT
         </button>
       </div>
       <PostalCodeModal open={modalOpen} onOpenChange={setModalOpen} />
