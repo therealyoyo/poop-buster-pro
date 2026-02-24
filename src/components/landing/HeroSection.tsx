@@ -3,17 +3,17 @@ import { Button } from "@/components/ui/button";
 import PawIcon from "@/components/PawIcon";
 import { Dog } from "lucide-react";
 
-const HeroSection = () => (
-  <section className="relative overflow-hidden bg-background py-16 md:py-24">
+const HeroSection = () =>
+<section className="relative overflow-hidden bg-background py-16 md:py-24">
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7 }}
-        >
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7 }}>
+
           <span className="inline-block font-display font-bold text-primary text-sm uppercase tracking-widest mb-3">
-            Le service N°1 en Belgique
+            Un service unique en Belgique
           </span>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-tight mb-4">
             Ramassage de{" "}
@@ -33,11 +33,11 @@ const HeroSection = () => (
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="flex justify-center"
-        >
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.2 }}
+        className="flex justify-center">
+
           <div className="relative w-72 h-72 md:w-96 md:h-96">
             {/* Cute dog illustration placeholder */}
             <div className="w-full h-full rounded-full bg-accent flex items-center justify-center">
@@ -79,7 +79,7 @@ const HeroSection = () => (
         </motion.div>
       </div>
     </div>
-  </section>
-);
+  </section>;
+
 
 export default HeroSection;
