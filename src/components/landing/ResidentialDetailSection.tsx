@@ -13,7 +13,7 @@ const services = [
   {
     icon: CalendarCheck,
     title: "2x par semaine",
-    desc: "Idéal pour les foyers avec plusieurs chiens ou en cas d'accumulation importante de déjections.\nPermet de maintenir un jardin propre et agréable en permanence.\nRéduit plus rapidement les odeurs et la prolifération des bactéries grâce à des interventions plus fréquente",
+    desc: "Idéal pour les foyers avec plusieurs chiens ou en cas d'accumulation importante de déjections.\nPermet de maintenir un jardin propre et agréable en permanence tout en réduisant plus rapidement les odeurs et la prolifération des bactéries grâce à des interventions plus fréquente",
   },
   {
     icon: Clock,
