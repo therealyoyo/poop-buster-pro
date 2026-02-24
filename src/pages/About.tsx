@@ -25,7 +25,7 @@ const About = () => (
             Notre équipe intervient régulièrement chez nos clients pour garantir un jardin propre, sain et agréable sans que vous ayez à lever le petit doigt. Que vous ayez un ou plusieurs chiens, nous adaptons notre service à vos besoins.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            Nous croyons que chaque propriétaire de chien mérite un espace extérieur impeccable. C'est pourquoi nous proposons des formules flexibles, un service fiable et une équipe passionnée qui traite votre jardin comme le sien.
+            Posséder un chien est un vrai bonheur, mais nettoyer ses déjections peut vite devenir une véritable corvée lorsque l'on est débordé.
           </p>
           <a href="/#signup">
             <Button variant="cta" size="lg">Demander un devis gratuit</Button>
