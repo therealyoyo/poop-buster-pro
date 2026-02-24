@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,8 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   
   const [gateCode, setGateCode] = useState("");
   const [rgpd, setRgpd] = useState(false);
+  const [mailing, setMailing] = useState(true);
+  const [referralSource, setReferralSource] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // Out-of-zone form state
@@ -65,6 +68,8 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     
     setGateCode("");
     setRgpd(false);
+    setMailing(true);
+    setReferralSource("");
     setOozFirstName("");
     setOozLastName("");
     setOozEmail("");
@@ -102,7 +107,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
         garden_size: null,
         status: "prospect",
         pipeline_stage: "new",
-        internal_notes: promoCode ? `Code promo: ${promoCode}` : null,
+        internal_notes: [promoCode ? `Code promo: ${promoCode}` : null, referralSource ? `Source: ${referralSource}` : null, mailing ? "Mailing: oui" : "Mailing: non"].filter(Boolean).join(" | ") || null,
       });
       if (error) throw error;
       toast.success("Votre demande de devis a été envoyée ! 🐾");
@@ -248,10 +253,29 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                 <Label>Code de portail / instructions spéciales</Label>
                 <Textarea value={gateCode} onChange={(e) => setGateCode(e.target.value)} placeholder="Optionnel" rows={2} />
               </div>
+              <div>
+                <Label>Comment avez-vous entendu parler de nous ?</Label>
+                <Select value={referralSource} onValueChange={setReferralSource}>
+                  <SelectTrigger><SelectValue placeholder="Choisir une option" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="google">Google</SelectItem>
+                    <SelectItem value="bouche_a_oreilles">Bouche à oreilles</SelectItem>
+                    <SelectItem value="social">Réseaux sociaux</SelectItem>
+                    <SelectItem value="flyer">Flyer / Dépliant</SelectItem>
+                    <SelectItem value="other">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-start gap-2">
+                <Checkbox id="mailing" checked={mailing} onCheckedChange={(v) => setMailing(!!v)} />
+                <label htmlFor="mailing" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                  J'accepte de recevoir les offres et actualités de Crotte &amp; Go par email.
+                </label>
+              </div>
               <div className="flex items-start gap-2">
                 <Checkbox id="rgpd" checked={rgpd} onCheckedChange={(v) => setRgpd(!!v)} />
                 <label htmlFor="rgpd" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                  J'accepte de recevoir des communications de Crotte & Go. Vous pouvez vous désinscrire à tout moment.
+                  J'accepte les conditions générales et la politique de confidentialité. *
                 </label>
               </div>
               <Button className="w-full" size="lg" onClick={handleQuoteSubmit} disabled={submitting}>
