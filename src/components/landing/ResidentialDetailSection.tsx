@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     q: "Dois-je être présent lors du passage ?",
-    a: "Non, pas nécessaire ! Il vous suffit de nous donner accès au jardin. Après chaque visite, vous recevrez une photo de confirmation de notre passage et du portail fermé.",
+    a: "Non, pas nécessaire ! Il vous suffit de nous donner accès au jardin. Après chaque visite, vous recevrez un e-mail de confirmation de notre passage et une photo de votre portail fermé.",
   },
   {
     q: "Que faites-vous des déjections ramassées ?",
