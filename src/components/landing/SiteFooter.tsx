@@ -19,7 +19,8 @@ const SiteFooter = () => (
         <div>
           <h4 className="font-display font-bold text-foreground mb-4">Services</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><a href="#services" className="hover:text-primary transition-colors">Résidentiel</a></li>
+            <li><Link to="/services/residential" className="hover:text-primary transition-colors">Résidentiel</Link></li>
+            <li><Link to="/services/commercial" className="hover:text-primary transition-colors">Professionnel / B2B</Link></li>
           </ul>
         </div>
 
