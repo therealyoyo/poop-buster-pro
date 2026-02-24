@@ -4,26 +4,28 @@ import { CheckCircle } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
 
 const PromoSection = () => (
-  <section className="py-20 bg-hero-gradient paw-pattern-dense relative overflow-hidden">
-    <div className="container mx-auto px-4">
+  <section className="py-20 bg-hero-gradient relative overflow-hidden">
+    {/* Background pattern with reduced opacity */}
+    <div className="absolute inset-0 paw-pattern-dense opacity-30" />
+    <div className="container mx-auto px-4 relative z-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
         >
-          <span className="font-display font-bold text-primary-foreground/80 text-sm uppercase tracking-widest mb-2 block">
+          <span className="font-display font-bold text-white/90 text-sm uppercase tracking-widest mb-2 block">
             Offre de lancement
           </span>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-6">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-6">
             Réclamez votre premier nettoyage GRATUIT !
           </h2>
           <ul className="space-y-3 mb-8">
-            <li className="flex items-center gap-3 text-primary-foreground/90">
-              <CheckCircle className="w-5 h-5 shrink-0" /> Aucun engagement, annulable à tout moment
+            <li className="flex items-center gap-3 text-white">
+              <CheckCircle className="w-5 h-5 shrink-0 text-secondary" /> Aucun engagement, annulable à tout moment
             </li>
-            <li className="flex items-center gap-3 text-primary-foreground/90">
-              <CheckCircle className="w-5 h-5 shrink-0" /> Valable pour les nouveaux clients uniquement
+            <li className="flex items-center gap-3 text-white">
+              <CheckCircle className="w-5 h-5 shrink-0 text-secondary" /> Valable pour les nouveaux clients uniquement
             </li>
           </ul>
           <a href="#signup">
