@@ -6,7 +6,9 @@ import IntroSection from "@/components/landing/IntroSection";
 import PromiseSection from "@/components/landing/PromiseSection";
 import AboutSection from "@/components/landing/AboutSection";
 import ResidentialSection from "@/components/landing/ResidentialSection";
+import ResidentialDetailSection from "@/components/landing/ResidentialDetailSection";
 import PromoSection from "@/components/landing/PromoSection";
+import CommercialSection from "@/components/landing/CommercialSection";
 import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
 import ServiceAreasSection from "@/components/landing/ServiceAreasSection";
 
@@ -41,8 +43,14 @@ const Index = () => {
       {/* 6. Services résidentiels */}
       <ResidentialSection />
 
+      {/* 6b. Détail résidentiel */}
+      <ResidentialDetailSection />
+
       {/* 7. Section promo */}
       <PromoSection />
+
+      {/* 7b. Section B2B */}
+      <CommercialSection />
 
       {/* 8. Pourquoi nous choisir */}
       <WhyChooseUsSection />
