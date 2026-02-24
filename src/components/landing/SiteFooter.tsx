@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import PawIcon from "@/components/PawIcon";
+import logo from "@/assets/logo.png";
 
 const SiteFooter = () => (
   <footer className="border-t border-border bg-card py-12">
@@ -7,9 +7,8 @@ const SiteFooter = () => (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {/* Coordonnées */}
         <div>
-          <div className="flex items-center gap-2 font-display font-bold text-primary mb-4">
-            <PawIcon className="w-5 h-5" />
-            Crotte & Go
+          <div className="flex items-center gap-2 mb-4">
+            <img src={logo} alt="Crotte & Go" className="h-10" />
           </div>
           <p className="text-sm text-muted-foreground mb-1">Belgique</p>
           <p className="text-sm text-muted-foreground mb-1">info@crottego.be</p>
