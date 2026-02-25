@@ -5,21 +5,25 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useClients, useUpdateClient } from "@/hooks/useClients";
+import { useQuotes } from "@/hooks/useQuotes";
 import PawIcon from "@/components/PawIcon";
 import { toast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import QuoteBuilderDrawer from "@/components/admin/QuoteBuilderDrawer";
 
 const stages = [
-  { key: "new", label: "Nouveau prospect" },
-  { key: "quote_sent", label: "Devis envoyé" },
-  { key: "active", label: "Client actif" },
-  { key: "inactive", label: "Inactif" },
+  { key: "new", label: "New Lead 🐾" },
+  { key: "quote_sent", label: "Quote Sent 📧" },
+  { key: "active", label: "Active Client ✅" },
+  { key: "inactive", label: "Inactive ⏸" },
 ];
 
 const Pipeline = () => {
   const { data: clients = [] } = useClients();
+  const { data: allQuotes = [] } = useQuotes("__all__"); // won't fire, we fetch per client below
   const updateClient = useUpdateClient();
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [quoteClient, setQuoteClient] = useState<any>(null);
 
   const handleDrop = async (stage: string) => {
     if (!draggedId) return;
@@ -46,7 +50,10 @@ const Pipeline = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stages.map(stage => {
-            const stageClients = clients.filter(c => c.pipeline_stage === stage.key);
+            const stageClients = clients.filter(c => {
+              if (stage.key === "active") return c.pipeline_stage === "active" && (c as any).is_recurring !== false;
+              return c.pipeline_stage === stage.key;
+            });
             return (
               <div
                 key={stage.key}
@@ -72,6 +79,17 @@ const Pipeline = () => {
                         </Link>
                         <p className="text-xs text-muted-foreground">{c.email || "—"}</p>
                         <p className="text-xs text-muted-foreground">{c.dog_count} 🐕 · {c.zone_name || "—"}</p>
+
+                        {stage.key === "new" && (
+                          <Button
+                            variant="cta"
+                            size="sm"
+                            className="w-full mt-2 rounded-full text-xs"
+                            onClick={(e) => { e.preventDefault(); setQuoteClient(c); }}
+                          >
+                            📋 Envoyer un devis
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -81,6 +99,14 @@ const Pipeline = () => {
           })}
         </div>
       </div>
+
+      {quoteClient && (
+        <QuoteBuilderDrawer
+          open={!!quoteClient}
+          onOpenChange={(open) => { if (!open) setQuoteClient(null); }}
+          client={quoteClient}
+        />
+      )}
     </div>
   );
 };
