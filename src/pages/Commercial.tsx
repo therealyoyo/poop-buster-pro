@@ -3,7 +3,6 @@ import TopBar from "@/components/landing/TopBar";
 import SiteNavbar from "@/components/landing/SiteNavbar";
 import SiteFooter from "@/components/landing/SiteFooter";
 import CommercialSection from "@/components/landing/CommercialSection";
-
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import PostalCodeModal from "@/components/landing/PostalCodeModal";
 
@@ -16,9 +15,8 @@ const Commercial = () => {
       <TopBar />
       <SiteNavbar onOpenQuote={openQuote} />
       <CommercialSection onOpenQuote={openQuote} />
-      
       <FinalCTASection onOpenQuote={openQuote} />
-      <PostalCodeModal open={quoteOpen} onOpenChange={setQuoteOpen} />
+      <PostalCodeModal open={quoteOpen} onOpenChange={setQuoteOpen} isB2B />
       <SiteFooter />
     </div>
   );

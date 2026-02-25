@@ -42,17 +42,23 @@ export function useUpdatePricingRule() {
   });
 }
 
+/** Find matching price rule. Returns undefined for xl garden or onetime frequency (= "Sur devis"). */
 export function findMatchingPrice(
   rules: PricingRule[],
   gardenSize: string,
-  dogCount: number,
   frequency: string
 ): PricingRule | undefined {
+  if (gardenSize === "xl" || frequency === "onetime") return undefined;
   return rules.find(
     (r) =>
       r.garden_size === gardenSize &&
       r.frequency === frequency &&
-      dogCount >= r.dog_count_min &&
-      dogCount <= r.dog_count_max
+      r.frequency !== "dog_surcharge"
   );
+}
+
+/** Get the dog surcharge rule */
+export function getDogSurcharge(rules: PricingRule[]): number {
+  const rule = rules.find((r) => r.frequency === "dog_surcharge");
+  return rule?.base_price ?? 10;
 }

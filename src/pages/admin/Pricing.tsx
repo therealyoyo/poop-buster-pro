@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import PawIcon from "@/components/PawIcon";
@@ -8,15 +8,14 @@ import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePricingRules, useUpdatePricingRule } from "@/hooks/usePricingRules";
 
-const gardenLabels: Record<string, string> = {
-  small: "Petit", medium: "Moyen", large: "Grand", xl: "Très grand",
-};
-const dogLabels: Record<string, string> = { "1-2": "1–2 chiens", "3-99": "3+ chiens" };
-const freqOrder = ["weekly", "biweekly", "monthly", "onetime"];
-const freqLabels: Record<string, string> = {
-  weekly: "Hebdo", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel",
-};
 const gardenOrder = ["small", "medium", "large", "xl"];
+const gardenLabels: Record<string, string> = {
+  small: "0–250 m²", medium: "251–750 m²", large: "751–1 500 m²", xl: "1 500 m²+",
+};
+const freqOrder = ["monthly", "biweekly", "weekly", "twice_weekly", "onetime"];
+const freqLabels: Record<string, string> = {
+  monthly: "1x/mois", biweekly: "2x/mois", weekly: "Hebdo", twice_weekly: "2x/sem.", onetime: "Ponctuel",
+};
 
 const Pricing = () => {
   const { data: rules = [], isLoading } = usePricingRules();
@@ -31,14 +30,13 @@ const Pricing = () => {
     setTimeout(() => setSavedId(null), 2000);
   };
 
-  const getRule = (garden: string, dogRange: string, freq: string) => {
-    const [min, max] = dogRange === "1-2" ? [1, 2] : [3, 99];
+  const getRule = (garden: string, freq: string) => {
     return rules.find(
-      r => r.garden_size === garden && r.dog_count_min === min && r.dog_count_max === max && r.frequency === freq
+      r => r.garden_size === garden && r.frequency === freq && r.frequency !== "dog_surcharge"
     );
   };
 
-  const rows = gardenOrder.flatMap(g => ["1-2", "3-99"].map(d => ({ garden: g, dogs: d })));
+  const dogSurchargeRule = rules.find(r => r.frequency === "dog_surcharge");
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,7 +51,7 @@ const Pricing = () => {
             <PawIcon className="w-6 h-6 text-primary" /> Grille tarifaire 💰
           </h1>
           <p className="text-sm text-muted-foreground mb-6">
-            Ces prix s'appliquent automatiquement lors de la génération de devis. Vous pouvez toujours ajuster manuellement par devis.
+            Prix de base pour 1 chien par passage. Le supplément par chien supplémentaire est configurable ci-dessous.
           </p>
         </motion.div>
 
@@ -65,26 +63,32 @@ const Pricing = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 font-semibold text-muted-foreground">Taille</th>
-                    <th className="text-left py-3 px-2 font-semibold text-muted-foreground">Chiens</th>
+                    <th className="text-left py-3 px-2 font-semibold text-muted-foreground">Surface</th>
                     {freqOrder.map(f => (
                       <th key={f} className="text-center py-3 px-2 font-semibold text-muted-foreground">{freqLabels[f]}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row, i) => (
+                  {gardenOrder.map((garden, i) => (
                     <motion.tr
-                      key={`${row.garden}-${row.dogs}`}
+                      key={garden}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
+                      transition={{ delay: i * 0.05 }}
                       className="border-b border-border/50"
                     >
-                      <td className="py-2 px-2 font-medium text-foreground">{gardenLabels[row.garden]}</td>
-                      <td className="py-2 px-2 text-muted-foreground">{dogLabels[row.dogs]}</td>
+                      <td className="py-2 px-2 font-medium text-foreground">{gardenLabels[garden]}</td>
                       {freqOrder.map(freq => {
-                        const rule = getRule(row.garden, row.dogs, freq);
+                        // XL or onetime → "Sur devis"
+                        if (garden === "xl" || freq === "onetime") {
+                          return (
+                            <td key={freq} className="py-2 px-2 text-center text-muted-foreground text-xs italic">
+                              Sur devis
+                            </td>
+                          );
+                        }
+                        const rule = getRule(garden, freq);
                         if (!rule) return <td key={freq} className="py-2 px-2 text-center text-muted-foreground">—</td>;
                         return (
                           <td key={freq} className="py-2 px-2">
@@ -107,6 +111,32 @@ const Pricing = () => {
                 </tbody>
               </table>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Dog surcharge field */}
+        <Card className="shadow-card mt-6">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">💶</span>
+              <span className="font-display font-bold text-foreground">Supplément par chien supplémentaire :</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  step="0.01"
+                  defaultValue={dogSurchargeRule?.base_price ?? 10}
+                  className="w-24 text-center h-8"
+                  onBlur={(e) => {
+                    if (dogSurchargeRule) handleBlur(dogSurchargeRule.id, e.target.value);
+                  }}
+                />
+                <span className="text-muted-foreground">€</span>
+                {savedId === dogSurchargeRule?.id && <Check className="w-4 h-4 text-secondary" />}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Ce montant est ajouté par chien au-delà du premier, par passage.
+            </p>
           </CardContent>
         </Card>
       </div>
