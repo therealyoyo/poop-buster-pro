@@ -94,9 +94,9 @@ const CommercialSection = ({ onOpenQuote }: {onOpenQuote?: () => void;}) =>
         className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-center">
 
           <Building2 className="w-14 h-14 text-secondary mx-auto mb-4" />
-          <h4 className="font-display text-xl font-bold text-white mb-3">
-            Devis Commercial Sur Mesure
-          </h4>
+          <h4 className="font-display text-xl font-bold text-white mb-3">Devis B2B Sur Mesure
+
+        </h4>
           <p className="text-white/80 mb-6">
             Chaque espace est unique. Contactez-nous pour recevoir une offre personnalisée 
             adaptée à vos besoins et à la superficie de vos espaces.
