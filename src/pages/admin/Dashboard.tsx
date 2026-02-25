@@ -1,11 +1,15 @@
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { Users, DollarSign, TrendingUp, AlertCircle, UserPlus, BarChart3 } from "lucide-react";
+import { Users, DollarSign, TrendingUp, AlertCircle, UserPlus, BarChart3, Calendar } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Link } from "react-router-dom";
+import { useInterventions } from "@/hooks/useInterventions";
+import { useClients } from "@/hooks/useClients";
+import { format } from "date-fns";
 
 const stats = [
   { label: "Total clients", value: "127", icon: Users, change: "+8 ce mois" },
@@ -15,12 +19,18 @@ const stats = [
 ];
 
 const revenueData = [
-  { month: "Mar", revenue: 5200 }, { month: "Avr", revenue: 5800 },
-  { month: "Mai", revenue: 6100 }, { month: "Juin", revenue: 6900 },
-  { month: "Juil", revenue: 7200 }, { month: "Août", revenue: 7500 },
-  { month: "Sep", revenue: 7100 }, { month: "Oct", revenue: 7800 },
-  { month: "Nov", revenue: 8000 }, { month: "Déc", revenue: 7600 },
-  { month: "Jan", revenue: 8100 }, { month: "Fév", revenue: 8420 },
+  { month: "Mar", recurring: 4200, oneOff: 1000 },
+  { month: "Avr", recurring: 4700, oneOff: 1100 },
+  { month: "Mai", recurring: 5000, oneOff: 1100 },
+  { month: "Juin", recurring: 5600, oneOff: 1300 },
+  { month: "Juil", recurring: 5900, oneOff: 1300 },
+  { month: "Août", recurring: 6200, oneOff: 1300 },
+  { month: "Sep", recurring: 5800, oneOff: 1300 },
+  { month: "Oct", recurring: 6400, oneOff: 1400 },
+  { month: "Nov", recurring: 6600, oneOff: 1400 },
+  { month: "Déc", recurring: 6200, oneOff: 1400 },
+  { month: "Jan", recurring: 6700, oneOff: 1400 },
+  { month: "Fév", recurring: 7000, oneOff: 1420 },
 ];
 
 const serviceBreakdown = [
@@ -36,6 +46,20 @@ const recentClients = [
 ];
 
 const AdminDashboard = () => {
+  const today = format(new Date(), "yyyy-MM-dd");
+  const { data: interventions = [] } = useInterventions();
+  const { data: clients = [] } = useClients();
+  const todayInterventions = interventions.filter(i => i.scheduled_date === today);
+
+  const getClientName = (clientId: string) => {
+    const c = clients.find(cl => cl.id === clientId);
+    return c ? `${c.first_name} ${c.last_name}` : "Client";
+  };
+  const getClientAddress = (clientId: string) => {
+    const c = clients.find(cl => cl.id === clientId);
+    return c?.address || "";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -98,12 +122,23 @@ const AdminDashboard = () => {
                   <XAxis dataKey="month" stroke="hsl(200, 12%, 42%)" fontSize={12} />
                   <YAxis stroke="hsl(200, 12%, 42%)" fontSize={12} tickFormatter={v => `${v / 1000}k$`} />
                   <Tooltip
-                    formatter={(v: number) => [`${v.toLocaleString()} $`, "Revenus"]}
+                    formatter={(v: number, name: string) => [`${v.toLocaleString()} $`, name === "recurring" ? "Récurrent" : "Ponctuel"]}
                     contentStyle={{ borderRadius: "0.75rem", border: "1px solid hsl(180, 12%, 87%)" }}
                   />
-                  <Bar dataKey="revenue" fill="hsl(174, 62%, 42%)" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="recurring" fill="hsl(174, 62%, 42%)" radius={[8, 8, 0, 0]} name="recurring" />
+                  <Bar dataKey="oneOff" fill="hsl(36, 90%, 55%)" radius={[8, 8, 0, 0]} name="oneOff" />
                 </BarChart>
               </ResponsiveContainer>
+              <div className="flex justify-center gap-6 mt-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-3 h-3 rounded-full bg-primary" />
+                  <span className="text-muted-foreground">Récurrent</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-3 h-3 rounded-full" style={{ background: "hsl(36, 90%, 55%)" }} />
+                  <span className="text-muted-foreground">Ponctuel</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -137,6 +172,41 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Today's Agenda */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <Card className="shadow-card mb-8">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                Agenda du jour
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {todayInterventions.length === 0 ? (
+                <p className="text-muted-foreground text-sm py-4 text-center">Aucune intervention prévue aujourd'hui 🎉</p>
+              ) : (
+                <div className="space-y-2">
+                  {todayInterventions.map(intervention => (
+                    <Link key={intervention.id} to={`/admin/clients/${intervention.client_id}`}>
+                      <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                        <div>
+                          <p className="font-medium text-foreground text-sm">{getClientName(intervention.client_id)}</p>
+                          <p className="text-xs text-muted-foreground">{getClientAddress(intervention.client_id)}</p>
+                        </div>
+                        {intervention.status === "completed" ? (
+                          <Badge className="bg-accent text-accent-foreground">Terminé ✅</Badge>
+                        ) : (
+                          <Badge variant="secondary">Planifié 🗓️</Badge>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Recent Clients */}
         <Card className="shadow-card">

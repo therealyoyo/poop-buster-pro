@@ -19,12 +19,16 @@ export type Database = {
           address: string | null
           created_at: string
           dog_count: number
+          dog_details: Json | null
           email: string | null
           first_name: string
           garden_size: string | null
           gate_code: string | null
+          gate_entry_type: string | null
+          gate_special_instructions: string | null
           id: string
           internal_notes: string | null
+          is_recurring: boolean | null
           last_name: string
           phone: string | null
           pipeline_stage: string
@@ -38,12 +42,16 @@ export type Database = {
           address?: string | null
           created_at?: string
           dog_count?: number
+          dog_details?: Json | null
           email?: string | null
           first_name: string
           garden_size?: string | null
           gate_code?: string | null
+          gate_entry_type?: string | null
+          gate_special_instructions?: string | null
           id?: string
           internal_notes?: string | null
+          is_recurring?: boolean | null
           last_name: string
           phone?: string | null
           pipeline_stage?: string
@@ -57,12 +65,16 @@ export type Database = {
           address?: string | null
           created_at?: string
           dog_count?: number
+          dog_details?: Json | null
           email?: string | null
           first_name?: string
           garden_size?: string | null
           gate_code?: string | null
+          gate_entry_type?: string | null
+          gate_special_instructions?: string | null
           id?: string
           internal_notes?: string | null
+          is_recurring?: boolean | null
           last_name?: string
           phone?: string | null
           pipeline_stage?: string
@@ -128,7 +140,10 @@ export type Database = {
           id: string
           photo_url: string | null
           scheduled_date: string
+          sms_sent_arrival: boolean | null
+          sms_sent_completion: boolean | null
           status: string
+          tech_name: string | null
           updated_at: string
         }
         Insert: {
@@ -140,7 +155,10 @@ export type Database = {
           id?: string
           photo_url?: string | null
           scheduled_date: string
+          sms_sent_arrival?: boolean | null
+          sms_sent_completion?: boolean | null
           status?: string
+          tech_name?: string | null
           updated_at?: string
         }
         Update: {
@@ -152,7 +170,10 @@ export type Database = {
           id?: string
           photo_url?: string | null
           scheduled_date?: string
+          sms_sent_arrival?: boolean | null
+          sms_sent_completion?: boolean | null
           status?: string
+          tech_name?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -164,6 +185,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      leads: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          dog_details: Json | null
+          email: string
+          first_name: string | null
+          gate_entry_type: string | null
+          gate_special_instructions: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          dog_details?: Json | null
+          email: string
+          first_name?: string | null
+          gate_entry_type?: string | null
+          gate_special_instructions?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          dog_details?: Json | null
+          email?: string
+          first_name?: string | null
+          gate_entry_type?: string | null
+          gate_special_instructions?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -209,6 +275,35 @@ export type Database = {
           },
           {
             foreignKeyName: "messages_intervention_id_fkey"
+            columns: ["intervention_id"]
+            isOneToOne: false
+            referencedRelation: "interventions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_photos: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          intervention_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          intervention_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          intervention_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_photos_intervention_id_fkey"
             columns: ["intervention_id"]
             isOneToOne: false
             referencedRelation: "interventions"

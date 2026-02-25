@@ -5,12 +5,16 @@ import { motion } from "framer-motion";
 import PawIcon from "@/components/PawIcon";
 import { Calendar, DollarSign, Star, MapPin, Dog } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useInterventions } from "@/hooks/useInterventions";
+import ServiceHistoryFeed from "@/components/ServiceHistoryFeed";
 
 const ClientDashboard = () => {
+  const { data: interventions = [], isLoading } = useInterventions();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-lg">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground flex items-center gap-2">
             <PawIcon className="w-7 h-7 text-primary animate-paw-bounce" />
@@ -100,29 +104,10 @@ const ClientDashboard = () => {
           </motion.div>
         </div>
 
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="font-display">Dernières visites de service</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                { date: "15 fév. 2026", notes: "Nettoyage complet ✨", tech: "Marc" },
-                { date: "8 fév. 2026", notes: "Nettoyage régulier, code du portail OK 🐾", tech: "Marc" },
-                { date: "1 fév. 2026", notes: "Nettoyage complet, attention particulière au jardin arrière", tech: "Julie" },
-                { date: "25 jan. 2026", notes: "Nettoyage hebdomadaire régulier 🐕", tech: "Marc" },
-              ].map((v, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{v.date}</p>
-                    <p className="text-xs text-muted-foreground">{v.notes}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">Tech : {v.tech}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <h2 className="font-display text-xl font-bold text-foreground mb-4">Dernières visites de service</h2>
+          <ServiceHistoryFeed interventions={interventions} isLoading={isLoading} />
+        </motion.div>
       </div>
     </div>
   );
