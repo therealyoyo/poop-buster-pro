@@ -103,7 +103,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
   const [selectedGardenSize, setSelectedGardenSize] = useState("");
   const [gateCode, setGateCode] = useState("");
   const [dataConsent, setDataConsent] = useState(false);
-  const [mailing, setMailing] = useState(false);
+  const [mailing, setMailing] = useState(true);
   const [referralSource, setReferralSource] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [attempted, setAttempted] = useState(false);
@@ -156,7 +156,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     setSelectedGardenSize("");
     setGateCode("");
     setDataConsent(false);
-    setMailing(false);
+    setMailing(true);
     setReferralSource("");
     setAttempted(false);
     setSuggestions([]);
@@ -848,11 +848,6 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                                   <div>
                                     <span className="font-display text-5xl font-black text-primary">€{displayPrice}</span>
                                     <span className="text-sm text-muted-foreground ml-1">/ passage</span>
-                                    {extraDogs > 0 && (
-                                      <span className="block text-xs text-muted-foreground mt-1">
-                                        dont {extraDogs} × {dogSurcharge}€ suppl. chien
-                                      </span>
-                                    )}
                                     {quarterlyBilling && (
                                       <span className="block text-xs text-primary font-semibold mt-1">−10% facturation trimestrielle appliquée</span>
                                     )}
@@ -861,7 +856,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                                   <span className="text-sm text-muted-foreground">Prix sur demande</span>
                                 )}
                                 <p className="text-xs text-muted-foreground">
-                                  Estimation basée sur votre jardin et fréquence. Le devis final sera confirmé par notre équipe.
+                                  Estimation basée sur la taille de votre jardin et la fréquence de passage. Le devis final sera confirmé par notre équipe.
                                 </p>
                               </div>
                             </Card>
