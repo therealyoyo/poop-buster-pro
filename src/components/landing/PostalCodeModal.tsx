@@ -419,9 +419,10 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         service_frequency: serviceFrequency,
         referral_source: referralSource || null,
         mailing_consent: mailing, data_processing_consent: true,
-        gate_code: gateCode || null,
+        gate_entry_type: gateLocation || null,
         gate_location: gateLocation || null,
         gate_location_other: gateLocation === "other" ? gateLocationOther : null,
+        gate_special_instructions: additionalComments || null,
         dog_names: dogNames.length > 0 ? dogNames : null,
         additional_comments: additionalComments || null,
         terms_accepted: true,
@@ -433,6 +434,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       try {
         await supabase.from("clients").insert({
           ...sharedData,
+          gate_code: gateCode || null,
           status: "prospect",
           pipeline_stage: "new",
           internal_notes: promoCode ? `Code promo: ${promoCode}` : null,
