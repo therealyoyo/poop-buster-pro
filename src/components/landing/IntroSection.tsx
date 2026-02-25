@@ -11,7 +11,7 @@ const benefits = [
   {
     icon: Heart,
     title: "Un service pensé pour vous",
-    desc: "Notre intervention fiable et soignée garantit un jardin propre et sûr, pour que vous puissiez créer des souvenirs en toute tranquillité avec vos enfants et vos animaux.",
+    desc: "Notre intervention fiable et soignée garantit un jardin propre et sûr, pour que vous puissiez créer des souvenirs en toute tranquillité avec vos proches et vos animaux.",
   },
   {
     icon: ShieldCheck,
