@@ -16,11 +16,9 @@ const sectors = [
 
 const advantages = [
 "Services sur mesure adaptés à la taille et la fréquence de vos besoins",
-"Visites régulières programmées (quotidiennes, hebdomadaires, etc.)",
 "Réactivité et flexibilité pour les événements ponctuels",
 "Amélioration de l'image de marque de vos espaces",
-"Réduction des risques sanitaires pour vos visiteurs et résidents",
-"Facturation claire et professionnelle"];
+"Réduction des risques sanitaires pour vos visiteurs et résidents"];
 
 
 const CommercialSection = ({ onOpenQuote }: {onOpenQuote?: () => void;}) =>

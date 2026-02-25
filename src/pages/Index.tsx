@@ -41,14 +41,14 @@ const Index = () => {
       <PromiseSection />
       <AboutSection />
       <ResidentialDetailSection onOpenQuote={openQuote} />
+      <ServiceAreasSection />
       <PromoSection onOpenQuote={openQuote} />
       <CommercialSection onOpenQuote={openQuote} />
       <WhyChooseUsSection />
-      <ServiceAreasSection />
       
       <FinalCTASection onOpenQuote={openQuote} />
       <FAQSection />
-      
+
       <SiteFooter />
       <PostalCodeModal open={quoteOpen} onOpenChange={setQuoteOpen} />
     </div>

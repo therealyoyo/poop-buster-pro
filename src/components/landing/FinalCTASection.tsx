@@ -10,7 +10,7 @@ const FinalCTASection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-6">
+        <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-6">
           N'attendez Plus ! Inscrivez-vous Aujourd'hui !
         </h2>
         <Button variant="cta" size="lg" className="text-lg px-10 py-6 rounded-full" onClick={onOpenQuote}>
