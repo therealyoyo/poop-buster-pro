@@ -11,7 +11,7 @@ import PromoSection from "@/components/landing/PromoSection";
 import CommercialSection from "@/components/landing/CommercialSection";
 import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
 import ServiceAreasSection from "@/components/landing/ServiceAreasSection";
-import ReferralSection from "@/components/landing/ReferralSection";
+
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
 
@@ -45,7 +45,7 @@ const Index = () => {
       <CommercialSection onOpenQuote={openQuote} />
       <WhyChooseUsSection />
       <ServiceAreasSection />
-      <ReferralSection onOpenQuote={openQuote} />
+      
       <FinalCTASection onOpenQuote={openQuote} />
       <FAQSection />
       
