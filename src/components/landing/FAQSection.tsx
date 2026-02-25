@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const faqs = [
-{ q: "Est-ce que vous nettoyez tout le jardin ?", a: "Oui ! Nous parcourons systématiquement l'ensemble de votre jardin pour ne laisser aucune surprise. Chaque visite est complète et minutieuse." },
+{ q: "Est-ce que vous nettoyez tout le jardin ?", a: "Crotte&Go® nettoie toutes les zones de votre propriété où l'on peut trouver des déjections canines : jardins avant, arrière et latéraux, parterres de fleurs, enclos pour chiens, etc." },
 { q: "Proposez-vous le service toute l'année ?", a: "Absolument. Nous travaillons 12 mois par an, beau temps comme mauvais temps. Votre jardin reste propre en toute saison." },
 { q: "Comment assurez-vous la sécurité de mes chiens ?", a: "Nos équipes sont formées à la manipulation en toute sécurité. Nous utilisons des désinfectants de qualité vétérinaire et nos outils sont nettoyés entre chaque visite." },
 { q: "Combien coûte le service ?", a: "Le tarif dépend de la taille de votre jardin, du nombre de chiens et de la fréquence choisie. Demandez un devis gratuit pour connaître votre prix personnalisé !" },
