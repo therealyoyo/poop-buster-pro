@@ -36,7 +36,7 @@ const services = [
   {
     icon: Shield,
     title: "Passage ponctuel",
-    desc: "Besoin d'un nettoyage rapide de votre jardin ? Que ce soit pour un événement spécial, un grand ménage de printemps ou simplement un entretien négligé, notre service ponctuel remet votre terrain en état. Parfait pour les propriétaires, les gestionnaires immobiliers ou les locataires qui emménagent ou déménagent",
+    desc: "Besoin d'un nettoyage rapide de votre jardin ? Que ce soit pour un événement spécial ou un grand ménage de printemps, notre service ponctuel remet votre jardin en état. Parfait pour les propriétaires, les gestionnaires immobiliers ou les locataires qui emménagent ou déménagent",
   },
 ];
 
