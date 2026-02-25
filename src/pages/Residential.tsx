@@ -1,37 +1,26 @@
+import { useState } from "react";
 import TopBar from "@/components/landing/TopBar";
 import SiteNavbar from "@/components/landing/SiteNavbar";
 import SiteFooter from "@/components/landing/SiteFooter";
 import ResidentialDetailSection from "@/components/landing/ResidentialDetailSection";
 import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
-
 import StatsSection from "@/components/landing/StatsSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
-import OnboardingForm from "@/components/OnboardingForm";
-import { motion } from "framer-motion";
+import PostalCodeModal from "@/components/landing/PostalCodeModal";
 
 const Residential = () => {
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const openQuote = () => setQuoteOpen(true);
+
   return (
     <div className="min-h-screen bg-background">
       <TopBar />
-      <SiteNavbar />
-      <ResidentialDetailSection />
+      <SiteNavbar onOpenQuote={openQuote} />
+      <ResidentialDetailSection onOpenQuote={openQuote} />
       <WhyChooseUsSection />
-      
       <StatsSection />
-      <FinalCTASection />
-
-      <section id="signup" className="py-20 bg-muted/50 paw-pattern">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <OnboardingForm />
-          </motion.div>
-        </div>
-      </section>
-
+      <FinalCTASection onOpenQuote={openQuote} />
+      <PostalCodeModal open={quoteOpen} onOpenChange={setQuoteOpen} />
       <SiteFooter />
     </div>
   );
