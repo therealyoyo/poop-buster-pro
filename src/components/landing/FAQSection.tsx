@@ -3,14 +3,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const faqs = [
 { q: "Est-ce que vous nettoyez tout le jardin ?", a: "Crotte&Go® nettoie toutes les zones de votre propriété où l'on peut trouver des déjections canines : jardins avant, arrière et latéraux, parterres de fleurs, enclos pour chiens, etc." },
-{ q: "Proposez-vous le service toute l'année ?", a: "Absolument. Nous travaillons 12 mois par an, beau temps comme mauvais temps. Votre jardin reste propre en toute saison." },
-{ q: "Comment assurez-vous la sécurité de mes chiens ?", a: "Nos équipes sont formées à la manipulation en toute sécurité. Nous utilisons des désinfectants de qualité vétérinaire et nos outils sont nettoyés entre chaque visite." },
-{ q: "Combien coûte le service ?", a: "Le tarif dépend de la taille de votre jardin, du nombre de chiens et de la fréquence choisie. Demandez un devis gratuit pour connaître votre prix personnalisé !" },
-{ q: "Dois-je signer un contrat ?", a: "Non ! Aucun contrat ni engagement. Vous pouvez commencer, mettre en pause ou annuler votre service à tout moment." },
-{ q: "Comment sont éliminées les déjections ?", a: "Les déjections sont collectées dans des sacs biodégradables et éliminées de manière écologique et conforme aux réglementations locales." },
-{ q: "Combien coûte le service de ramassage ?", a: "Nos tarifs dépendent de la taille de votre jardin, du nombre de chiens et de la fréquence choisie. Demandez votre devis gratuit pour recevoir une offre personnalisée en quelques minutes." },
+{ q: "Proposez-vous vos services de ramassage toute l'année ?", a: "Absolument. Crotte&Go® assure ses services toute l'année et même en hiver." },
+{ q: "Comment assurez-vous la sécurité de mes chiens ?", a: "La sécurité de nos clients et de leurs chiens est notre priorité absolue. Pour éviter la propagation de germes, nous désinfectons tout notre matériel et nos chaussures entre chaque passage chez un client avec des produits de qualité vétérinaire. Nous prenons également une photo du portail de votre jardin une fois le travail terminé pour vous assurer qu'il est bien fermé." },
+{ q: "Dois-je signer un contrat ?", a: "Non ! Aucun contrat ni engagement. Vous pouvez commencer, mettre en pause ou annuler votre service à tout moment via votre portail client ou en nous téléphonant." },
 { q: "Dois-je être présent lors du passage ?", a: "Non, pas nécessaire ! Il vous suffit de nous donner accès au jardin. Après chaque visite, vous recevrez un e-mail de confirmation de notre passage et une photo de votre portail fermé." },
-{ q: "Que faites-vous des déjections ramassées ?", a: "Nous emportons toutes les déjections avec nous après chaque visite. Vous n'avez rien à faire — votre jardin reste propre et vous n'avez pas à gérer l'élimination." },
+{ q: "Que faites-vous des déjections ramassées ?", a: "On emballe les déjections dans un double sac avant de les déposer dans votre poubelle. Si vous n'avez pas de poubelle ou de benne accessible, les sacs doublés seront simplement déposés sur le côté de votre domicile." },
 ];
 
 
