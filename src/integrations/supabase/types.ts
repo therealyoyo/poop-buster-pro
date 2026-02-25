@@ -17,7 +17,9 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          city: string | null
           created_at: string
+          data_processing_consent: boolean | null
           dog_count: number
           dog_details: Json | null
           email: string | null
@@ -32,12 +34,17 @@ export type Database = {
           last_name: string
           lat: number | null
           lng: number | null
+          mailing_consent: boolean | null
           paused_until: string | null
           phone: string | null
           pipeline_stage: string
+          postal_code: string | null
           preferred_day: string | null
+          referral_source: string | null
           service_frequency: string | null
           status: string
+          street_name: string | null
+          street_number: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           updated_at: string
@@ -46,7 +53,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          city?: string | null
           created_at?: string
+          data_processing_consent?: boolean | null
           dog_count?: number
           dog_details?: Json | null
           email?: string | null
@@ -61,12 +70,17 @@ export type Database = {
           last_name: string
           lat?: number | null
           lng?: number | null
+          mailing_consent?: boolean | null
           paused_until?: string | null
           phone?: string | null
           pipeline_stage?: string
+          postal_code?: string | null
           preferred_day?: string | null
+          referral_source?: string | null
           service_frequency?: string | null
           status?: string
+          street_name?: string | null
+          street_number?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -75,7 +89,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          city?: string | null
           created_at?: string
+          data_processing_consent?: boolean | null
           dog_count?: number
           dog_details?: Json | null
           email?: string | null
@@ -90,12 +106,17 @@ export type Database = {
           last_name?: string
           lat?: number | null
           lng?: number | null
+          mailing_consent?: boolean | null
           paused_until?: string | null
           phone?: string | null
           pipeline_stage?: string
+          postal_code?: string | null
           preferred_day?: string | null
+          referral_source?: string | null
           service_frequency?: string | null
           status?: string
+          street_name?: string | null
+          street_number?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -260,44 +281,74 @@ export type Database = {
       leads: {
         Row: {
           address: string | null
+          city: string | null
           created_at: string | null
+          data_processing_consent: boolean | null
+          dog_count: number | null
           dog_details: Json | null
           email: string
           first_name: string | null
+          garden_size: string | null
           gate_entry_type: string | null
           gate_special_instructions: string | null
           id: string
           last_name: string | null
+          mailing_consent: boolean | null
           phone: string | null
+          postal_code: string | null
+          referral_source: string | null
+          service_frequency: string | null
           status: string | null
+          street_name: string | null
+          street_number: string | null
           updated_at: string | null
         }
         Insert: {
           address?: string | null
+          city?: string | null
           created_at?: string | null
+          data_processing_consent?: boolean | null
+          dog_count?: number | null
           dog_details?: Json | null
           email: string
           first_name?: string | null
+          garden_size?: string | null
           gate_entry_type?: string | null
           gate_special_instructions?: string | null
           id?: string
           last_name?: string | null
+          mailing_consent?: boolean | null
           phone?: string | null
+          postal_code?: string | null
+          referral_source?: string | null
+          service_frequency?: string | null
           status?: string | null
+          street_name?: string | null
+          street_number?: string | null
           updated_at?: string | null
         }
         Update: {
           address?: string | null
+          city?: string | null
           created_at?: string | null
+          data_processing_consent?: boolean | null
+          dog_count?: number | null
           dog_details?: Json | null
           email?: string
           first_name?: string | null
+          garden_size?: string | null
           gate_entry_type?: string | null
           gate_special_instructions?: string | null
           id?: string
           last_name?: string | null
+          mailing_consent?: boolean | null
           phone?: string | null
+          postal_code?: string | null
+          referral_source?: string | null
+          service_frequency?: string | null
           status?: string | null
+          street_name?: string | null
+          street_number?: string | null
           updated_at?: string | null
         }
         Relationships: []

@@ -98,7 +98,7 @@ const faqs = [
   },
 ];
 
-const ResidentialDetailSection = () => (
+const ResidentialDetailSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
   <section className="py-20 bg-background">
     <div className="container mx-auto px-4 max-w-5xl">
       {/* ── Bloc 1 : Header ── */}
@@ -231,11 +231,9 @@ const ResidentialDetailSection = () => (
         <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl mx-auto mb-8">
           Que vous ayez un emploi du temps chargé, des problèmes de mobilité ou que vous préfériez simplement éviter cette corvée désagréable, notre service de ramassage est la solution fiable qu'il vous faut.
         </p>
-        <a href="#signup">
-          <Button variant="cta" size="lg" className="rounded-full px-10 py-6 text-lg">
-            <PawIcon className="w-5 h-5" /> Réserver mon nettoyage maintenant
-          </Button>
-        </a>
+        <Button variant="cta" size="lg" className="rounded-full px-10 py-6 text-lg" onClick={onOpenQuote}>
+          <PawIcon className="w-5 h-5" /> Réserver mon nettoyage maintenant
+        </Button>
       </motion.div>
 
       {/* ── FAQ ── */}

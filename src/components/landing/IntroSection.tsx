@@ -20,7 +20,7 @@ const benefits = [
   },
 ];
 
-const IntroSection = () => (
+const IntroSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
   <section className="py-20 bg-background">
     <div className="container mx-auto px-4 max-w-5xl">
       <motion.div
@@ -77,11 +77,9 @@ const IntroSection = () => (
         <p className="font-display text-xl font-bold text-foreground mb-6">
           Ne ramassez plus, profitez simplement.
         </p>
-        <a href="#signup">
-          <Button variant="default" size="lg">
-            Planifier mon premier ramassage
-          </Button>
-        </a>
+        <Button variant="default" size="lg" onClick={onOpenQuote}>
+          Planifier mon premier ramassage
+        </Button>
       </motion.div>
     </div>
   </section>

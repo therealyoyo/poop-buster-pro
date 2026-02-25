@@ -1,91 +1,56 @@
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import TopBar from "@/components/landing/TopBar";
 import SiteNavbar from "@/components/landing/SiteNavbar";
 import HeroSection from "@/components/landing/HeroSection";
 import IntroSection from "@/components/landing/IntroSection";
 import PromiseSection from "@/components/landing/PromiseSection";
 import AboutSection from "@/components/landing/AboutSection";
-import ResidentialSection from "@/components/landing/ResidentialSection";
 import ResidentialDetailSection from "@/components/landing/ResidentialDetailSection";
 import PromoSection from "@/components/landing/PromoSection";
 import CommercialSection from "@/components/landing/CommercialSection";
 import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
 import ServiceAreasSection from "@/components/landing/ServiceAreasSection";
-
 import ReferralSection from "@/components/landing/ReferralSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
 import StatsSection from "@/components/landing/StatsSection";
 import SiteFooter from "@/components/landing/SiteFooter";
-import OnboardingForm from "@/components/OnboardingForm";
+import PostalCodeModal from "@/components/landing/PostalCodeModal";
 
 const Index = () => {
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("quote") === "true") {
+      setQuoteOpen(true);
+      searchParams.delete("quote");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const openQuote = () => setQuoteOpen(true);
+
   return (
     <div className="min-h-screen bg-background">
-      {/* 1. Top Bar */}
       <TopBar />
-
-      {/* 2. Navbar */}
-      <SiteNavbar />
-
-      {/* 3. Hero */}
-      <HeroSection />
-
-      {/* 4. Intro */}
-      <IntroSection />
-
-      {/* 5. Promesse client */}
+      <SiteNavbar onOpenQuote={openQuote} />
+      <HeroSection onOpenQuote={openQuote} />
+      <IntroSection onOpenQuote={openQuote} />
       <PromiseSection />
-
-      {/* 5. À propos */}
       <AboutSection />
-
-
-
-
-      {/* 6b. Détail résidentiel */}
-      <ResidentialDetailSection />
-
-      {/* 7. Section promo */}
-      <PromoSection />
-
-      {/* 7b. Section B2B */}
-      <CommercialSection />
-
-      {/* 8. Pourquoi nous choisir */}
+      <ResidentialDetailSection onOpenQuote={openQuote} />
+      <PromoSection onOpenQuote={openQuote} />
+      <CommercialSection onOpenQuote={openQuote} />
       <WhyChooseUsSection />
-
-      {/* 9. Zones desservies */}
       <ServiceAreasSection />
-
-
-      {/* 11. Parrainage */}
-      <ReferralSection />
-
-      {/* 12. CTA Final */}
-      <FinalCTASection />
-
-      {/* 13. FAQ */}
+      <ReferralSection onOpenQuote={openQuote} />
+      <FinalCTASection onOpenQuote={openQuote} />
       <FAQSection />
-
-      {/* 14. Compteurs animés */}
       <StatsSection />
-
-      {/* 15. Signup Form */}
-      <section id="signup" className="py-20 bg-muted/50 paw-pattern">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <OnboardingForm />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 16. Footer */}
       <SiteFooter />
+      <PostalCodeModal open={quoteOpen} onOpenChange={setQuoteOpen} />
     </div>
   );
 };
