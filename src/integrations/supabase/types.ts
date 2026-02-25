@@ -16,17 +16,21 @@ export type Database = {
     Tables: {
       clients: {
         Row: {
+          additional_comments: string | null
           address: string | null
           city: string | null
           created_at: string
           data_processing_consent: boolean | null
           dog_count: number
           dog_details: Json | null
+          dog_names: Json | null
           email: string | null
           first_name: string
           garden_size: string | null
           gate_code: string | null
           gate_entry_type: string | null
+          gate_location: string | null
+          gate_location_other: string | null
           gate_special_instructions: string | null
           id: string
           internal_notes: string | null
@@ -36,10 +40,14 @@ export type Database = {
           lng: number | null
           mailing_consent: boolean | null
           paused_until: string | null
+          payment_intent: string | null
+          payment_question: string | null
           phone: string | null
           pipeline_stage: string
           postal_code: string | null
           preferred_day: string | null
+          promo_code: string | null
+          quarterly_billing: boolean | null
           referral_source: string | null
           service_frequency: string | null
           status: string
@@ -47,22 +55,27 @@ export type Database = {
           street_number: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          terms_accepted: boolean | null
           updated_at: string
           user_id: string | null
           zone_id: string | null
         }
         Insert: {
+          additional_comments?: string | null
           address?: string | null
           city?: string | null
           created_at?: string
           data_processing_consent?: boolean | null
           dog_count?: number
           dog_details?: Json | null
+          dog_names?: Json | null
           email?: string | null
           first_name: string
           garden_size?: string | null
           gate_code?: string | null
           gate_entry_type?: string | null
+          gate_location?: string | null
+          gate_location_other?: string | null
           gate_special_instructions?: string | null
           id?: string
           internal_notes?: string | null
@@ -72,10 +85,14 @@ export type Database = {
           lng?: number | null
           mailing_consent?: boolean | null
           paused_until?: string | null
+          payment_intent?: string | null
+          payment_question?: string | null
           phone?: string | null
           pipeline_stage?: string
           postal_code?: string | null
           preferred_day?: string | null
+          promo_code?: string | null
+          quarterly_billing?: boolean | null
           referral_source?: string | null
           service_frequency?: string | null
           status?: string
@@ -83,22 +100,27 @@ export type Database = {
           street_number?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          terms_accepted?: boolean | null
           updated_at?: string
           user_id?: string | null
           zone_id?: string | null
         }
         Update: {
+          additional_comments?: string | null
           address?: string | null
           city?: string | null
           created_at?: string
           data_processing_consent?: boolean | null
           dog_count?: number
           dog_details?: Json | null
+          dog_names?: Json | null
           email?: string | null
           first_name?: string
           garden_size?: string | null
           gate_code?: string | null
           gate_entry_type?: string | null
+          gate_location?: string | null
+          gate_location_other?: string | null
           gate_special_instructions?: string | null
           id?: string
           internal_notes?: string | null
@@ -108,10 +130,14 @@ export type Database = {
           lng?: number | null
           mailing_consent?: boolean | null
           paused_until?: string | null
+          payment_intent?: string | null
+          payment_question?: string | null
           phone?: string | null
           pipeline_stage?: string
           postal_code?: string | null
           preferred_day?: string | null
+          promo_code?: string | null
+          quarterly_billing?: boolean | null
           referral_source?: string | null
           service_frequency?: string | null
           status?: string
@@ -119,6 +145,7 @@ export type Database = {
           street_number?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          terms_accepted?: boolean | null
           updated_at?: string
           user_id?: string | null
           zone_id?: string | null
@@ -280,75 +307,102 @@ export type Database = {
       }
       leads: {
         Row: {
+          additional_comments: string | null
           address: string | null
           city: string | null
           created_at: string | null
           data_processing_consent: boolean | null
           dog_count: number | null
           dog_details: Json | null
+          dog_names: Json | null
           email: string
           first_name: string | null
           garden_size: string | null
           gate_entry_type: string | null
+          gate_location: string | null
+          gate_location_other: string | null
           gate_special_instructions: string | null
           id: string
           last_name: string | null
           mailing_consent: boolean | null
+          payment_intent: string | null
+          payment_question: string | null
           phone: string | null
           postal_code: string | null
+          promo_code: string | null
+          quarterly_billing: boolean | null
           referral_source: string | null
           service_frequency: string | null
           status: string | null
           street_name: string | null
           street_number: string | null
+          terms_accepted: boolean | null
           updated_at: string | null
         }
         Insert: {
+          additional_comments?: string | null
           address?: string | null
           city?: string | null
           created_at?: string | null
           data_processing_consent?: boolean | null
           dog_count?: number | null
           dog_details?: Json | null
+          dog_names?: Json | null
           email: string
           first_name?: string | null
           garden_size?: string | null
           gate_entry_type?: string | null
+          gate_location?: string | null
+          gate_location_other?: string | null
           gate_special_instructions?: string | null
           id?: string
           last_name?: string | null
           mailing_consent?: boolean | null
+          payment_intent?: string | null
+          payment_question?: string | null
           phone?: string | null
           postal_code?: string | null
+          promo_code?: string | null
+          quarterly_billing?: boolean | null
           referral_source?: string | null
           service_frequency?: string | null
           status?: string | null
           street_name?: string | null
           street_number?: string | null
+          terms_accepted?: boolean | null
           updated_at?: string | null
         }
         Update: {
+          additional_comments?: string | null
           address?: string | null
           city?: string | null
           created_at?: string | null
           data_processing_consent?: boolean | null
           dog_count?: number | null
           dog_details?: Json | null
+          dog_names?: Json | null
           email?: string
           first_name?: string | null
           garden_size?: string | null
           gate_entry_type?: string | null
+          gate_location?: string | null
+          gate_location_other?: string | null
           gate_special_instructions?: string | null
           id?: string
           last_name?: string | null
           mailing_consent?: boolean | null
+          payment_intent?: string | null
+          payment_question?: string | null
           phone?: string | null
           postal_code?: string | null
+          promo_code?: string | null
+          quarterly_billing?: boolean | null
           referral_source?: string | null
           service_frequency?: string | null
           status?: string | null
           street_name?: string | null
           street_number?: string | null
+          terms_accepted?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
