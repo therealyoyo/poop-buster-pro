@@ -17,6 +17,10 @@ import { toast } from "sonner";
 import { MapPin, ArrowLeft, Dog, Loader2, CheckCircle2, CreditCard, Lock } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
 import { motion } from "framer-motion";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 type Step = "check" | "quote" | "out_of_zone";
 
@@ -51,6 +55,57 @@ const gateLocationOptions = [
   { value: "house_only", label: "Via la maison" },
   { value: "other", label: "Autre" },
 ];
+
+interface StripeSetupFormProps {
+  onSuccess: () => void;
+}
+
+const StripeSetupForm = ({ onSuccess }: StripeSetupFormProps) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [confirming, setConfirming] = useState(false);
+  const [cardError, setCardError] = useState<string | null>(null);
+
+  const handleConfirm = async () => {
+    if (!stripe || !elements) return;
+    setConfirming(true);
+    setCardError(null);
+    const { error } = await stripe.confirmSetup({
+      elements,
+      confirmParams: {
+        return_url: window.location.href,
+      },
+      redirect: "if_required",
+    });
+    if (error) {
+      setCardError(error.message || "Erreur lors de la sauvegarde de la carte.");
+      setConfirming(false);
+    } else {
+      onSuccess();
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <PaymentElement />
+      {cardError && <p className="text-sm text-destructive">{cardError}</p>}
+      <Button
+        className="w-full"
+        onClick={handleConfirm}
+        disabled={!stripe || confirming}
+      >
+        {confirming ? (
+          <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Sauvegarde en cours...</>
+        ) : (
+          <><Lock className="w-4 h-4 mr-2" /> Sauvegarder mon moyen de paiement</>
+        )}
+      </Button>
+      <p className="text-[10px] text-muted-foreground text-center">
+        🔒 Connexion sécurisée via Stripe. Aucun montant ne sera débité maintenant.
+      </p>
+    </div>
+  );
+};
 
 const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) => {
   const [step, setStep] = useState<Step>("check");
@@ -87,6 +142,12 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const [additionalComments, setAdditionalComments] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [quarterlyBilling, setQuarterlyBilling] = useState(false);
+
+  // Stripe state
+  const [setupClientSecret, setSetupClientSecret] = useState<string | null>(null);
+  const [stripeCustomerId, setStripeCustomerId] = useState<string | null>(null);
+  const [setupLoading, setSetupLoading] = useState(false);
+  const [setupComplete, setSetupComplete] = useState(false);
 
   // Address autocomplete
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -141,6 +202,10 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     setAdditionalComments("");
     setTermsAccepted(false);
     setQuarterlyBilling(false);
+    setSetupClientSecret(null);
+    setStripeCustomerId(null);
+    setSetupLoading(false);
+    setSetupComplete(false);
   };
 
   const handleCheck = async () => {
@@ -300,6 +365,25 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     setShowFullForm(true);
   };
 
+  // Initialize Stripe SetupIntent
+  const initializeStripeSetup = async () => {
+    if (setupClientSecret) return;
+    if (!email || !firstName) return;
+    setSetupLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-setup-intent", {
+        body: { email, name: `${firstName} ${lastName}` },
+      });
+      if (error) throw error;
+      setSetupClientSecret(data.client_secret);
+      setStripeCustomerId(data.customer_id);
+    } catch (e: any) {
+      toast.error("Impossible d'initialiser le paiement. Veuillez réessayer.");
+    } finally {
+      setSetupLoading(false);
+    }
+  };
+
   // Final submit (Phase 2)
   const handleFinalSubmit = async () => {
     setAttempted(true);
@@ -329,6 +413,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
         terms_accepted: true,
         quarterly_billing: quarterlyBilling,
         promo_code: promoCode || null,
+        ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
       };
 
       await supabase.from("clients").insert({
@@ -825,7 +910,10 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                         <div className="space-y-2">
                           <button
                             type="button"
-                            onClick={() => setPaymentIntent("now")}
+                            onClick={() => {
+                              setPaymentIntent("now");
+                              initializeStripeSetup();
+                            }}
                             className={`w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all ${
                               paymentIntent === "now"
                                 ? "border-primary bg-primary/5 font-medium"
@@ -850,15 +938,38 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                       </Card>
 
                       {paymentIntent === "now" && (
-                        <Card className="border border-border p-4 bg-muted/20">
-                          <div className="flex items-center gap-2 mb-2">
+                        <Card className="border border-border p-4 bg-muted/20 space-y-3">
+                          <div className="flex items-center gap-2">
                             <Lock className="w-4 h-4 text-primary" />
                             <span className="font-display font-bold text-sm text-foreground">Paiement sécurisé via Stripe</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            Vos informations de paiement seront collectées de manière sécurisée après la soumission de ce formulaire.
-                            Aucun montant ne sera débité avant le début de votre service.
-                          </p>
+
+                          {setupLoading && (
+                            <div className="flex items-center justify-center gap-2 py-4">
+                              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                              <span className="text-sm text-muted-foreground">Initialisation...</span>
+                            </div>
+                          )}
+
+                          {!setupLoading && setupComplete && (
+                            <div className="flex items-center gap-2 text-primary py-2">
+                              <CheckCircle2 className="w-5 h-5" />
+                              <span className="text-sm font-medium">Moyen de paiement sauvegardé avec succès !</span>
+                            </div>
+                          )}
+
+                          {!setupLoading && !setupComplete && setupClientSecret && (
+                            <Elements stripe={stripePromise} options={{ clientSecret: setupClientSecret }}>
+                              <StripeSetupForm onSuccess={() => setSetupComplete(true)} />
+                            </Elements>
+                          )}
+
+                          {!setupLoading && !setupClientSecret && !setupComplete && (
+                            <Button variant="outline" className="w-full" onClick={initializeStripeSetup}>
+                              <CreditCard className="w-4 h-4 mr-2" />
+                              Charger le formulaire de paiement
+                            </Button>
+                          )}
                         </Card>
                       )}
 
