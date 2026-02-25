@@ -4,7 +4,7 @@ import SiteNavbar from "@/components/landing/SiteNavbar";
 import SiteFooter from "@/components/landing/SiteFooter";
 import ResidentialDetailSection from "@/components/landing/ResidentialDetailSection";
 import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
-import StatsSection from "@/components/landing/StatsSection";
+
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import PostalCodeModal from "@/components/landing/PostalCodeModal";
 
@@ -18,7 +18,7 @@ const Residential = () => {
       <SiteNavbar onOpenQuote={openQuote} />
       <ResidentialDetailSection onOpenQuote={openQuote} />
       <WhyChooseUsSection />
-      <StatsSection />
+      
       <FinalCTASection onOpenQuote={openQuote} />
       <PostalCodeModal open={quoteOpen} onOpenChange={setQuoteOpen} />
       <SiteFooter />

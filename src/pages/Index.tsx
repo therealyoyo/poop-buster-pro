@@ -14,7 +14,7 @@ import ServiceAreasSection from "@/components/landing/ServiceAreasSection";
 import ReferralSection from "@/components/landing/ReferralSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
-import StatsSection from "@/components/landing/StatsSection";
+
 import SiteFooter from "@/components/landing/SiteFooter";
 import PostalCodeModal from "@/components/landing/PostalCodeModal";
 
@@ -48,7 +48,7 @@ const Index = () => {
       <ReferralSection onOpenQuote={openQuote} />
       <FinalCTASection onOpenQuote={openQuote} />
       <FAQSection />
-      <StatsSection />
+      
       <SiteFooter />
       <PostalCodeModal open={quoteOpen} onOpenChange={setQuoteOpen} />
     </div>
