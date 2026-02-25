@@ -310,6 +310,7 @@ export type Database = {
           additional_comments: string | null
           address: string | null
           city: string | null
+          company_name: string | null
           created_at: string | null
           data_processing_consent: boolean | null
           dog_count: number | null
@@ -324,6 +325,7 @@ export type Database = {
           gate_special_instructions: string | null
           id: string
           last_name: string | null
+          lead_type: string | null
           mailing_consent: boolean | null
           payment_intent: string | null
           payment_question: string | null
@@ -343,6 +345,7 @@ export type Database = {
           additional_comments?: string | null
           address?: string | null
           city?: string | null
+          company_name?: string | null
           created_at?: string | null
           data_processing_consent?: boolean | null
           dog_count?: number | null
@@ -357,6 +360,7 @@ export type Database = {
           gate_special_instructions?: string | null
           id?: string
           last_name?: string | null
+          lead_type?: string | null
           mailing_consent?: boolean | null
           payment_intent?: string | null
           payment_question?: string | null
@@ -376,6 +380,7 @@ export type Database = {
           additional_comments?: string | null
           address?: string | null
           city?: string | null
+          company_name?: string | null
           created_at?: string | null
           data_processing_consent?: boolean | null
           dog_count?: number | null
@@ -390,6 +395,7 @@ export type Database = {
           gate_special_instructions?: string | null
           id?: string
           last_name?: string | null
+          lead_type?: string | null
           mailing_consent?: boolean | null
           payment_intent?: string | null
           payment_question?: string | null

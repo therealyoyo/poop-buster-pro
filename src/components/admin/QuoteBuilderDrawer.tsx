@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
-import { usePricingRules, findMatchingPrice } from "@/hooks/usePricingRules";
+import { usePricingRules, findMatchingPrice, getDogSurcharge } from "@/hooks/usePricingRules";
 import { useCreateQuote, type LineItem } from "@/hooks/useQuotes";
 import { useUpdateClient } from "@/hooks/useClients";
 import { toast } from "@/hooks/use-toast";
@@ -27,8 +27,8 @@ interface QuoteBuilderDrawerProps {
   };
 }
 
-const gardenLabels: Record<string, string> = { small: "Petit", medium: "Moyen", large: "Grand", xl: "Très grand" };
-const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel" };
+const gardenLabels: Record<string, string> = { small: "0–250 m²", medium: "251–750 m²", large: "751–1500 m²", xl: "1500 m²+" };
+const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "2x/mois", monthly: "1x/mois", twice_weekly: "2x/sem.", onetime: "Ponctuel" };
 
 const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerProps) => {
   const { data: rules = [] } = usePricingRules();
@@ -51,8 +51,10 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
     setManualPrice(null);
   }, [client.id, open]);
 
-  const matchedRule = findMatchingPrice(rules, gardenSize, dogCount, frequency);
-  const basePrice = matchedRule ? Number(matchedRule.base_price) : manualPrice || 0;
+  const matchedRule = findMatchingPrice(rules, gardenSize, frequency);
+  const dogSurcharge = getDogSurcharge(rules);
+  const extraDogs = Math.max(0, dogCount - 1);
+  const basePrice = matchedRule ? Number(matchedRule.base_price) + extraDogs * dogSurcharge : manualPrice || 0;
   const lineItemsTotal = lineItems.reduce((s, li) => s + li.price, 0);
   const totalPrice = basePrice + lineItemsTotal;
 

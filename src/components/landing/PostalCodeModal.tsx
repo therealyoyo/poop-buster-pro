@@ -11,10 +11,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useCheckPostalCode } from "@/hooks/useZonesService";
-import { usePricingRules, findMatchingPrice } from "@/hooks/usePricingRules";
+import { usePricingRules, findMatchingPrice, getDogSurcharge } from "@/hooks/usePricingRules";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MapPin, ArrowLeft, Dog, Loader2, CheckCircle2, CreditCard, Lock } from "lucide-react";
+import { MapPin, ArrowLeft, Dog, Loader2, CheckCircle2, CreditCard, Lock, Building2 } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
 import { motion } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
@@ -25,19 +25,19 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 type Step = "check" | "quote" | "out_of_zone";
 
 const frequencies = [
-  "Deux fois par semaine",
-  "Hebdomadaire",
-  "Toutes les deux semaines",
-  "Une fois par mois",
   "Passage unique",
+  "1x par mois",
+  "Toutes les 2 semaines",
+  "Hebdomadaire",
+  "2x par semaine",
 ];
 
 const freqToKey: Record<number, string> = {
-  0: "weekly",
-  1: "weekly",
+  0: "onetime",
+  1: "monthly",
   2: "biweekly",
-  3: "monthly",
-  4: "onetime",
+  3: "weekly",
+  4: "twice_weekly",
 };
 
 const gardenSizes = [
@@ -72,9 +72,7 @@ const StripeSetupForm = ({ onSuccess }: StripeSetupFormProps) => {
     setCardError(null);
     const { error } = await stripe.confirmSetup({
       elements,
-      confirmParams: {
-        return_url: window.location.href,
-      },
+      confirmParams: { return_url: window.location.href },
       redirect: "if_required",
     });
     if (error) {
@@ -89,11 +87,7 @@ const StripeSetupForm = ({ onSuccess }: StripeSetupFormProps) => {
     <div className="space-y-4">
       <PaymentElement />
       {cardError && <p className="text-sm text-destructive">{cardError}</p>}
-      <Button
-        className="w-full"
-        onClick={handleConfirm}
-        disabled={!stripe || confirming}
-      >
+      <Button className="w-full" onClick={handleConfirm} disabled={!stripe || confirming}>
         {confirming ? (
           <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Sauvegarde en cours...</>
         ) : (
@@ -107,7 +101,13 @@ const StripeSetupForm = ({ onSuccess }: StripeSetupFormProps) => {
   );
 };
 
-const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) => {
+interface PostalCodeModalProps {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  isB2B?: boolean;
+}
+
+const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalProps) => {
   const [step, setStep] = useState<Step>("check");
   const [codePostal, setCodePostal] = useState("");
   const [zone, setZone] = useState("");
@@ -123,6 +123,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const [phone, setPhone] = useState("");
   const [streetName, setStreetName] = useState("");
   const [streetNumber, setStreetNumber] = useState("");
+  const [city, setCity] = useState("");
   const [selectedGardenSize, setSelectedGardenSize] = useState("");
   const [gateCode, setGateCode] = useState("");
   const [dataConsent, setDataConsent] = useState(false);
@@ -130,6 +131,9 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const [referralSource, setReferralSource] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [attempted, setAttempted] = useState(false);
+
+  // B2B fields
+  const [companyName, setCompanyName] = useState("");
 
   // New state variables
   const [quoteSubmitted, setQuoteSubmitted] = useState(false);
@@ -180,6 +184,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     setPhone("");
     setStreetName("");
     setStreetNumber("");
+    setCity("");
     setSelectedGardenSize("");
     setGateCode("");
     setDataConsent(false);
@@ -206,6 +211,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     setStripeCustomerId(null);
     setSetupLoading(false);
     setSetupComplete(false);
+    setCompanyName("");
   };
 
   const handleCheck = async () => {
@@ -250,7 +256,6 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     debounceRef.current = setTimeout(() => fetchSuggestions(val), 300);
   };
 
-  // Close suggestions on click outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
@@ -261,7 +266,6 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Resize dog names array when dog count changes
   useEffect(() => {
     setDogNames(prev => {
       const arr = [...prev];
@@ -270,7 +274,6 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     });
   }, [dogCount]);
 
-  // Scroll to price card when showFullForm becomes true
   useEffect(() => {
     if (showFullForm && priceCardRef.current) {
       setTimeout(() => {
@@ -282,11 +285,16 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   // Price calculation
   const isXl = selectedGardenSize === "xl";
   const freqKey = freqToKey[freqIndex[0]];
-  const matchedRule = pricingRules && selectedGardenSize && !isXl
-    ? findMatchingPrice(pricingRules, selectedGardenSize, dogCount[0], freqKey)
+  const isOnetime = freqKey === "onetime";
+  const isSpecialLead = isXl || isOnetime;
+
+  const matchedRule = pricingRules && selectedGardenSize && !isSpecialLead
+    ? findMatchingPrice(pricingRules, selectedGardenSize, freqKey)
     : undefined;
+  const dogSurcharge = pricingRules ? getDogSurcharge(pricingRules) : 10;
+  const extraDogs = Math.max(0, dogCount[0] - 1);
   const estimatedPrice = matchedRule
-    ? matchedRule.base_price + (dogCount[0] - 1) * 4
+    ? matchedRule.base_price + extraDogs * dogSurcharge
     : null;
   const displayPrice = quarterlyBilling && estimatedPrice
     ? Math.round(estimatedPrice * 0.9)
@@ -301,8 +309,19 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     );
   };
 
-  // Validation (Phase 1 fields)
   const isValidEmail = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim());
+
+  // B2B validation
+  const b2bErrors = {
+    firstName: !firstName.trim(),
+    lastName: !lastName.trim(),
+    email: !email.trim() || !isValidEmail,
+    phone: !phone.trim() || !isValidBelgianPhone(phone),
+    companyName: !companyName.trim(),
+  };
+  const b2bHasErrors = b2bErrors.firstName || b2bErrors.lastName || b2bErrors.email || b2bErrors.phone || b2bErrors.companyName;
+
+  // Residential validation (Phase 1 fields)
   const errors = {
     firstName: !firstName.trim(),
     lastName: !lastName.trim(),
@@ -312,38 +331,56 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     dataConsent: !dataConsent,
     termsAccepted: !termsAccepted,
   };
-
   const phase1HasErrors = errors.firstName || errors.lastName || errors.email || errors.phone || errors.gardenSize || errors.dataConsent;
 
-  // Special lead submit for XL garden or 4+ dogs
+  // Special lead submit (onetime / XL)
   const handleSpecialLeadSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const address = `${streetName} ${streetNumber}, ${codePostal}`.trim().replace(/^,/, "").trim();
+      const note = isOnetime ? "Devis sur mesure — Passage unique" : "Devis sur mesure — Jardin XL";
+      await supabase.from("leads").insert({
+        first_name: firstName, last_name: lastName, email, phone,
+        address, street_name: streetName || null, street_number: streetNumber || null,
+        city: zone, postal_code: codePostal,
+        dog_count: dogCount[0], garden_size: selectedGardenSize,
+        service_frequency: freqKey,
+        referral_source: referralSource || null,
+        mailing_consent: mailing, data_processing_consent: true, status: "new",
+        promo_code: promoCode || null,
+        additional_comments: note,
+        lead_type: "quote_request",
+      } as any);
+      setQuoteSubmitted(true);
+      toast.success("Votre demande a été envoyée ! Nous vous contacterons rapidement. 🐾");
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de l'envoi.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // B2B submit
+  const handleB2BSubmit = async () => {
+    setAttempted(true);
+    if (b2bHasErrors) {
+      toast.error("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
     setSubmitting(true);
     try {
       const address = `${streetName} ${streetNumber}, ${codePostal}`.trim().replace(/^,/, "").trim();
       await supabase.from("leads").insert({
         first_name: firstName, last_name: lastName, email, phone,
         address, street_name: streetName || null, street_number: streetNumber || null,
-        city: zone, postal_code: codePostal,
-        dog_count: dogCount[0], garden_size: selectedGardenSize,
-        service_frequency: "custom",
-        referral_source: referralSource || null,
+        city: city || zone || null, postal_code: codePostal,
         mailing_consent: mailing, data_processing_consent: true, status: "new",
-        promo_code: promoCode || null,
-      });
-      await supabase.from("clients").insert({
-        first_name: firstName, last_name: lastName, email, phone,
-        address, street_name: streetName || null, street_number: streetNumber || null,
-        city: zone, postal_code: codePostal,
-        dog_count: dogCount[0], garden_size: selectedGardenSize,
-        service_frequency: "custom",
-        referral_source: referralSource || null,
-        mailing_consent: mailing, data_processing_consent: true,
-        status: "prospect", pipeline_stage: "new",
-        internal_notes: promoCode ? `Code promo: ${promoCode}` : null,
-        promo_code: promoCode || null,
-      });
+        company_name: companyName,
+        lead_type: "b2b",
+        additional_comments: "Lead B2B — Devis sur mesure",
+      } as any);
       setQuoteSubmitted(true);
-      toast.success("Votre demande a été envoyée ! Nous vous contacterons rapidement. 🐾");
+      toast.success("Demande B2B envoyée ! 🏢");
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de l'envoi.");
     } finally {
@@ -358,7 +395,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
       toast.error("Veuillez remplir tous les champs obligatoires.");
       return;
     }
-    if (isXl || dogCount[0] === 4) {
+    if (isSpecialLead) {
       handleSpecialLeadSubmit();
       return;
     }
@@ -445,12 +482,9 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     setOozSubmitting(true);
     try {
       const { error } = await supabase.from("contact_requests").insert({
-        first_name: oozFirstName,
-        last_name: oozLastName,
-        email: oozEmail,
-        phone: oozPhone || null,
-        code_postal: codePostal,
-        commentaire: oozComment || null,
+        first_name: oozFirstName, last_name: oozLastName,
+        email: oozEmail, phone: oozPhone || null,
+        code_postal: codePostal, commentaire: oozComment || null,
         status: "hors_zone",
       });
       if (error) throw error;
@@ -467,8 +501,123 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const FieldError = ({ show, msg }: { show: boolean; msg?: string }) =>
     show ? <p className="text-xs text-destructive mt-1">{msg || "Ce champ est obligatoire"}</p> : null;
 
-  // Frequency label for price card
   const frequencyLabel = frequencies[freqIndex[0]];
+
+  // ═══════════════════════════════════════
+  // B2B SUCCESS SCREEN
+  // ═══════════════════════════════════════
+  const B2BSuccessScreen = () => (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-8 space-y-4">
+      <Building2 className="w-16 h-16 text-primary mx-auto" />
+      <h2 className="font-display text-2xl font-bold text-foreground">🏢 Demande reçue !</h2>
+      <p className="text-muted-foreground text-sm">
+        Notre équipe B2B vous contactera dans les 24–48h pour élaborer votre offre sur mesure.<br />
+        Merci de votre confiance ! 🐾
+      </p>
+    </motion.div>
+  );
+
+  // ═══════════════════════════════════════
+  // SPECIAL LEAD SUCCESS SCREEN
+  // ═══════════════════════════════════════
+  const SpecialLeadSuccessScreen = () => (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-8 space-y-4">
+      <CheckCircle2 className="w-16 h-16 text-primary mx-auto" />
+      <h2 className="font-display text-2xl font-bold text-foreground">✅ Nous avons bien reçu votre demande !</h2>
+      <p className="text-muted-foreground text-sm">
+        Notre équipe vous contactera sous 24–48h pour établir un devis personnalisé. 🐾
+      </p>
+    </motion.div>
+  );
+
+  // ═══════════════════════════════════════
+  // B2B FORM
+  // ═══════════════════════════════════════
+  const B2BForm = () => (
+    <div className="space-y-4 pt-2">
+      <DialogHeader>
+        <DialogTitle className="text-lg flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-primary" /> Demande de devis B2B
+        </DialogTitle>
+      </DialogHeader>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Prénom *</Label>
+          <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={attempted && b2bErrors.firstName ? "border-destructive" : ""} />
+          <FieldError show={attempted && b2bErrors.firstName} />
+        </div>
+        <div>
+          <Label>Nom *</Label>
+          <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className={attempted && b2bErrors.lastName ? "border-destructive" : ""} />
+          <FieldError show={attempted && b2bErrors.lastName} />
+        </div>
+      </div>
+
+      <div>
+        <Label>Email *</Label>
+        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={attempted && b2bErrors.email ? "border-destructive" : ""} />
+        <FieldError show={attempted && b2bErrors.email} msg={!email.trim() ? "Ce champ est obligatoire" : "Veuillez entrer un email valide"} />
+      </div>
+
+      <div>
+        <Label>Téléphone *</Label>
+        <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={attempted && b2bErrors.phone ? "border-destructive" : ""} />
+        <FieldError show={attempted && b2bErrors.phone} msg={!phone.trim() ? "Ce champ est obligatoire" : "Numéro belge valide requis (ex: 0470 12 34 56)"} />
+      </div>
+
+      <div>
+        <Label>Entreprise / Société *</Label>
+        <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={attempted && b2bErrors.companyName ? "border-destructive" : ""} placeholder="Nom de votre société" />
+        <FieldError show={attempted && b2bErrors.companyName} />
+      </div>
+
+      <Separator />
+
+      <div className="flex gap-2">
+        <div className="flex-1 relative" ref={suggestionsRef}>
+          <Label>Rue</Label>
+          <Input value={streetName} onChange={(e) => handleStreetChange(e.target.value)} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} placeholder="Rue de la Loi" />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-card overflow-hidden">
+              {suggestions.map((s, i) => (
+                <button key={i} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors" onClick={() => { setStreetName(s); setShowSuggestions(false); }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="w-24">
+          <Label>Numéro</Label>
+          <Input value={streetNumber} onChange={(e) => setStreetNumber(e.target.value)} placeholder="12" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Code postal</Label>
+          <Input value={codePostal} disabled className="bg-muted" />
+        </div>
+        <div>
+          <Label>Ville</Label>
+          <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Bruxelles" />
+        </div>
+      </div>
+
+      <div className="flex items-start gap-2">
+        <Checkbox id="mailing-b2b" checked={mailing} onCheckedChange={(v) => setMailing(!!v)} />
+        <label htmlFor="mailing-b2b" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+          J'accepte de recevoir des communications commerciales de Crotte &amp; Go.
+        </label>
+      </div>
+
+      <Button className="w-full" variant="cta" size="lg" onClick={handleB2BSubmit} disabled={submitting}>
+        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Building2 className="w-4 h-4 mr-2" />}
+        Envoyer ma demande de devis B2B 🏢
+      </Button>
+    </div>
+  );
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetAll(); onOpenChange(v); }}>
@@ -478,7 +627,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-xl">
                 <MapPin className="w-5 h-5 text-primary" />
-                Vérifiez votre zone de ramassage
+                {isB2B ? "Vérifiez votre zone — Devis B2B" : "Vérifiez votre zone de ramassage"}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
@@ -486,9 +635,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                 <Label htmlFor="cp">Code postal</Label>
                 <div className="flex gap-2 mt-1">
                   <Input
-                    id="cp"
-                    placeholder="Ex: 1000"
-                    value={codePostal}
+                    id="cp" placeholder="Ex: 1000" value={codePostal}
                     onChange={(e) => setCodePostal(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleCheck()}
                     maxLength={5}
@@ -504,535 +651,482 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
         {step === "quote" && (
           <>
-            {/* Success screen */}
-            {quoteSubmitted ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-8 space-y-4"
-              >
-                <CheckCircle2 className="w-16 h-16 text-primary mx-auto" />
-                <h2 className="font-display text-2xl font-bold text-foreground">C'est tout bon ! 🎉</h2>
-                <p className="text-muted-foreground text-sm">
-                  Merci ! Nous avons bien reçu votre demande et vous contacterons rapidement par email pour finaliser votre devis personnalisé.
-                </p>
-              </motion.div>
+            {/* B2B flow */}
+            {isB2B ? (
+              quoteSubmitted ? <B2BSuccessScreen /> : <B2BForm />
             ) : (
               <>
-                {/* Green banner */}
-                <div className="bg-primary text-primary-foreground text-center py-2 px-4 rounded-t-lg -mx-6 -mt-6 mb-4 font-display font-bold text-sm">
-                  ⚡ Réclamez votre premier ramassage GRATUIT !
-                </div>
-                <DialogHeader>
-                  <DialogTitle className="text-lg">Votre devis gratuit</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-2">
-                  {/* Postal code + promo */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Code postal</Label>
-                      <Input value={codePostal} disabled className="bg-muted" />
-                    </div>
-                    <div>
-                      <Label>Code promo</Label>
-                      <Input placeholder="Optionnel" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} />
-                    </div>
-                  </div>
-
-                  {/* Garden size tiles */}
-                  <div>
-                    <Label>Taille du jardin *</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      {gardenSizes.map((g) => (
-                        <button
-                          key={g.key}
-                          type="button"
-                          onClick={() => setSelectedGardenSize(g.key)}
-                          className={`rounded-xl border-2 p-3 text-center transition-all ${
-                            selectedGardenSize === g.key
-                              ? "border-primary bg-primary/5 shadow-sm"
-                              : "border-border bg-card hover:border-muted-foreground/30"
-                          }`}
-                        >
-                          <span className="text-xl block">{g.emoji}</span>
-                          <span className="font-display font-bold text-sm text-foreground block">{g.label}</span>
-                          <span className="text-[10px] text-muted-foreground">{g.range}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <FieldError show={attempted && errors.gardenSize} />
-                  </div>
-
-                  {/* XL special message */}
-                  {isXl && (
-                    <div className="bg-accent/50 rounded-lg p-4 text-center">
-                      <PawIcon className="w-6 h-6 text-primary mx-auto mb-2" />
-                      <p className="text-sm text-foreground font-display font-bold">
-                        Votre jardin nécessite un devis personnalisé.
+                {/* Residential success screen */}
+                {quoteSubmitted ? (
+                  isSpecialLead ? <SpecialLeadSuccessScreen /> : (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-8 space-y-4">
+                      <CheckCircle2 className="w-16 h-16 text-primary mx-auto" />
+                      <h2 className="font-display text-2xl font-bold text-foreground">C'est tout bon ! 🎉</h2>
+                      <p className="text-muted-foreground text-sm">
+                        Merci ! Nous avons bien reçu votre demande et vous contacterons rapidement par email pour finaliser votre devis personnalisé.
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Remplissez vos coordonnées et nous vous contacterons rapidement !
-                      </p>
+                    </motion.div>
+                  )
+                ) : (
+                  <>
+                    {/* Green banner */}
+                    <div className="bg-primary text-primary-foreground text-center py-2 px-4 rounded-t-lg -mx-6 -mt-6 mb-4 font-display font-bold text-sm">
+                      ⚡ Réclamez votre premier ramassage GRATUIT !
                     </div>
-                  )}
-
-                  {/* Dog count slider */}
-                  <div>
-                    <Label className="flex items-center gap-2">
-                      <Dog className="w-4 h-4 text-primary" />
-                      Nombre de chiens : {dogCount[0] === 4 ? "4+" : dogCount[0]}
-                    </Label>
-                    <div className="relative mt-2">
-                      <Slider value={dogCount} onValueChange={setDogCount} min={1} max={4} step={1} />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        {[1, 2, 3, "4+"].map((n, i) => <span key={i}>{n}</span>)}
-                      </div>
-                    </div>
-                    {dogCount[0] === 4 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Pour 4 chiens et plus, nous vous contacterons pour adapter le devis.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Frequency slider — hidden for XL */}
-                  {!isXl && (
-                    <div>
-                      <Label className="flex items-center gap-2">
-                        <PawIcon className="w-4 h-4 text-primary" />
-                        Fréquence : {frequencies[freqIndex[0]]}
-                      </Label>
-                      <div className="relative mt-2">
-                        <Slider value={freqIndex} onValueChange={setFreqIndex} min={0} max={4} step={1} />
-                        <div className="flex justify-between mt-1 px-0">
-                          {frequencies.map((f, i) => (
-                            <span key={i} className="text-[9px] leading-tight text-muted-foreground text-center" style={{ width: "20%", display: "inline-block" }}>
-                              {f}
-                            </span>
-                          ))}
+                    <DialogHeader>
+                      <DialogTitle className="text-lg">Votre devis gratuit</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-2">
+                      {/* Postal code + promo */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label>Code postal</Label>
+                          <Input value={codePostal} disabled className="bg-muted" />
+                        </div>
+                        <div>
+                          <Label>Code promo</Label>
+                          <Input placeholder="Optionnel" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} />
                         </div>
                       </div>
-                    </div>
-                  )}
 
-                  {/* Contact info */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Prénom *</Label>
-                      <Input
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        className={attempted && errors.firstName ? "border-destructive" : ""}
-                      />
-                      <FieldError show={attempted && errors.firstName} />
-                    </div>
-                    <div>
-                      <Label>Nom *</Label>
-                      <Input
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        className={attempted && errors.lastName ? "border-destructive" : ""}
-                      />
-                      <FieldError show={attempted && errors.lastName} />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Email *</Label>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={attempted && errors.email ? "border-destructive" : ""}
-                    />
-                    <FieldError show={attempted && errors.email} msg={!email.trim() ? "Ce champ est obligatoire" : "Veuillez entrer un email valide"} />
-                  </div>
-                  <div>
-                    <Label>Téléphone *</Label>
-                    <Input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className={attempted && errors.phone ? "border-destructive" : ""}
-                    />
-                    <FieldError show={attempted && errors.phone} msg={!phone.trim() ? "Ce champ est obligatoire" : "Veuillez entrer un numéro de téléphone belge valide (ex: 0470 12 34 56)"} />
-                  </div>
-
-                  {/* Referral source */}
-                  <div>
-                    <Label>Comment avez-vous entendu parler de nous ?</Label>
-                    <Select value={referralSource} onValueChange={setReferralSource}>
-                      <SelectTrigger><SelectValue placeholder="Choisir une option" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="google">Google</SelectItem>
-                        <SelectItem value="bouche_a_oreilles">Bouche à oreilles</SelectItem>
-                        <SelectItem value="social">Réseaux sociaux</SelectItem>
-                        <SelectItem value="flyer">Flyer / Dépliant</SelectItem>
-                        <SelectItem value="other">Autre</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Consent checkboxes — hidden after Phase 2 reveals */}
-                  {!showFullForm && (
-                    <>
-                      <div className="flex items-start gap-2">
-                        <Checkbox id="mailing" checked={mailing} onCheckedChange={(v) => setMailing(!!v)} />
-                        <label htmlFor="mailing" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                          J'accepte de recevoir d'autres communications de Crotte &amp; Go.
-                        </label>
-                      </div>
+                      {/* Garden size tiles */}
                       <div>
-                        <div className="flex items-start gap-2">
-                          <Checkbox id="dataConsent" checked={dataConsent} onCheckedChange={(v) => setDataConsent(!!v)} />
-                          <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                            J'accepte que Crotte &amp; Go conserve et traite mes données personnelles conformément à la déclaration de confidentialité. <span className="text-destructive">*</span>
-                          </label>
-                        </div>
-                        <FieldError show={attempted && errors.dataConsent} msg="Vous devez accepter le traitement de vos données pour continuer." />
-                      </div>
-
-                      {/* Phase 1 CTA */}
-                      <Button
-                        className="w-full"
-                        variant="cta"
-                        size="lg"
-                        onClick={handlePhase1Submit}
-                        disabled={submitting}
-                      >
-                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        Obtenir mon devis gratuit 🐾
-                      </Button>
-                    </>
-                  )}
-
-                  {/* ═══════════════════════════════════════ */}
-                  {/* PHASE 2 — Revealed after Phase 1 CTA   */}
-                  {/* ═══════════════════════════════════════ */}
-                  {showFullForm && !isXl && dogCount[0] < 4 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4 }}
-                      className="space-y-5"
-                    >
-                      {/* ── SECTION A: PRICE CARD ── */}
-                      <div ref={priceCardRef}>
-                        <Card className="border-2 border-primary/40 shadow-card overflow-hidden">
-                          <div className="p-5 text-center space-y-3">
-                            <h3 className="font-display font-bold text-base text-foreground">
-                              Devis pour passage {frequencyLabel}
-                            </h3>
-                            {pricingLoading ? (
-                              <Skeleton className="h-12 w-40 mx-auto" />
-                            ) : displayPrice ? (
-                              <div>
-                                <span className="font-display text-5xl font-black text-primary">€{displayPrice}</span>
-                                <span className="text-sm text-muted-foreground ml-1">/ passage</span>
-                                {quarterlyBilling && (
-                                  <span className="block text-xs text-primary font-semibold mt-1">−10% facturation trimestrielle appliquée</span>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">Prix sur demande</span>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              Estimation basée sur votre jardin et fréquence. Le devis final sera confirmé par notre équipe.
-                            </p>
-                          </div>
-                        </Card>
-                      </div>
-
-                      {/* Promotional text */}
-                      <div className="text-sm text-muted-foreground space-y-2">
-                        <p>
-                          🎁 <strong>Votre premier nettoyage est 100% GRATUIT</strong> lors de la souscription à un service récurrent.
-                          Ces nettoyages coûtent généralement 100 € et + en raison des déchets accumulés.
-                        </p>
-                        <p>
-                          Limite : une promotion par client. Les passages uniques ne sont pas éligibles aux promotions.
-                          Pour un devis de passage unique, nous vous répondrons par email.
-                        </p>
-                      </div>
-
-                      {/* Yellow quarterly billing callout */}
-                      <Card className="bg-accent/30 border-2 border-accent rounded-xl p-4">
-                        <p className="text-sm font-bold text-foreground">
-                          🏷️ Économisez 10% avec la facturation trimestrielle !
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Recevez 10% de réduction sur votre abonnement en optant pour la facturation trimestrielle.
-                        </p>
-                        <div className="flex items-start gap-2 mt-3">
-                          <Checkbox id="quarterly" checked={quarterlyBilling} onCheckedChange={(v) => setQuarterlyBilling(!!v)} />
-                          <label htmlFor="quarterly" className="text-xs text-foreground leading-tight cursor-pointer font-medium">
-                            Oui, je souhaite bénéficier de la facturation trimestrielle (-10%)
-                          </label>
-                        </div>
-                      </Card>
-
-                      <Separator />
-
-                      {/* ── SECTION B: INSCRIPTION ── */}
-                      <h3 className="font-display text-lg font-bold text-foreground mt-6 mb-3 pb-2 border-b border-border">
-                        📋 Inscription
-                      </h3>
-
-                      {/* Address with BOSA autocomplete */}
-                      <div className="flex gap-2">
-                        <div className="flex-1 relative" ref={suggestionsRef}>
-                          <Label>Nom de la rue</Label>
-                          <Input
-                            value={streetName}
-                            onChange={(e) => handleStreetChange(e.target.value)}
-                            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                            placeholder="Rue de la Loi"
-                          />
-                          {showSuggestions && suggestions.length > 0 && (
-                            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-card overflow-hidden">
-                              {suggestions.map((s, i) => (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
-                                  onClick={() => {
-                                    setStreetName(s);
-                                    setShowSuggestions(false);
-                                  }}
-                                >
-                                  {s}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div className="w-24">
-                          <Label>Numéro</Label>
-                          <Input
-                            value={streetNumber}
-                            onChange={(e) => setStreetNumber(e.target.value)}
-                            placeholder="12"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Gate code */}
-                      <div>
-                        <Label>Code de portail / instructions spéciales</Label>
-                        <Textarea value={gateCode} onChange={(e) => setGateCode(e.target.value)} placeholder="Optionnel" rows={2} />
-                      </div>
-
-                      {/* Dog names */}
-                      {dogCount[0] >= 1 && (
-                        <div className="space-y-3">
-                          <h4 className="font-display font-bold text-sm text-foreground">🐕 Infos sur vos chiens</h4>
-                          {dogNames.map((dog, idx) => (
-                            <div key={idx} className="space-y-2">
-                              <div>
-                                <Label>Nom du chien #{idx + 1}</Label>
-                                <Input
-                                  placeholder="Rex"
-                                  value={dog.name}
-                                  onChange={(e) => {
-                                    const updated = [...dogNames];
-                                    updated[idx] = { ...updated[idx], name: e.target.value };
-                                    setDogNames(updated);
-                                  }}
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs text-muted-foreground">
-                                  Est-il sûr pour nous d'être dans le jardin avec le chien #{idx + 1} ?
-                                </Label>
-                                <Select
-                                  value={dog.safe ? "yes" : "no"}
-                                  onValueChange={(v) => {
-                                    const updated = [...dogNames];
-                                    updated[idx] = { ...updated[idx], safe: v === "yes" };
-                                    setDogNames(updated);
-                                  }}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Choisir" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="yes">Oui</SelectItem>
-                                    <SelectItem value="no">Non</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              {idx < dogNames.length - 1 && <Separator className="my-2" />}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Gate location */}
-                      <div>
-                        <Label>Où se trouve l'accès à votre jardin ?</Label>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {gateLocationOptions.map((opt) => (
+                        <Label>Taille du jardin *</Label>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          {gardenSizes.map((g) => (
                             <button
-                              key={opt.value}
-                              type="button"
-                              onClick={() => setGateLocation(opt.value)}
-                              className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
-                                gateLocation === opt.value
-                                  ? "border-primary bg-primary/10 text-primary font-medium"
-                                  : "border-border bg-card text-muted-foreground hover:border-muted-foreground/40"
+                              key={g.key} type="button"
+                              onClick={() => setSelectedGardenSize(g.key)}
+                              className={`rounded-xl border-2 p-3 text-center transition-all ${
+                                selectedGardenSize === g.key
+                                  ? "border-primary bg-primary/5 shadow-sm"
+                                  : "border-border bg-card hover:border-muted-foreground/30"
                               }`}
                             >
-                              {opt.label}
+                              <span className="text-xl block">{g.emoji}</span>
+                              <span className="font-display font-bold text-sm text-foreground block">{g.label}</span>
+                              <span className="text-[10px] text-muted-foreground">{g.range}</span>
                             </button>
                           ))}
                         </div>
-                        {gateLocation === "other" && (
-                          <Textarea
-                            className="mt-2"
-                            placeholder="Précisez l'emplacement de l'accès à votre jardin"
-                            value={gateLocationOther}
-                            onChange={(e) => setGateLocationOther(e.target.value)}
-                            rows={2}
-                          />
+                        <FieldError show={attempted && errors.gardenSize} />
+                      </div>
+
+                      {/* XL special message */}
+                      {isXl && (
+                        <div className="bg-accent/50 rounded-lg p-4 text-center">
+                          <PawIcon className="w-6 h-6 text-primary mx-auto mb-2" />
+                          <p className="text-sm text-foreground font-display font-bold">
+                            Votre jardin nécessite un devis personnalisé.
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Remplissez vos coordonnées et nous vous contacterons rapidement !
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Dog count slider */}
+                      <div>
+                        <Label className="flex items-center gap-2">
+                          <Dog className="w-4 h-4 text-primary" />
+                          Nombre de chiens : {dogCount[0] === 4 ? "4+" : dogCount[0]}
+                        </Label>
+                        <div className="relative mt-2">
+                          <Slider value={dogCount} onValueChange={setDogCount} min={1} max={4} step={1} />
+                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                            {[1, 2, 3, "4+"].map((n, i) => <span key={i}>{n}</span>)}
+                          </div>
+                        </div>
+                        {dogCount[0] === 4 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Pour 4 chiens et plus, nous vous contacterons pour adapter le devis.
+                          </p>
                         )}
                       </div>
 
-                      <Separator />
-
-                      {/* ── SECTION C: PAIEMENT ── */}
-                      <h3 className="font-display text-lg font-bold text-foreground mt-6 mb-3 pb-2 border-b border-border">
-                        💳 Paiement
-                      </h3>
-
-                      <Card className="border shadow-card p-4 space-y-3">
-                        <p className="text-sm text-foreground">
-                          Un moyen de paiement est requis avant le début des services. Souhaitez-vous fournir vos informations de paiement maintenant ?
-                        </p>
-                        <div className="space-y-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPaymentIntent("now");
-                              initializeStripeSetup();
-                            }}
-                            className={`w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all ${
-                              paymentIntent === "now"
-                                ? "border-primary bg-primary/5 font-medium"
-                                : "border-border bg-card hover:border-muted-foreground/30"
-                            }`}
-                          >
-                            <CreditCard className="w-4 h-4 inline mr-2 text-primary" />
-                            Oui, je souhaite enregistrer ma carte maintenant
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPaymentIntent("question")}
-                            className={`w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all ${
-                              paymentIntent === "question"
-                                ? "border-primary bg-primary/5 font-medium"
-                                : "border-border bg-card hover:border-muted-foreground/30"
-                            }`}
-                          >
-                            Non, j'ai une question sur mon service d'abord
-                          </button>
+                      {/* Frequency slider — hidden for XL */}
+                      {!isXl && (
+                        <div>
+                          <Label className="flex items-center gap-2">
+                            <PawIcon className="w-4 h-4 text-primary" />
+                            Fréquence : {frequencyLabel}
+                          </Label>
+                          <div className="relative mt-2">
+                            <Slider value={freqIndex} onValueChange={setFreqIndex} min={0} max={4} step={1} />
+                            <div className="flex justify-between mt-1 px-0">
+                              {frequencies.map((f, i) => (
+                                <span key={i} className="text-[9px] leading-tight text-muted-foreground text-center" style={{ width: "20%", display: "inline-block" }}>
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                      </Card>
+                      )}
 
-                      {paymentIntent === "now" && (
-                        <Card className="border border-border p-4 bg-muted/20 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <Lock className="w-4 h-4 text-primary" />
-                            <span className="font-display font-bold text-sm text-foreground">Paiement sécurisé via Stripe</span>
+                      {/* "Sur devis" message for onetime */}
+                      {isOnetime && !isXl && (
+                        <div className="bg-accent/50 rounded-lg p-4 text-center">
+                          <PawIcon className="w-6 h-6 text-primary mx-auto mb-2" />
+                          <p className="text-sm text-foreground font-display font-bold">
+                            Sur devis — Nous vous contactons 🐾
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Les passages uniques font l'objet d'un devis personnalisé par notre équipe.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Estimated price preview (non-special only, before Phase 2) */}
+                      {!isSpecialLead && selectedGardenSize && !showFullForm && (
+                        <div className="bg-primary/5 rounded-lg p-3 text-center">
+                          {pricingLoading ? (
+                            <Skeleton className="h-8 w-32 mx-auto" />
+                          ) : displayPrice ? (
+                            <p className="font-display font-bold text-foreground">
+                              Estimation : <span className="text-primary text-xl">€{displayPrice}</span> / passage
+                              {extraDogs > 0 && <span className="text-xs text-muted-foreground block">({extraDogs} chien{extraDogs > 1 ? "s" : ""} suppl. × {dogSurcharge}€)</span>}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Prix sur demande</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Contact info */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label>Prénom *</Label>
+                          <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={attempted && errors.firstName ? "border-destructive" : ""} />
+                          <FieldError show={attempted && errors.firstName} />
+                        </div>
+                        <div>
+                          <Label>Nom *</Label>
+                          <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className={attempted && errors.lastName ? "border-destructive" : ""} />
+                          <FieldError show={attempted && errors.lastName} />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Email *</Label>
+                        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={attempted && errors.email ? "border-destructive" : ""} />
+                        <FieldError show={attempted && errors.email} msg={!email.trim() ? "Ce champ est obligatoire" : "Veuillez entrer un email valide"} />
+                      </div>
+                      <div>
+                        <Label>Téléphone *</Label>
+                        <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={attempted && errors.phone ? "border-destructive" : ""} />
+                        <FieldError show={attempted && errors.phone} msg={!phone.trim() ? "Ce champ est obligatoire" : "Veuillez entrer un numéro de téléphone belge valide (ex: 0470 12 34 56)"} />
+                      </div>
+
+                      {/* Referral source */}
+                      <div>
+                        <Label>Comment avez-vous entendu parler de nous ?</Label>
+                        <Select value={referralSource} onValueChange={setReferralSource}>
+                          <SelectTrigger><SelectValue placeholder="Choisir une option" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="google">Google</SelectItem>
+                            <SelectItem value="bouche_a_oreilles">Bouche à oreilles</SelectItem>
+                            <SelectItem value="social">Réseaux sociaux</SelectItem>
+                            <SelectItem value="flyer">Flyer / Dépliant</SelectItem>
+                            <SelectItem value="other">Autre</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Consent checkboxes — hidden after Phase 2 reveals */}
+                      {!showFullForm && (
+                        <>
+                          <div className="flex items-start gap-2">
+                            <Checkbox id="mailing" checked={mailing} onCheckedChange={(v) => setMailing(!!v)} />
+                            <label htmlFor="mailing" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                              J'accepte de recevoir d'autres communications de Crotte &amp; Go.
+                            </label>
+                          </div>
+                          <div>
+                            <div className="flex items-start gap-2">
+                              <Checkbox id="dataConsent" checked={dataConsent} onCheckedChange={(v) => setDataConsent(!!v)} />
+                              <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                                J'accepte que Crotte &amp; Go conserve et traite mes données personnelles conformément à la déclaration de confidentialité. <span className="text-destructive">*</span>
+                              </label>
+                            </div>
+                            <FieldError show={attempted && errors.dataConsent} msg="Vous devez accepter le traitement de vos données pour continuer." />
                           </div>
 
-                          {setupLoading && (
-                            <div className="flex items-center justify-center gap-2 py-4">
-                              <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                              <span className="text-sm text-muted-foreground">Initialisation...</span>
+                          {/* Phase 1 CTA */}
+                          <Button className="w-full" variant="cta" size="lg" onClick={handlePhase1Submit} disabled={submitting}>
+                            {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                            Obtenir mon devis gratuit 🐾
+                          </Button>
+                        </>
+                      )}
+
+                      {/* ═══════════════════════════════════════ */}
+                      {/* PHASE 2 — Revealed after Phase 1 CTA   */}
+                      {/* ═══════════════════════════════════════ */}
+                      {showFullForm && !isSpecialLead && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                          className="space-y-5"
+                        >
+                          {/* ── SECTION A: PRICE CARD ── */}
+                          <div ref={priceCardRef}>
+                            <Card className="border-2 border-primary/40 shadow-card overflow-hidden">
+                              <div className="p-5 text-center space-y-3">
+                                <h3 className="font-display font-bold text-base text-foreground">
+                                  Devis pour passage {frequencyLabel}
+                                </h3>
+                                {pricingLoading ? (
+                                  <Skeleton className="h-12 w-40 mx-auto" />
+                                ) : displayPrice ? (
+                                  <div>
+                                    <span className="font-display text-5xl font-black text-primary">€{displayPrice}</span>
+                                    <span className="text-sm text-muted-foreground ml-1">/ passage</span>
+                                    {extraDogs > 0 && (
+                                      <span className="block text-xs text-muted-foreground mt-1">
+                                        dont {extraDogs} × {dogSurcharge}€ suppl. chien
+                                      </span>
+                                    )}
+                                    {quarterlyBilling && (
+                                      <span className="block text-xs text-primary font-semibold mt-1">−10% facturation trimestrielle appliquée</span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">Prix sur demande</span>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                  Estimation basée sur votre jardin et fréquence. Le devis final sera confirmé par notre équipe.
+                                </p>
+                              </div>
+                            </Card>
+                          </div>
+
+                          {/* Promotional text */}
+                          <div className="text-sm text-muted-foreground space-y-2">
+                            <p>
+                              🎁 <strong>Votre premier nettoyage est 100% GRATUIT</strong> lors de la souscription à un service récurrent.
+                              Ces nettoyages coûtent généralement 100 € et + en raison des déchets accumulés.
+                            </p>
+                            <p>
+                              Limite : une promotion par client. Les passages uniques ne sont pas éligibles aux promotions.
+                              Pour un devis de passage unique, nous vous répondrons par email.
+                            </p>
+                          </div>
+
+                          {/* Yellow quarterly billing callout */}
+                          <Card className="bg-accent/30 border-2 border-accent rounded-xl p-4">
+                            <p className="text-sm font-bold text-foreground">
+                              🏷️ Économisez 10% avec la facturation trimestrielle !
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Recevez 10% de réduction sur votre abonnement en optant pour la facturation trimestrielle.
+                            </p>
+                            <div className="flex items-start gap-2 mt-3">
+                              <Checkbox id="quarterly" checked={quarterlyBilling} onCheckedChange={(v) => setQuarterlyBilling(!!v)} />
+                              <label htmlFor="quarterly" className="text-xs text-foreground leading-tight cursor-pointer font-medium">
+                                Oui, je souhaite bénéficier de la facturation trimestrielle (-10%)
+                              </label>
+                            </div>
+                          </Card>
+
+                          <Separator />
+
+                          {/* ── SECTION B: INSCRIPTION ── */}
+                          <h3 className="font-display text-lg font-bold text-foreground mt-6 mb-3 pb-2 border-b border-border">
+                            📋 Inscription
+                          </h3>
+
+                          {/* Address with BOSA autocomplete */}
+                          <div className="flex gap-2">
+                            <div className="flex-1 relative" ref={suggestionsRef}>
+                              <Label>Nom de la rue</Label>
+                              <Input value={streetName} onChange={(e) => handleStreetChange(e.target.value)} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} placeholder="Rue de la Loi" />
+                              {showSuggestions && suggestions.length > 0 && (
+                                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-card overflow-hidden">
+                                  {suggestions.map((s, i) => (
+                                    <button key={i} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors" onClick={() => { setStreetName(s); setShowSuggestions(false); }}>
+                                      {s}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="w-24">
+                              <Label>Numéro</Label>
+                              <Input value={streetNumber} onChange={(e) => setStreetNumber(e.target.value)} placeholder="12" />
+                            </div>
+                          </div>
+
+                          {/* Gate code */}
+                          <div>
+                            <Label>Code de portail / instructions spéciales</Label>
+                            <Textarea value={gateCode} onChange={(e) => setGateCode(e.target.value)} placeholder="Optionnel" rows={2} />
+                          </div>
+
+                          {/* Dog names */}
+                          {dogCount[0] >= 1 && (
+                            <div className="space-y-3">
+                              <h4 className="font-display font-bold text-sm text-foreground">🐕 Infos sur vos chiens</h4>
+                              {dogNames.map((dog, idx) => (
+                                <div key={idx} className="space-y-2">
+                                  <div>
+                                    <Label>Nom du chien #{idx + 1}</Label>
+                                    <Input placeholder="Rex" value={dog.name} onChange={(e) => {
+                                      const updated = [...dogNames];
+                                      updated[idx] = { ...updated[idx], name: e.target.value };
+                                      setDogNames(updated);
+                                    }} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-muted-foreground">
+                                      Est-il sûr pour nous d'être dans le jardin avec le chien #{idx + 1} ?
+                                    </Label>
+                                    <Select value={dog.safe ? "yes" : "no"} onValueChange={(v) => {
+                                      const updated = [...dogNames];
+                                      updated[idx] = { ...updated[idx], safe: v === "yes" };
+                                      setDogNames(updated);
+                                    }}>
+                                      <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="yes">Oui</SelectItem>
+                                        <SelectItem value="no">Non</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  {idx < dogNames.length - 1 && <Separator className="my-2" />}
+                                </div>
+                              ))}
                             </div>
                           )}
 
-                          {!setupLoading && setupComplete && (
-                            <div className="flex items-center gap-2 text-primary py-2">
-                              <CheckCircle2 className="w-5 h-5" />
-                              <span className="text-sm font-medium">Moyen de paiement sauvegardé avec succès !</span>
+                          {/* Gate location */}
+                          <div>
+                            <Label>Où se trouve l'accès à votre jardin ?</Label>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {gateLocationOptions.map((opt) => (
+                                <button key={opt.value} type="button" onClick={() => setGateLocation(opt.value)}
+                                  className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
+                                    gateLocation === opt.value
+                                      ? "border-primary bg-primary/10 text-primary font-medium"
+                                      : "border-border bg-card text-muted-foreground hover:border-muted-foreground/40"
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                            {gateLocation === "other" && (
+                              <Textarea className="mt-2" placeholder="Précisez l'emplacement de l'accès à votre jardin" value={gateLocationOther} onChange={(e) => setGateLocationOther(e.target.value)} rows={2} />
+                            )}
+                          </div>
+
+                          <Separator />
+
+                          {/* ── SECTION C: PAIEMENT ── */}
+                          <h3 className="font-display text-lg font-bold text-foreground mt-6 mb-3 pb-2 border-b border-border">
+                            💳 Paiement
+                          </h3>
+
+                          <Card className="border shadow-card p-4 space-y-3">
+                            <p className="text-sm text-foreground">
+                              Un moyen de paiement est requis avant le début des services. Souhaitez-vous fournir vos informations de paiement maintenant ?
+                            </p>
+                            <div className="space-y-2">
+                              <button type="button" onClick={() => { setPaymentIntent("now"); initializeStripeSetup(); }}
+                                className={`w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all ${
+                                  paymentIntent === "now" ? "border-primary bg-primary/5 font-medium" : "border-border bg-card hover:border-muted-foreground/30"
+                                }`}
+                              >
+                                <CreditCard className="w-4 h-4 inline mr-2 text-primary" />
+                                Oui, je souhaite enregistrer ma carte maintenant
+                              </button>
+                              <button type="button" onClick={() => setPaymentIntent("question")}
+                                className={`w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all ${
+                                  paymentIntent === "question" ? "border-primary bg-primary/5 font-medium" : "border-border bg-card hover:border-muted-foreground/30"
+                                }`}
+                              >
+                                Non, j'ai une question sur mon service d'abord
+                              </button>
+                            </div>
+                          </Card>
+
+                          {paymentIntent === "now" && (
+                            <Card className="border border-border p-4 bg-muted/20 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-primary" />
+                                <span className="font-display font-bold text-sm text-foreground">Paiement sécurisé via Stripe</span>
+                              </div>
+                              {setupLoading && (
+                                <div className="flex items-center justify-center gap-2 py-4">
+                                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                  <span className="text-sm text-muted-foreground">Initialisation...</span>
+                                </div>
+                              )}
+                              {!setupLoading && setupComplete && (
+                                <div className="flex items-center gap-2 text-primary py-2">
+                                  <CheckCircle2 className="w-5 h-5" />
+                                  <span className="text-sm font-medium">Moyen de paiement sauvegardé avec succès !</span>
+                                </div>
+                              )}
+                              {!setupLoading && !setupComplete && setupClientSecret && (
+                                <Elements stripe={stripePromise} options={{ clientSecret: setupClientSecret }}>
+                                  <StripeSetupForm onSuccess={() => setSetupComplete(true)} />
+                                </Elements>
+                              )}
+                              {!setupLoading && !setupClientSecret && !setupComplete && (
+                                <Button variant="outline" className="w-full" onClick={initializeStripeSetup}>
+                                  <CreditCard className="w-4 h-4 mr-2" /> Charger le formulaire de paiement
+                                </Button>
+                              )}
+                            </Card>
+                          )}
+
+                          {paymentIntent === "question" && (
+                            <div>
+                              <Label>Veuillez entrer votre question ici :</Label>
+                              <Textarea value={paymentQuestion} onChange={(e) => setPaymentQuestion(e.target.value)} placeholder="Ex: Puis-je payer par virement bancaire ?" rows={3} />
                             </div>
                           )}
 
-                          {!setupLoading && !setupComplete && setupClientSecret && (
-                            <Elements stripe={stripePromise} options={{ clientSecret: setupClientSecret }}>
-                              <StripeSetupForm onSuccess={() => setSetupComplete(true)} />
-                            </Elements>
-                          )}
+                          <Separator />
 
-                          {!setupLoading && !setupClientSecret && !setupComplete && (
-                            <Button variant="outline" className="w-full" onClick={initializeStripeSetup}>
-                              <CreditCard className="w-4 h-4 mr-2" />
-                              Charger le formulaire de paiement
-                            </Button>
-                          )}
-                        </Card>
+                          {/* ── SECTION D: FINALISATION ── */}
+                          <div>
+                            <Label>Commentaires supplémentaires</Label>
+                            <Textarea rows={3} placeholder="Tout ce que nous devrions savoir..." value={additionalComments} onChange={(e) => setAdditionalComments(e.target.value)} />
+                          </div>
+
+                          {/* Terms checkbox */}
+                          <div>
+                            <div className="flex items-start gap-2">
+                              <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(!!v)} />
+                              <label htmlFor="terms" className="text-sm text-foreground leading-tight cursor-pointer">
+                                J'accepte les{" "}
+                                <a href="/terms" target="_blank" className="text-primary underline">conditions générales de service</a>
+                                {" "}<span className="text-destructive">*</span>
+                              </label>
+                            </div>
+                            <FieldError show={attempted && errors.termsAccepted} msg="Vous devez accepter les conditions générales pour continuer." />
+                          </div>
+
+                          {/* hCaptcha placeholder */}
+                          <div className="border border-border rounded-xl p-4 bg-muted/30 text-center">
+                            <p className="text-xs text-muted-foreground">🤖 Vérification anti-robot (hCaptcha)</p>
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              Intégrez hCaptcha ici avec la librairie @hcaptcha/react-hcaptcha
+                            </p>
+                          </div>
+
+                          {/* Final CTA */}
+                          <Button className="w-full text-base" variant="hero" size="lg" onClick={handleFinalSubmit} disabled={submitting}>
+                            {submitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <PawIcon className="w-5 h-5 mr-2" />}
+                            Démarrer mon service ! 🐾
+                          </Button>
+                        </motion.div>
                       )}
-
-                      {paymentIntent === "question" && (
-                        <div>
-                          <Label>Veuillez entrer votre question ici :</Label>
-                          <Textarea
-                            value={paymentQuestion}
-                            onChange={(e) => setPaymentQuestion(e.target.value)}
-                            placeholder="Ex: Puis-je payer par virement bancaire ?"
-                            rows={3}
-                          />
-                        </div>
-                      )}
-
-                      <Separator />
-
-                      {/* ── SECTION D: FINALISATION ── */}
-                      <div>
-                        <Label>Commentaires supplémentaires</Label>
-                        <Textarea
-                          rows={3}
-                          placeholder="Tout ce que nous devrions savoir..."
-                          value={additionalComments}
-                          onChange={(e) => setAdditionalComments(e.target.value)}
-                        />
-                      </div>
-
-                      {/* Terms checkbox */}
-                      <div>
-                        <div className="flex items-start gap-2">
-                          <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(!!v)} />
-                          <label htmlFor="terms" className="text-sm text-foreground leading-tight cursor-pointer">
-                            J'accepte les{" "}
-                            <a href="/terms" target="_blank" className="text-primary underline">conditions générales de service</a>
-                            {" "}<span className="text-destructive">*</span>
-                          </label>
-                        </div>
-                        <FieldError show={attempted && errors.termsAccepted} msg="Vous devez accepter les conditions générales pour continuer." />
-                      </div>
-
-                      {/* hCaptcha placeholder */}
-                      <div className="border border-border rounded-xl p-4 bg-muted/30 text-center">
-                        <p className="text-xs text-muted-foreground">🤖 Vérification anti-robot (hCaptcha)</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">
-                          Intégrez hCaptcha ici avec la librairie @hcaptcha/react-hcaptcha
-                        </p>
-                      </div>
-
-                      {/* Final CTA */}
-                      <Button
-                        className="w-full text-base"
-                        variant="hero"
-                        size="lg"
-                        onClick={handleFinalSubmit}
-                        disabled={submitting}
-                      >
-                        {submitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <PawIcon className="w-5 h-5 mr-2" />}
-                        Démarrer mon service ! 🐾
-                      </Button>
-                    </motion.div>
-                  )}
-                </div>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>
