@@ -40,7 +40,7 @@ const SiteFooter = () => (
             <li><Link to="/about" className="hover:text-primary transition-colors">À propos</Link></li>
             <li><a href="#faq" className="hover:text-primary transition-colors">FAQ</a></li>
             <li><a href="#signup" className="hover:text-primary transition-colors">Contact</a></li>
-            <li><Link to="/login" className="hover:text-primary transition-colors">Connexion client</Link></li>
+            
           </ul>
         </div>
       </div>

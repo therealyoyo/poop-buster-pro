@@ -59,7 +59,7 @@ const steps = [
   {
     icon: Lock,
     title: "Procédures de Sécurité",
-    desc: "Une fois votre jardin impeccable, votre technicien Crotte&Go® prendra une photo de votre portail de jardin fermé et l'ajoutera à votre portail client. Cette étape garantit qu'aucun chien ne puisse s'échapper accidentellement de votre propriété.\n\nNotre équipe procède ensuite à la désinfection systématique de tout son matériel de ramassage à l'aide d'un désinfectant biologique de qualité vétérinaire. Cette mesure prévient la propagation des germes et des maladies entre les chiens, garantissant ainsi un environnement sain et sécuritaire pour tous nos clients.",
+    desc: "Une fois votre jardin impeccable, votre technicien Crotte&Go® prendra une photo de votre portail de jardin fermé et vous l'enverra par email. Cette étape garantit qu'aucun chien ne puisse s'échapper accidentellement de votre propriété.\n\nNotre équipe procède ensuite à la désinfection systématique de tout son matériel de ramassage à l'aide d'un désinfectant biologique de qualité vétérinaire. Cette mesure prévient la propagation des germes et des maladies entre les chiens, garantissant ainsi un environnement sain et sécuritaire pour tous nos clients.",
   },
   {
     icon: Trash2,
