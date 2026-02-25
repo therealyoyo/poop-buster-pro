@@ -14,13 +14,9 @@ import { useCheckPostalCode } from "@/hooks/useZonesService";
 import { usePricingRules, findMatchingPrice, getDogSurcharge } from "@/hooks/usePricingRules";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MapPin, ArrowLeft, Dog, Loader2, CheckCircle2, CreditCard, Lock, Building2 } from "lucide-react";
+import { MapPin, ArrowLeft, Dog, Loader2, CheckCircle2, Building2 } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
 import { motion } from "framer-motion";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 type Step = "check" | "quote" | "out_of_zone";
 
@@ -40,6 +36,15 @@ const freqToKey: Record<number, string> = {
   4: "twice_weekly",
 };
 
+/** Divisor to convert monthly base_price to per-passage price */
+const freqDivisor: Record<string, number> = {
+  onetime: 1,
+  monthly: 1,
+  biweekly: 2,
+  weekly: 4,
+  twice_weekly: 8,
+};
+
 const gardenSizes = [
   { key: "small", label: "Petit", range: "0 – 250 m²", emoji: "🌱" },
   { key: "medium", label: "Moyen", range: "251 – 750 m²", emoji: "🌿" },
@@ -56,56 +61,27 @@ const gateLocationOptions = [
   { value: "other", label: "Autre" },
 ];
 
-interface StripeSetupFormProps {
-  onSuccess: () => void;
-}
-
-const StripeSetupForm = ({ onSuccess }: StripeSetupFormProps) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [confirming, setConfirming] = useState(false);
-  const [cardError, setCardError] = useState<string | null>(null);
-
-  const handleConfirm = async () => {
-    if (!stripe || !elements) return;
-    setConfirming(true);
-    setCardError(null);
-    const { error } = await stripe.confirmSetup({
-      elements,
-      confirmParams: { return_url: window.location.href },
-      redirect: "if_required",
-    });
-    if (error) {
-      setCardError(error.message || "Erreur lors de la sauvegarde de la carte.");
-      setConfirming(false);
-    } else {
-      onSuccess();
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <PaymentElement />
-      {cardError && <p className="text-sm text-destructive">{cardError}</p>}
-      <Button className="w-full" onClick={handleConfirm} disabled={!stripe || confirming}>
-        {confirming ? (
-          <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Sauvegarde en cours...</>
-        ) : (
-          <><Lock className="w-4 h-4 mr-2" /> Sauvegarder mon moyen de paiement</>
-        )}
-      </Button>
-      <p className="text-[10px] text-muted-foreground text-center">
-        🔒 Connexion sécurisée via Stripe. Aucun montant ne sera débité maintenant.
-      </p>
-    </div>
-  );
-};
-
 interface PostalCodeModalProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   isB2B?: boolean;
 }
+
+/** Non-blocking newsletter insert when mailing consent is checked */
+const insertNewsletterLead = async (data: { email: string; first_name: string; last_name: string }) => {
+  try {
+    await supabase.from("leads").insert({
+      email: data.email,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      mailing_consent: true,
+      data_processing_consent: true,
+      status: "new",
+      lead_type: "newsletter",
+      additional_comments: "Inscrit à la mailing list via formulaire devis",
+    } as any);
+  } catch { /* silent */ }
+};
 
 const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalProps) => {
   const [step, setStep] = useState<Step>("check");
@@ -141,17 +117,9 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
   const [dogNames, setDogNames] = useState<{ name: string; safe: boolean }[]>([]);
   const [gateLocation, setGateLocation] = useState("");
   const [gateLocationOther, setGateLocationOther] = useState("");
-  const [paymentIntent, setPaymentIntent] = useState<"now" | "question" | "">("");
-  const [paymentQuestion, setPaymentQuestion] = useState("");
   const [additionalComments, setAdditionalComments] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [quarterlyBilling, setQuarterlyBilling] = useState(false);
-
-  // Stripe state
-  const [setupClientSecret, setSetupClientSecret] = useState<string | null>(null);
-  const [stripeCustomerId, setStripeCustomerId] = useState<string | null>(null);
-  const [setupLoading, setSetupLoading] = useState(false);
-  const [setupComplete, setSetupComplete] = useState(false);
 
   // Address autocomplete
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -202,15 +170,9 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     setDogNames([]);
     setGateLocation("");
     setGateLocationOther("");
-    setPaymentIntent("");
-    setPaymentQuestion("");
     setAdditionalComments("");
     setTermsAccepted(false);
     setQuarterlyBilling(false);
-    setSetupClientSecret(null);
-    setStripeCustomerId(null);
-    setSetupLoading(false);
-    setSetupComplete(false);
     setCompanyName("");
   };
 
@@ -293,8 +255,10 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     : undefined;
   const dogSurcharge = pricingRules ? getDogSurcharge(pricingRules) : 10;
   const extraDogs = Math.max(0, dogCount[0] - 1);
-  const estimatedPrice = matchedRule
-    ? matchedRule.base_price + extraDogs * dogSurcharge
+  const divisor = freqDivisor[freqKey] || 1;
+  const perPassageBase = matchedRule ? matchedRule.base_price / divisor : null;
+  const estimatedPrice = perPassageBase !== null
+    ? perPassageBase + extraDogs * dogSurcharge
     : null;
   const displayPrice = quarterlyBilling && estimatedPrice
     ? Math.round(estimatedPrice * 0.9)
@@ -333,7 +297,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
   };
   const phase1HasErrors = errors.firstName || errors.lastName || errors.email || errors.phone || errors.gardenSize || errors.dataConsent;
 
-  // Special lead submit (onetime / XL)
+  // Special lead submit (onetime / XL) — now uses early_lead type
   const handleSpecialLeadSubmit = async () => {
     setSubmitting(true);
     try {
@@ -349,8 +313,14 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         mailing_consent: mailing, data_processing_consent: true, status: "new",
         promo_code: promoCode || null,
         additional_comments: note,
-        lead_type: "quote_request",
+        lead_type: "early_lead",
       } as any);
+
+      // Newsletter insert if mailing consent
+      if (mailing) {
+        insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
+      }
+
       setQuoteSubmitted(true);
       toast.success("Votre demande a été envoyée ! Nous vous contacterons rapidement. 🐾");
     } catch (e: any) {
@@ -379,6 +349,12 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         lead_type: "b2b",
         additional_comments: "Lead B2B — Devis sur mesure",
       } as any);
+
+      // Newsletter insert if mailing consent
+      if (mailing) {
+        insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
+      }
+
       setQuoteSubmitted(true);
       toast.success("Demande B2B envoyée ! 🏢");
     } catch (e: any) {
@@ -388,37 +364,40 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     }
   };
 
-  // Phase 1 CTA handler
+  // Phase 1 CTA handler — inserts early_lead non-blocking
   const handlePhase1Submit = () => {
     setAttempted(true);
     if (phase1HasErrors) {
       toast.error("Veuillez remplir tous les champs obligatoires.");
       return;
     }
+
+    // Non-blocking early_lead insert for ALL Phase 1 submissions
+    try {
+      const address = `${streetName} ${streetNumber}, ${codePostal}`.trim().replace(/^,/, "").trim();
+      supabase.from("leads").insert({
+        first_name: firstName, last_name: lastName, email, phone,
+        address: address || null, street_name: streetName || null, street_number: streetNumber || null,
+        city: zone, postal_code: codePostal,
+        dog_count: dogCount[0], garden_size: selectedGardenSize,
+        service_frequency: freqKey,
+        referral_source: referralSource || null,
+        mailing_consent: mailing, data_processing_consent: true, status: "new",
+        promo_code: promoCode || null,
+        lead_type: "early_lead",
+      } as any).then(() => {
+        // Newsletter insert if mailing consent (for non-special leads going to Phase 2)
+        if (mailing && !isSpecialLead) {
+          insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
+        }
+      });
+    } catch { /* non-blocking */ }
+
     if (isSpecialLead) {
       handleSpecialLeadSubmit();
       return;
     }
     setShowFullForm(true);
-  };
-
-  // Initialize Stripe SetupIntent
-  const initializeStripeSetup = async () => {
-    if (setupClientSecret) return;
-    if (!email || !firstName) return;
-    setSetupLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-setup-intent", {
-        body: { email, name: `${firstName} ${lastName}` },
-      });
-      if (error) throw error;
-      setSetupClientSecret(data.client_secret);
-      setStripeCustomerId(data.customer_id);
-    } catch (e: any) {
-      toast.error("Impossible d'initialiser le paiement. Veuillez réessayer.");
-    } finally {
-      setSetupLoading(false);
-    }
   };
 
   // Final submit (Phase 2)
@@ -444,13 +423,10 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         gate_location: gateLocation || null,
         gate_location_other: gateLocation === "other" ? gateLocationOther : null,
         dog_names: dogNames.length > 0 ? dogNames : null,
-        payment_intent: paymentIntent || null,
-        payment_question: paymentIntent === "question" ? paymentQuestion : null,
         additional_comments: additionalComments || null,
         terms_accepted: true,
         quarterly_billing: quarterlyBilling,
         promo_code: promoCode || null,
-        ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
       };
 
       await supabase.from("clients").insert({
@@ -463,7 +439,13 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       await supabase.from("leads").insert({
         ...sharedData,
         status: "new",
-      });
+        lead_type: "qualified_lead",
+      } as any);
+
+      // Newsletter insert if mailing consent
+      if (mailing) {
+        insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
+      }
 
       setQuoteSubmitted(true);
       toast.success("Inscription complète ! Bienvenue chez Crotte & Go 🐾");
@@ -777,22 +759,6 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                         </div>
                       )}
 
-                      {/* Estimated price preview (non-special only, before Phase 2) */}
-                      {!isSpecialLead && selectedGardenSize && !showFullForm && (
-                        <div className="bg-primary/5 rounded-lg p-3 text-center">
-                          {pricingLoading ? (
-                            <Skeleton className="h-8 w-32 mx-auto" />
-                          ) : displayPrice ? (
-                            <p className="font-display font-bold text-foreground">
-                              Estimation : <span className="text-primary text-xl">€{displayPrice}</span> / passage
-                              {extraDogs > 0 && <span className="text-xs text-muted-foreground block">({extraDogs} chien{extraDogs > 1 ? "s" : ""} suppl. × {dogSurcharge}€)</span>}
-                            </p>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">Prix sur demande</p>
-                          )}
-                        </div>
-                      )}
-
                       {/* Contact info */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -1022,75 +988,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
 
                           <Separator />
 
-                          {/* ── SECTION C: PAIEMENT ── */}
-                          <h3 className="font-display text-lg font-bold text-foreground mt-6 mb-3 pb-2 border-b border-border">
-                            💳 Paiement
-                          </h3>
-
-                          <Card className="border shadow-card p-4 space-y-3">
-                            <p className="text-sm text-foreground">
-                              Un moyen de paiement est requis avant le début des services. Souhaitez-vous fournir vos informations de paiement maintenant ?
-                            </p>
-                            <div className="space-y-2">
-                              <button type="button" onClick={() => { setPaymentIntent("now"); initializeStripeSetup(); }}
-                                className={`w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all ${
-                                  paymentIntent === "now" ? "border-primary bg-primary/5 font-medium" : "border-border bg-card hover:border-muted-foreground/30"
-                                }`}
-                              >
-                                <CreditCard className="w-4 h-4 inline mr-2 text-primary" />
-                                Oui, je souhaite enregistrer ma carte maintenant
-                              </button>
-                              <button type="button" onClick={() => setPaymentIntent("question")}
-                                className={`w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all ${
-                                  paymentIntent === "question" ? "border-primary bg-primary/5 font-medium" : "border-border bg-card hover:border-muted-foreground/30"
-                                }`}
-                              >
-                                Non, j'ai une question sur mon service d'abord
-                              </button>
-                            </div>
-                          </Card>
-
-                          {paymentIntent === "now" && (
-                            <Card className="border border-border p-4 bg-muted/20 space-y-3">
-                              <div className="flex items-center gap-2">
-                                <Lock className="w-4 h-4 text-primary" />
-                                <span className="font-display font-bold text-sm text-foreground">Paiement sécurisé via Stripe</span>
-                              </div>
-                              {setupLoading && (
-                                <div className="flex items-center justify-center gap-2 py-4">
-                                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                  <span className="text-sm text-muted-foreground">Initialisation...</span>
-                                </div>
-                              )}
-                              {!setupLoading && setupComplete && (
-                                <div className="flex items-center gap-2 text-primary py-2">
-                                  <CheckCircle2 className="w-5 h-5" />
-                                  <span className="text-sm font-medium">Moyen de paiement sauvegardé avec succès !</span>
-                                </div>
-                              )}
-                              {!setupLoading && !setupComplete && setupClientSecret && (
-                                <Elements stripe={stripePromise} options={{ clientSecret: setupClientSecret }}>
-                                  <StripeSetupForm onSuccess={() => setSetupComplete(true)} />
-                                </Elements>
-                              )}
-                              {!setupLoading && !setupClientSecret && !setupComplete && (
-                                <Button variant="outline" className="w-full" onClick={initializeStripeSetup}>
-                                  <CreditCard className="w-4 h-4 mr-2" /> Charger le formulaire de paiement
-                                </Button>
-                              )}
-                            </Card>
-                          )}
-
-                          {paymentIntent === "question" && (
-                            <div>
-                              <Label>Veuillez entrer votre question ici :</Label>
-                              <Textarea value={paymentQuestion} onChange={(e) => setPaymentQuestion(e.target.value)} placeholder="Ex: Puis-je payer par virement bancaire ?" rows={3} />
-                            </div>
-                          )}
-
-                          <Separator />
-
-                          {/* ── SECTION D: FINALISATION ── */}
+                          {/* ── SECTION C: FINALISATION ── */}
                           <div>
                             <Label>Commentaires supplémentaires</Label>
                             <Textarea rows={3} placeholder="Tout ce que nous devrions savoir..." value={additionalComments} onChange={(e) => setAdditionalComments(e.target.value)} />
