@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
@@ -7,7 +7,20 @@ import logo from "@/assets/logo.png";
 const SiteNavbar = ({ onOpenQuote }: { onOpenQuote?: () => void }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  
+  const navigate = useNavigate();
+
+  const handleFaqClick = () => {
+    setMobileOpen(false);
+    const faqEl = document.getElementById("faq");
+    if (faqEl) {
+      faqEl.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/#faq");
+      setTimeout(() => {
+        document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" });
+      }, 500);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-md">
@@ -28,7 +41,7 @@ const SiteNavbar = ({ onOpenQuote }: { onOpenQuote?: () => void }) => {
             </div>
           </div>
 
-          <a href="#faq" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">FAQ</a>
+          <button onClick={handleFaqClick} className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">FAQ</button>
           <Link to="/about" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">À propos</Link>
 
 
@@ -52,7 +65,7 @@ const SiteNavbar = ({ onOpenQuote }: { onOpenQuote?: () => void }) => {
               <Link to="/services/commercial" onClick={() => setMobileOpen(false)} className="px-3 py-1.5 text-sm text-muted-foreground">Professionnel / B2B</Link>
             </div>
           )}
-          <a href="#faq" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">FAQ</a>
+          <button onClick={handleFaqClick} className="px-3 py-2 text-sm font-medium text-foreground">FAQ</button>
           <Link to="/about" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">À propos</Link>
           <Link to="/login" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">Connexion client</Link>
           <Button variant="cta" className="w-full mt-2" onClick={() => { setMobileOpen(false); onOpenQuote?.(); }}>Devis gratuit</Button>
