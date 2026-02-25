@@ -30,10 +30,16 @@ export type Database = {
           internal_notes: string | null
           is_recurring: boolean | null
           last_name: string
+          lat: number | null
+          lng: number | null
+          paused_until: string | null
           phone: string | null
           pipeline_stage: string
+          preferred_day: string | null
           service_frequency: string | null
           status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           updated_at: string
           user_id: string | null
           zone_id: string | null
@@ -53,10 +59,16 @@ export type Database = {
           internal_notes?: string | null
           is_recurring?: boolean | null
           last_name: string
+          lat?: number | null
+          lng?: number | null
+          paused_until?: string | null
           phone?: string | null
           pipeline_stage?: string
+          preferred_day?: string | null
           service_frequency?: string | null
           status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string | null
           zone_id?: string | null
@@ -76,10 +88,16 @@ export type Database = {
           internal_notes?: string | null
           is_recurring?: boolean | null
           last_name?: string
+          lat?: number | null
+          lng?: number | null
+          paused_until?: string | null
           phone?: string | null
           pipeline_stage?: string
+          preferred_day?: string | null
           service_frequency?: string | null
           status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string | null
           zone_id?: string | null
@@ -130,6 +148,56 @@ export type Database = {
         }
         Relationships: []
       }
+      financials: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          paid_at: string | null
+          stripe_event_id: string | null
+          stripe_invoice_id: string | null
+          stripe_subscription_id: string | null
+          type: string
+        }
+        Insert: {
+          amount: number
+          client_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          paid_at?: string | null
+          stripe_event_id?: string | null
+          stripe_invoice_id?: string | null
+          stripe_subscription_id?: string | null
+          type: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          paid_at?: string | null
+          stripe_event_id?: string | null
+          stripe_invoice_id?: string | null
+          stripe_subscription_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financials_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interventions: {
         Row: {
           admin_id: string | null
@@ -138,6 +206,7 @@ export type Database = {
           completion_message: string | null
           created_at: string
           id: string
+          job_started_at: string | null
           photo_url: string | null
           scheduled_date: string
           sms_sent_arrival: boolean | null
@@ -153,6 +222,7 @@ export type Database = {
           completion_message?: string | null
           created_at?: string
           id?: string
+          job_started_at?: string | null
           photo_url?: string | null
           scheduled_date: string
           sms_sent_arrival?: boolean | null
@@ -168,6 +238,7 @@ export type Database = {
           completion_message?: string | null
           created_at?: string
           id?: string
+          job_started_at?: string | null
           photo_url?: string | null
           scheduled_date?: string
           sms_sent_arrival?: boolean | null
@@ -276,6 +347,157 @@ export type Database = {
           {
             foreignKeyName: "messages_intervention_id_fkey"
             columns: ["intervention_id"]
+            isOneToOne: false
+            referencedRelation: "interventions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_rules: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          dog_count_max: number
+          dog_count_min: number
+          frequency: string
+          garden_size: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          base_price: number
+          created_at?: string | null
+          dog_count_max: number
+          dog_count_min: number
+          frequency: string
+          garden_size: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          dog_count_max?: number
+          dog_count_min?: number
+          frequency?: string
+          garden_size?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      quotes: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_name: string | null
+          admin_notes: string | null
+          base_price: number
+          client_id: string
+          created_at: string | null
+          dog_count: number
+          frequency: string
+          garden_size: string
+          id: string
+          line_items: Json | null
+          preferred_day: string | null
+          sent_at: string | null
+          status: string | null
+          stripe_checkout_session_id: string | null
+          stripe_customer_id: string | null
+          terms_text: string | null
+          token: string
+          total_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_name?: string | null
+          admin_notes?: string | null
+          base_price: number
+          client_id: string
+          created_at?: string | null
+          dog_count: number
+          frequency: string
+          garden_size: string
+          id?: string
+          line_items?: Json | null
+          preferred_day?: string | null
+          sent_at?: string | null
+          status?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          terms_text?: string | null
+          token?: string
+          total_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_name?: string | null
+          admin_notes?: string | null
+          base_price?: number
+          client_id?: string
+          created_at?: string | null
+          dog_count?: number
+          frequency?: string
+          garden_size?: string
+          id?: string
+          line_items?: Json | null
+          preferred_day?: string | null
+          sent_at?: string | null
+          status?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          terms_text?: string | null
+          token?: string
+          total_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_logs: {
+        Row: {
+          completion_timestamp: string | null
+          created_at: string | null
+          gate_closed_verified: boolean | null
+          id: string
+          job_id: string
+          notes: string | null
+          photo_url: string | null
+          tech_name: string | null
+        }
+        Insert: {
+          completion_timestamp?: string | null
+          created_at?: string | null
+          gate_closed_verified?: boolean | null
+          id?: string
+          job_id: string
+          notes?: string | null
+          photo_url?: string | null
+          tech_name?: string | null
+        }
+        Update: {
+          completion_timestamp?: string | null
+          created_at?: string | null
+          gate_closed_verified?: boolean | null
+          id?: string
+          job_id?: string
+          notes?: string | null
+          photo_url?: string | null
+          tech_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_logs_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "interventions"
             referencedColumns: ["id"]

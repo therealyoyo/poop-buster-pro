@@ -6,15 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings as SettingsIcon, Key } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Settings as SettingsIcon, Key, Pause, Play } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const ClientSettings = () => {
   const [gateEntryType, setGateEntryType] = useState("side_gate");
   const [gateCode, setGateCode] = useState("");
   const [gateInstructions, setGateInstructions] = useState("");
+  const [pausedUntil, setPausedUntil] = useState<string | null>(null);
+  const [pauseDate, setPauseDate] = useState<Date>();
   const [loading, setLoading] = useState(true);
   const [clientId, setClientId] = useState<string | null>(null);
 
@@ -24,7 +31,7 @@ const ClientSettings = () => {
       if (!session) { setLoading(false); return; }
       const { data } = await supabase
         .from("clients")
-        .select("id, gate_entry_type, gate_code, gate_special_instructions")
+        .select("id, gate_entry_type, gate_code, gate_special_instructions, paused_until")
         .eq("user_id", session.user.id)
         .maybeSingle();
       if (data) {
@@ -32,6 +39,7 @@ const ClientSettings = () => {
         setGateEntryType(data.gate_entry_type || "side_gate");
         setGateCode(data.gate_code || "");
         setGateInstructions(data.gate_special_instructions || "");
+        setPausedUntil((data as any).paused_until || null);
       }
       setLoading(false);
     };
@@ -50,11 +58,23 @@ const ClientSettings = () => {
       gate_code: gateCode || null,
       gate_special_instructions: gateInstructions || null,
     }).eq("id", clientId);
-    if (error) {
-      toast.error("Erreur lors de la mise à jour.");
-    } else {
-      toast.success("Vos infos d'accès ont été mises à jour ! On briefera l'équipe. 🔑");
-    }
+    if (error) toast.error("Erreur lors de la mise à jour.");
+    else toast.success("Vos infos d'accès ont été mises à jour ! On briefera l'équipe. 🔑");
+  };
+
+  const handlePauseSave = async () => {
+    if (!clientId || !pauseDate) return;
+    const dateStr = format(pauseDate, "yyyy-MM-dd");
+    const { error } = await supabase.from("clients").update({ paused_until: dateStr } as any).eq("id", clientId);
+    if (error) toast.error("Erreur.");
+    else { setPausedUntil(dateStr); toast.success("Service mis en pause ⏸"); }
+  };
+
+  const handleResume = async () => {
+    if (!clientId) return;
+    const { error } = await supabase.from("clients").update({ paused_until: null } as any).eq("id", clientId);
+    if (error) toast.error("Erreur.");
+    else { setPausedUntil(null); toast.success("Service repris ▶️"); }
   };
 
   return (
@@ -62,58 +82,35 @@ const ClientSettings = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="font-display text-3xl font-bold text-foreground flex items-center gap-2 mb-6">
-          <SettingsIcon className="w-7 h-7 text-primary" />
-          Paramètres du compte
+          <SettingsIcon className="w-7 h-7 text-primary" /> Paramètres du compte
         </h1>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="shadow-card mb-6">
-            <CardHeader>
-              <CardTitle className="font-display">Coordonnées</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="font-display">Coordonnées</CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Prénom</Label>
-                    <Input defaultValue="Sophie" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Nom</Label>
-                    <Input defaultValue="Tremblay" />
-                  </div>
+                  <div className="space-y-1.5"><Label>Prénom</Label><Input defaultValue="Sophie" /></div>
+                  <div className="space-y-1.5"><Label>Nom</Label><Input defaultValue="Tremblay" /></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Courriel</Label>
-                    <Input type="email" defaultValue="sophie@courriel.com" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Téléphone</Label>
-                    <Input type="tel" defaultValue="(514) 123-4567" />
-                  </div>
+                  <div className="space-y-1.5"><Label>Courriel</Label><Input type="email" defaultValue="sophie@courriel.com" /></div>
+                  <div className="space-y-1.5"><Label>Téléphone</Label><Input type="tel" defaultValue="(514) 123-4567" /></div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Adresse de service</Label>
-                  <Input defaultValue="123 rue des Chênes, Montréal, H2X 1Y4" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Instructions spéciales / Code de portail</Label>
-                  <Textarea defaultValue="Code du portail #1234. Les chiens sont gentils, généralement dans le jardin arrière." rows={3} />
-                </div>
+                <div className="space-y-1.5"><Label>Adresse de service</Label><Input defaultValue="123 rue des Chênes, Montréal, H2X 1Y4" /></div>
                 <Button type="submit" variant="cta" className="rounded-full">Enregistrer les modifications</Button>
               </form>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Gate & Access Self-Service */}
+        {/* Gate & Access */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="shadow-card">
+          <Card className="shadow-card mb-6">
             <CardHeader>
               <CardTitle className="font-display flex items-center gap-2">
-                <Key className="w-5 h-5 text-primary" />
-                Accès au jardin
+                <Key className="w-5 h-5 text-primary" /> Accès au jardin
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -134,21 +131,54 @@ const ClientSettings = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <Label>Code d'accès</Label>
-                    <Input value={gateCode} onChange={e => setGateCode(e.target.value)} placeholder="ex. 4521" />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label>Instructions spéciales d'accès</Label>
-                    <Textarea value={gateInstructions} onChange={e => setGateInstructions(e.target.value)} placeholder="ex. Soulever le loquet et pousser" rows={3} />
-                  </div>
-
-                  <Button variant="cta" className="rounded-full" onClick={handleGateSave} disabled={!clientId}>
-                    Enregistrer les infos d'accès
-                  </Button>
+                  <div className="space-y-1.5"><Label>Code d'accès</Label><Input value={gateCode} onChange={e => setGateCode(e.target.value)} placeholder="ex. 4521" /></div>
+                  <div className="space-y-1.5"><Label>Instructions spéciales d'accès</Label><Textarea value={gateInstructions} onChange={e => setGateInstructions(e.target.value)} placeholder="ex. Soulever le loquet et pousser" rows={3} /></div>
+                  <Button variant="cta" className="rounded-full" onClick={handleGateSave} disabled={!clientId}>Enregistrer les infos d'accès</Button>
                 </>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Pause Service */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2">
+                <Pause className="w-5 h-5 text-primary" /> Pause du service ⏸
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loading ? (
+                <div className="h-16 bg-muted rounded-lg animate-pulse" />
+              ) : pausedUntil ? (
+                <div className="space-y-3">
+                  <div className="bg-accent/50 border border-primary/20 rounded-xl p-4">
+                    <p className="text-sm font-medium">⏸ Votre service est en pause jusqu'au <strong>{format(new Date(pausedUntil), "d MMMM yyyy", { locale: fr })}</strong></p>
+                  </div>
+                  <Button variant="cta" className="rounded-full w-full" onClick={handleResume}>
+                    <Play className="w-4 h-4" /> Reprendre le service ▶️
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className={cn("flex-1 justify-start", !pauseDate && "text-muted-foreground")}>
+                          {pauseDate ? format(pauseDate, "PPP", { locale: fr }) : "Pause jusqu'au..."}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={pauseDate} onSelect={setPauseDate} disabled={(d) => d < new Date()} className="p-3 pointer-events-auto" />
+                      </PopoverContent>
+                    </Popover>
+                    <Button variant="cta" className="rounded-full" onClick={handlePauseSave} disabled={!pauseDate || !clientId}>
+                      Sauver 💤
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">Mettre en pause retire vos visites du planning. Les visites prévues pendant cette période seront annulées.</p>
+                </div>
               )}
             </CardContent>
           </Card>

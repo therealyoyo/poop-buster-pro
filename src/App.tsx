@@ -15,10 +15,13 @@ import ClientDetail from "./pages/admin/ClientDetail";
 import Pipeline from "./pages/admin/Pipeline";
 import ZonesService from "./pages/admin/ZonesService";
 import FieldApp from "./pages/admin/FieldApp";
+import Pricing from "./pages/admin/Pricing";
 import ClientDashboard from "./pages/portal/ClientDashboard";
 import ClientInvoices from "./pages/portal/Invoices";
 import ClientSettings from "./pages/portal/Settings";
 import ClientMessages from "./pages/portal/Messages";
+import QuoteAccept from "./pages/QuoteAccept";
+import QuoteSuccess from "./pages/QuoteSuccess";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
 
@@ -43,10 +46,13 @@ const App = () => (
           <Route path="/admin/billing" element={<AdminRoute><AdminBilling /></AdminRoute>} />
           <Route path="/admin/zones" element={<AdminRoute><ZonesService /></AdminRoute>} />
           <Route path="/admin/field" element={<AdminRoute><FieldApp /></AdminRoute>} />
+          <Route path="/admin/pricing" element={<AdminRoute><Pricing /></AdminRoute>} />
           <Route path="/portal" element={<ClientDashboard />} />
           <Route path="/portal/messages" element={<ClientMessages />} />
           <Route path="/portal/invoices" element={<ClientInvoices />} />
           <Route path="/portal/settings" element={<ClientSettings />} />
+          <Route path="/quote/accept/:token" element={<QuoteAccept />} />
+          <Route path="/quote/success" element={<QuoteSuccess />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
