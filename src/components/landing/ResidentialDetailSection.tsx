@@ -16,12 +16,6 @@ import {
   Heart,
 } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const services = [
   {
@@ -83,20 +77,6 @@ const benefits = [
   "Photo et e-mail de confirmation après chaque passage",
 ];
 
-const faqs = [
-  {
-    q: "Combien coûte le service de ramassage ?",
-    a: "Nos tarifs dépendent de la taille de votre jardin, du nombre de chiens et de la fréquence choisie. Demandez votre devis gratuit pour recevoir une offre personnalisée en quelques minutes.",
-  },
-  {
-    q: "Dois-je être présent lors du passage ?",
-    a: "Non, pas nécessaire ! Il vous suffit de nous donner accès au jardin. Après chaque visite, vous recevrez un e-mail de confirmation de notre passage et une photo de votre portail fermé.",
-  },
-  {
-    q: "Que faites-vous des déjections ramassées ?",
-    a: "Nous emportons toutes les déjections avec nous après chaque visite. Vous n'avez rien à faire — votre jardin reste propre et vous n'avez pas à gérer l'élimination.",
-  },
-];
 
 const ResidentialDetailSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
   <section className="py-20 bg-background">
@@ -236,33 +216,6 @@ const ResidentialDetailSection = ({ onOpenQuote }: { onOpenQuote?: () => void })
         </Button>
       </motion.div>
 
-      {/* ── FAQ ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mx-auto"
-      >
-        <h3 className="font-display text-2xl font-bold text-foreground text-center mb-8">
-          Questions Fréquentes — Résidentiel
-        </h3>
-        <Accordion type="single" collapsible className="space-y-3">
-          {faqs.map((faq, i) => (
-            <AccordionItem
-              key={i}
-              value={`faq-${i}`}
-              className="bg-card rounded-xl shadow-card border-none px-6"
-            >
-              <AccordionTrigger className="font-display font-bold text-foreground hover:no-underline">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {faq.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </motion.div>
     </div>
   </section>
 );
