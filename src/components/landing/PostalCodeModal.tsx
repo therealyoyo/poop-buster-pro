@@ -46,7 +46,7 @@ const gardenSizes = [
 const gateLocationOptions = [
   { value: "left", label: "À gauche" },
   { value: "right", label: "À droite" },
-  { value: "driveway", label: "Allée" },
+  { value: "driveway", label: "Via l'allée" },
   { value: "no_gate", label: "Pas de portail" },
   { value: "house_only", label: "Via la maison" },
   { value: "other", label: "Autre" },
@@ -227,13 +227,22 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
     ? Math.round(estimatedPrice * 0.9)
     : estimatedPrice ? Math.round(estimatedPrice) : null;
 
+  const isValidBelgianPhone = (value: string): boolean => {
+    const cleaned = value.replace(/[\s.\-()]/g, "");
+    return (
+      /^\+32[1-9][0-9]{7,8}$/.test(cleaned) ||
+      /^0032[1-9][0-9]{7,8}$/.test(cleaned) ||
+      /^0[1-9][0-9]{7,8}$/.test(cleaned)
+    );
+  };
+
   // Validation (Phase 1 fields)
-  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidEmail = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim());
   const errors = {
     firstName: !firstName.trim(),
     lastName: !lastName.trim(),
     email: !email.trim() || !isValidEmail,
-    phone: !phone.trim(),
+    phone: !phone.trim() || !isValidBelgianPhone(phone),
     gardenSize: !selectedGardenSize,
     dataConsent: !dataConsent,
     termsAccepted: !termsAccepted,
@@ -560,7 +569,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                       onChange={(e) => setPhone(e.target.value)}
                       className={attempted && errors.phone ? "border-destructive" : ""}
                     />
-                    <FieldError show={attempted && errors.phone} />
+                    <FieldError show={attempted && errors.phone} msg={!phone.trim() ? "Ce champ est obligatoire" : "Veuillez entrer un numéro de téléphone belge valide (ex: 0470 12 34 56)"} />
                   </div>
 
                   {/* Referral source */}
@@ -578,34 +587,38 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                     </Select>
                   </div>
 
-                  {/* Consent checkboxes */}
-                  <div className="flex items-start gap-2">
-                    <Checkbox id="mailing" checked={mailing} onCheckedChange={(v) => setMailing(!!v)} />
-                    <label htmlFor="mailing" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                      J'accepte de recevoir d'autres communications de Crotte &amp; Go.
-                    </label>
-                  </div>
-                  <div>
-                    <div className="flex items-start gap-2">
-                      <Checkbox id="dataConsent" checked={dataConsent} onCheckedChange={(v) => setDataConsent(!!v)} />
-                      <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                        J'accepte que Crotte &amp; Go conserve et traite mes données personnelles conformément à la déclaration de confidentialité. <span className="text-destructive">*</span>
-                      </label>
-                    </div>
-                    <FieldError show={attempted && errors.dataConsent} msg="Vous devez accepter le traitement de vos données pour continuer." />
-                  </div>
+                  {/* Consent checkboxes — hidden after Phase 2 reveals */}
+                  {!showFullForm && (
+                    <>
+                      <div className="flex items-start gap-2">
+                        <Checkbox id="mailing" checked={mailing} onCheckedChange={(v) => setMailing(!!v)} />
+                        <label htmlFor="mailing" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                          J'accepte de recevoir d'autres communications de Crotte &amp; Go.
+                        </label>
+                      </div>
+                      <div>
+                        <div className="flex items-start gap-2">
+                          <Checkbox id="dataConsent" checked={dataConsent} onCheckedChange={(v) => setDataConsent(!!v)} />
+                          <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                            J'accepte que Crotte &amp; Go conserve et traite mes données personnelles conformément à la déclaration de confidentialité. <span className="text-destructive">*</span>
+                          </label>
+                        </div>
+                        <FieldError show={attempted && errors.dataConsent} msg="Vous devez accepter le traitement de vos données pour continuer." />
+                      </div>
 
-                  {/* Phase 1 CTA */}
-                  <Button
-                    className="w-full"
-                    variant="cta"
-                    size="lg"
-                    onClick={handlePhase1Submit}
-                    disabled={submitting}
-                  >
-                    {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Obtenir mon devis gratuit 🐾
-                  </Button>
+                      {/* Phase 1 CTA */}
+                      <Button
+                        className="w-full"
+                        variant="cta"
+                        size="lg"
+                        onClick={handlePhase1Submit}
+                        disabled={submitting}
+                      >
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                        Obtenir mon devis gratuit 🐾
+                      </Button>
+                    </>
+                  )}
 
                   {/* ═══════════════════════════════════════ */}
                   {/* PHASE 2 — Revealed after Phase 1 CTA   */}
@@ -648,11 +661,11 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                       <div className="text-sm text-muted-foreground space-y-2">
                         <p>
                           🎁 <strong>Votre premier nettoyage est 100% GRATUIT</strong> lors de la souscription à un service récurrent.
-                          Ces nettoyages coûtent généralement 100 € et plus en raison des déchets accumulés.
+                          Ces nettoyages coûtent généralement 100 € et + en raison des déchets accumulés.
                         </p>
                         <p>
                           Limite : une promotion par client. Les passages uniques ne sont pas éligibles aux promotions.
-                          Pour un devis ponctuel, nous vous répondrons par email.
+                          Pour un devis de passage unique, nous vous répondrons par email.
                         </p>
                       </div>
 
@@ -723,8 +736,8 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                         <Textarea value={gateCode} onChange={(e) => setGateCode(e.target.value)} placeholder="Optionnel" rows={2} />
                       </div>
 
-                      {/* Dog names — only if > 1 dog */}
-                      {dogCount[0] > 1 && (
+                      {/* Dog names */}
+                      {dogCount[0] >= 1 && (
                         <div className="space-y-3">
                           <h4 className="font-display font-bold text-sm text-foreground">🐕 Infos sur vos chiens</h4>
                           {dogNames.map((dog, idx) => (
@@ -741,19 +754,26 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                                   }}
                                 />
                               </div>
-                              <div className="flex items-start gap-2">
-                                <Checkbox
-                                  id={`dog-safe-${idx}`}
-                                  checked={dog.safe}
-                                  onCheckedChange={(v) => {
+                              <div className="space-y-1">
+                                <Label className="text-xs text-muted-foreground">
+                                  Est-il sûr pour nous d'être dans le jardin avec le chien #{idx + 1} ?
+                                </Label>
+                                <Select
+                                  value={dog.safe ? "yes" : "no"}
+                                  onValueChange={(v) => {
                                     const updated = [...dogNames];
-                                    updated[idx] = { ...updated[idx], safe: !!v };
+                                    updated[idx] = { ...updated[idx], safe: v === "yes" };
                                     setDogNames(updated);
                                   }}
-                                />
-                                <label htmlFor={`dog-safe-${idx}`} className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                                  Est-il sécuritaire pour nous d'être dans le jardin avec le chien #{idx + 1} ?
-                                </label>
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Choisir" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="yes">Oui</SelectItem>
+                                    <SelectItem value="no">Non</SelectItem>
+                                  </SelectContent>
+                                </Select>
                               </div>
                               {idx < dogNames.length - 1 && <Separator className="my-2" />}
                             </div>
@@ -763,7 +783,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
                       {/* Gate location */}
                       <div>
-                        <Label>Où se trouve votre portail ?</Label>
+                        <Label>Où se trouve l'accès à votre jardin ?</Label>
                         <div className="flex flex-wrap gap-2 mt-2">
                           {gateLocationOptions.map((opt) => (
                             <button
@@ -783,7 +803,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
                         {gateLocation === "other" && (
                           <Textarea
                             className="mt-2"
-                            placeholder="Précisez l'emplacement de votre portail"
+                            placeholder="Précisez l'emplacement de l'accès à votre jardin"
                             value={gateLocationOther}
                             onChange={(e) => setGateLocationOther(e.target.value)}
                             rows={2}
@@ -800,7 +820,7 @@ const PostalCodeModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
                       <Card className="border shadow-card p-4 space-y-3">
                         <p className="text-sm text-foreground">
-                          Une carte de paiement est requise avant le début des services. Souhaitez-vous fournir vos informations de paiement maintenant ?
+                          Un moyen de paiement est requis avant le début des services. Souhaitez-vous fournir vos informations de paiement maintenant ?
                         </p>
                         <div className="space-y-2">
                           <button
