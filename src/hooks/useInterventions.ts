@@ -12,6 +12,9 @@ export interface Intervention {
   admin_id: string | null;
   created_at: string;
   updated_at: string;
+  tech_name: string | null;
+  sms_sent_arrival: boolean;
+  sms_sent_completion: boolean;
 }
 
 export function useInterventions(clientId?: string) {
