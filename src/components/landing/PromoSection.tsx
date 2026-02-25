@@ -3,21 +3,21 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
 
-const PromoSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
-  <section className="py-20 bg-hero-gradient relative overflow-hidden">
+const PromoSection = ({ onOpenQuote }: {onOpenQuote?: () => void;}) =>
+<section className="py-20 bg-hero-gradient relative overflow-hidden">
     <div className="absolute inset-0 paw-pattern-dense opacity-30" />
     <div className="container mx-auto px-4 relative z-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}>
+
           <span className="font-display font-bold text-white/90 text-sm uppercase tracking-widest mb-2 block">
             Offre de lancement
           </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-6">
-            Réclamez votre premier nettoyage GRATUIT !
+            Profitez de votre premier nettoyage GRATUIT !
           </h2>
           <ul className="space-y-3 mb-8">
             <li className="flex items-center gap-3 text-white">
@@ -33,11 +33,11 @@ const PromoSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="flex justify-center"
-        >
+        initial={{ opacity: 0, x: 20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        className="flex justify-center">
+
           <svg viewBox="0 0 200 200" className="w-64 h-64 md:w-80 md:h-80" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="100" cy="100" r="90" className="fill-primary-foreground/10" />
             <ellipse cx="100" cy="130" rx="45" ry="35" fill="white" fillOpacity="0.3" />
@@ -56,7 +56,7 @@ const PromoSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
         </motion.div>
       </div>
     </div>
-  </section>
-);
+  </section>;
+
 
 export default PromoSection;
