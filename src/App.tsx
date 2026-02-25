@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Residential from "./pages/Residential";
 import Commercial from "./pages/Commercial";
 import AdminLogin from "./pages/AdminLogin";
+import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminCRM from "./pages/admin/CRM";
 import AdminBilling from "./pages/admin/Billing";
@@ -38,6 +40,8 @@ const App = () => (
           <Route path="/services/residential" element={<Residential />} />
           <Route path="/services/commercial" element={<Commercial />} />
           <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/clients" element={<AdminRoute><AdminCRM /></AdminRoute>} />

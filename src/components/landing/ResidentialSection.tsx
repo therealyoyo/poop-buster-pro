@@ -8,7 +8,7 @@ const bullets = [
   "Un jardin propre et sain pour vos compagnons à quatre pattes",
 ];
 
-const ResidentialSection = () => (
+const ResidentialSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
   <section id="services" className="py-20 bg-muted/50">
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
@@ -28,9 +28,7 @@ const ResidentialSection = () => (
               </li>
             ))}
           </ul>
-          <a href="#signup">
-            <Button variant="default" size="lg">En savoir plus</Button>
-          </a>
+          <Button variant="default" size="lg" onClick={onOpenQuote}>En savoir plus</Button>
         </motion.div>
 
         <motion.div

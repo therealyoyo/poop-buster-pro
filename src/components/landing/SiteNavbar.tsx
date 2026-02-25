@@ -4,7 +4,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import logo from "@/assets/logo.png";
 
-const SiteNavbar = () => {
+const SiteNavbar = ({ onOpenQuote }: { onOpenQuote?: () => void }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [zonesOpen, setZonesOpen] = useState(false);
@@ -43,9 +43,7 @@ const SiteNavbar = () => {
           </div>
 
           <Link to="/login" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">Connexion client</Link>
-          <a href="#signup">
-            <Button variant="cta" size="sm" className="ml-2">Devis gratuit</Button>
-          </a>
+          <Button variant="cta" size="sm" className="ml-2" onClick={onOpenQuote}>Devis gratuit</Button>
         </div>
 
         <button className="lg:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -76,9 +74,7 @@ const SiteNavbar = () => {
             </div>
           )}
           <Link to="/login" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">Connexion client</Link>
-          <a href="#signup" onClick={() => setMobileOpen(false)}>
-            <Button variant="cta" className="w-full mt-2">Devis gratuit</Button>
-          </a>
+          <Button variant="cta" className="w-full mt-2" onClick={() => { setMobileOpen(false); onOpenQuote?.(); }}>Devis gratuit</Button>
         </div>
       )}
     </nav>

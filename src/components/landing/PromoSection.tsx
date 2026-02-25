@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import PawIcon from "@/components/PawIcon";
 
-const PromoSection = () => (
+const PromoSection = ({ onOpenQuote }: { onOpenQuote?: () => void }) => (
   <section className="py-20 bg-hero-gradient relative overflow-hidden">
-    {/* Background pattern with reduced opacity */}
     <div className="absolute inset-0 paw-pattern-dense opacity-30" />
     <div className="container mx-auto px-4 relative z-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
@@ -28,11 +27,9 @@ const PromoSection = () => (
               <CheckCircle className="w-5 h-5 shrink-0 text-secondary" /> Valable pour les nouveaux clients uniquement
             </li>
           </ul>
-          <a href="#signup">
-            <Button variant="cta" size="lg" className="text-lg px-8 py-6 rounded-full">
-              <PawIcon className="w-5 h-5" /> Devis gratuit
-            </Button>
-          </a>
+          <Button variant="cta" size="lg" className="text-lg px-8 py-6 rounded-full" onClick={onOpenQuote}>
+            <PawIcon className="w-5 h-5" /> Devis gratuit
+          </Button>
         </motion.div>
 
         <motion.div
