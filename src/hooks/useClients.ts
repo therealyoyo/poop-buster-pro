@@ -95,6 +95,53 @@ export function useCreateClient() {
   });
 }
 
+export interface Lead {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  postal_code: string | null;
+  city: string | null;
+  dog_count: number | null;
+  garden_size: string | null;
+  service_frequency: string | null;
+  status: string | null;
+  lead_type: string | null;
+  promo_code: string | null;
+  mailing_consent: boolean | null;
+  referral_source: string | null;
+  additional_comments: string | null;
+  created_at: string | null;
+}
+
+export function useLeads(filters?: { search?: string; status?: string }) {
+  return useQuery({
+    queryKey: ["leads", filters],
+    queryFn: async () => {
+      let query = supabase
+        .from("leads")
+        .select("*")
+        .not("lead_type", "eq", "newsletter")
+        .order("created_at", { ascending: false });
+
+      if (filters?.search) {
+        query = query.or(
+          `first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`
+        );
+      }
+      if (filters?.status && filters.status !== "all") {
+        query = query.eq("status", filters.status);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as Lead[];
+    },
+  });
+}
+
 export function useServiceZones() {
   return useQuery({
     queryKey: ["service_zones"],

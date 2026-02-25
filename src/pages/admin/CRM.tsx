@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, UserPlus, Filter, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import PawIcon from "@/components/PawIcon";
-import { useClients, useServiceZones } from "@/hooks/useClients";
+import { useClients, useServiceZones, useLeads } from "@/hooks/useClients";
+import type { Lead } from "@/hooks/useClients";
 import { useUnreadCount } from "@/hooks/useMessages";
 import AddClientDialog from "@/components/admin/AddClientDialog";
 
@@ -19,6 +21,14 @@ const frequencyLabels: Record<string, string> = {
   weekly: "Hebdo", biweekly: "Aux 2 sem.", monthly: "Mensuel", one_time: "Ponctuel",
 };
 
+const leadTypeLabel = (type: string | null) => {
+  switch (type) {
+    case "qualified_lead": return { label: "Qualifié", variant: "default" as const };
+    case "b2b": return { label: "B2B", variant: "outline" as const };
+    default: return { label: "Devis demandé", variant: "secondary" as const };
+  }
+};
+
 const AdminCRM = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -27,6 +37,7 @@ const AdminCRM = () => {
   const [showAdd, setShowAdd] = useState(false);
 
   const { data: clients = [], isLoading } = useClients({ search, status: statusFilter, zone: zoneFilter, frequency: freqFilter });
+  const { data: leads = [], isLoading: leadsLoading } = useLeads({ search, status: statusFilter });
   const { data: zones = [] } = useServiceZones();
   const { data: unreadCount = 0 } = useUnreadCount();
 
@@ -84,61 +95,129 @@ const AdminCRM = () => {
           </CardContent>
         </Card>
 
-        {/* Table */}
-        <Card className="shadow-card">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Client</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden md:table-cell">Zone</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Chiens</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Fréquence</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Statut</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map(c => (
-                    <tr key={c.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                      <td className="py-3 px-4">
-                        <Link to={`/admin/clients/${c.id}`} className="hover:underline">
-                          <p className="font-medium text-foreground">{c.first_name} {c.last_name}</p>
-                          <p className="text-xs text-muted-foreground">{c.email}</p>
-                        </Link>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{c.zone_name || "—"}</td>
-                      <td className="py-3 px-4 text-center">{c.dog_count} 🐕</td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground">{c.service_frequency ? frequencyLabels[c.service_frequency] || c.service_frequency : "—"}</td>
-                      <td className="py-3 px-4">
-                        <Badge variant={c.status === "active" ? "default" : c.status === "paused" ? "secondary" : "destructive"}>
-                          {statusLabels[c.status] || c.status}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <Link to={`/admin/clients/${c.id}`}>
-                          <Button variant="ghost" size="icon"><MessageSquare className="w-4 h-4" /></Button>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {isLoading && (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-              </div>
-            )}
-            {!isLoading && clients.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                <PawIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>Aucun client trouvé.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Tabs */}
+        <Tabs defaultValue="clients">
+          <TabsList className="mb-4">
+            <TabsTrigger value="clients">Clients ({clients.length})</TabsTrigger>
+            <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
+          </TabsList>
+
+          {/* Clients Tab */}
+          <TabsContent value="clients">
+            <Card className="shadow-card">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Client</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden md:table-cell">Zone</th>
+                        <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Chiens</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Fréquence</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Statut</th>
+                        <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clients.map(c => (
+                        <tr key={c.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                          <td className="py-3 px-4">
+                            <Link to={`/admin/clients/${c.id}`} className="hover:underline">
+                              <p className="font-medium text-foreground">{c.first_name} {c.last_name}</p>
+                              <p className="text-xs text-muted-foreground">{c.email}</p>
+                            </Link>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{c.zone_name || "—"}</td>
+                          <td className="py-3 px-4 text-center">{c.dog_count} 🐕</td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground">{c.service_frequency ? frequencyLabels[c.service_frequency] || c.service_frequency : "—"}</td>
+                          <td className="py-3 px-4">
+                            <Badge variant={c.status === "active" ? "default" : c.status === "paused" ? "secondary" : "destructive"}>
+                              {statusLabels[c.status] || c.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <Link to={`/admin/clients/${c.id}`}>
+                              <Button variant="ghost" size="icon"><MessageSquare className="w-4 h-4" /></Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {isLoading && (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+                  </div>
+                )}
+                {!isLoading && clients.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <PawIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>Aucun client trouvé.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Leads Tab */}
+          <TabsContent value="leads">
+            <Card className="shadow-card">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Nom</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Email</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden md:table-cell">Téléphone</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden md:table-cell">Code postal</th>
+                        <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Chiens</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Fréquence</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Type</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leads.map((l: Lead) => {
+                        const lt = leadTypeLabel(l.lead_type);
+                        return (
+                          <tr key={l.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                            <td className="py-3 px-4">
+                              <p className="font-medium text-foreground">{l.first_name || "—"} {l.last_name || ""}</p>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground">{l.email}</td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{l.phone || "—"}</td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{l.postal_code || "—"}</td>
+                            <td className="py-3 px-4 text-center">{l.dog_count ?? "—"}</td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground">{l.service_frequency || "—"}</td>
+                            <td className="py-3 px-4">
+                              <Badge variant={lt.variant}>{lt.label}</Badge>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground">
+                              {l.created_at ? new Date(l.created_at).toLocaleDateString("fr-BE") : "—"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {leadsLoading && (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+                  </div>
+                )}
+                {!leadsLoading && leads.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <PawIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>Aucun lead trouvé.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <AddClientDialog open={showAdd} onClose={() => setShowAdd(false)} />

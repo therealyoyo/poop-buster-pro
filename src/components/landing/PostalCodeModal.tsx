@@ -429,18 +429,24 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         promo_code: promoCode || null,
       };
 
-      await supabase.from("clients").insert({
-        ...sharedData,
-        status: "prospect",
-        pipeline_stage: "new",
-        internal_notes: promoCode ? `Code promo: ${promoCode}` : null,
-      });
+      // Best-effort clients insert — may fail due to RLS on unauthenticated users
+      try {
+        await supabase.from("clients").insert({
+          ...sharedData,
+          status: "prospect",
+          pipeline_stage: "new",
+          internal_notes: promoCode ? `Code promo: ${promoCode}` : null,
+        });
+      } catch {
+        // Best-effort — may fail due to RLS on unauthenticated users
+      }
 
-      await supabase.from("leads").insert({
+      const { error: leadError } = await supabase.from("leads").insert({
         ...sharedData,
         status: "new",
         lead_type: "qualified_lead",
       } as any);
+      if (leadError) throw leadError;
 
       // Newsletter insert if mailing consent
       if (mailing) {
@@ -448,7 +454,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       }
 
       setQuoteSubmitted(true);
-      toast.success("Inscription complète ! Bienvenue chez Crotte & Go 🐾");
+      toast.success("Votre demande de devis a bien été reçue ! Nous vous contacterons rapidement. 🐾");
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de l'envoi.");
     } finally {
@@ -645,7 +651,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                       <CheckCircle2 className="w-16 h-16 text-primary mx-auto" />
                       <h2 className="font-display text-2xl font-bold text-foreground">C'est tout bon ! 🎉</h2>
                       <p className="text-muted-foreground text-sm">
-                        Merci ! Nous avons bien reçu votre demande et vous contacterons rapidement par email pour finaliser votre devis personnalisé.
+                        Merci ! Nous avons bien reçu votre demande de devis et vous contacterons rapidement par email.
                       </p>
                     </motion.div>
                   )
@@ -894,7 +900,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
 
                           {/* ── SECTION B: INSCRIPTION ── */}
                           <h3 className="font-display text-lg font-bold text-foreground mt-6 mb-3 pb-2 border-b border-border">
-                            📋 Inscription
+                            📋 Vos informations
                           </h3>
 
                           {/* Address with BOSA autocomplete */}
