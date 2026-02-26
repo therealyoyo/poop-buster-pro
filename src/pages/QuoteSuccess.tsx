@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import logo from "@/assets/logo.png";
 
 const dayLabelsMap: Record<string, string> = {
   monday: "lundi", tuesday: "mardi", wednesday: "mercredi",
@@ -53,13 +54,13 @@ const QuoteSuccess = () => {
     const freq = quote.frequency === "weekly" ? "WEEKLY" : quote.frequency === "biweekly" ? "WEEKLY;INTERVAL=2" : "MONTHLY";
     const rrule = quote.frequency !== "onetime" ? `\nRRULE:FREQ=${freq}` : "";
 
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dateStr}\nDURATION:PT1H\nSUMMARY:Crotte & Go - Visite de service 🐾${rrule}\nDESCRIPTION:Visite de nettoyage programmée\nEND:VEVENT\nEND:VCALENDAR`;
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dateStr}\nDURATION:PT1H\nSUMMARY:Crotte & Go® - Visite de service 🐾${rrule}\nDESCRIPTION:Visite de nettoyage programmée\nEND:VEVENT\nEND:VCALENDAR`;
 
     const blob = new Blob([ics], { type: "text/calendar" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "crotte-and-go.ics";
+    a.download = "crotte-and-go-passage.ics";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -76,11 +77,12 @@ const QuoteSuccess = () => {
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full space-y-4">
         <Card className="shadow-card">
           <CardContent className="py-12 text-center space-y-4">
+            <img src={logo} alt="Crotte & Go®" className="h-16 w-auto mx-auto" />
             <motion.div animate={{ rotate: [0, -10, 10, -10, 0] }} transition={{ duration: 0.8, delay: 0.3 }}>
               <PawIcon className="w-16 h-16 text-primary mx-auto" />
             </motion.div>
             <h1 className="font-display text-2xl font-bold">
-              Bienvenue chez Crotte & Go, {clientName} !
+              Bienvenue chez Crotte & Go®, {clientName} !
             </h1>
             {dayLabel && (
               <p className="text-muted-foreground">
@@ -90,6 +92,17 @@ const QuoteSuccess = () => {
             <Button variant="cta" className="rounded-full" onClick={generateIcs}>
               📅 Ajouter au calendrier
             </Button>
+
+            <div className="border-t border-border pt-4 mt-4 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Gérez vos passages, factures et messages depuis votre espace client.
+              </p>
+              <Link to="/portal">
+                <Button variant="outline" className="rounded-full w-full">
+                  🏠 Accéder à mon espace client Crotte & Go®
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
 

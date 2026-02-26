@@ -89,7 +89,10 @@ serve(async (req) => {
             },
           }
         : {}),
-      product_data: { name: `Poop Buster Pro — ${quote.frequency} (${billingCycle})` },
+      product_data: {
+        name: `Crotte & Go® — ${({"weekly":"Hebdomadaire (4 visites/mois)","biweekly":"Bimensuel (2 visites/mois)","monthly":"Mensuel (1 visite/mois)","twice_weekly":"2 fois/semaine (8 visites/mois)","onetime":"Visite unique"} as Record<string,string>)[quote.frequency] || quote.frequency}`,
+        description: `${billingCycle === "quarterly" ? "Facturation trimestrielle" : "Facturation mensuelle"} · ${quote.dog_count} chien(s) · Jardin ${({"small":"petit","medium":"moyen","large":"grand","xl":"très grand"} as Record<string,string>)[quote.garden_size] || quote.garden_size}`,
+      },
     });
 
     const session = await stripe.checkout.sessions.create({
