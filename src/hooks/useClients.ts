@@ -74,8 +74,17 @@ export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Client> & { id: string }) => {
-      const { error } = await supabase.from("clients").update(updates).eq("id", id);
-      if (error) throw error;
+      const { data, error } = await supabase.from("clients").update(updates).eq("id", id).select().single();
+      if (error) throw new Error(error.message);
+      // Log pipeline stage changes (best-effort)
+      if (updates.pipeline_stage) {
+        await supabase.from("pipeline_history").insert({
+          client_id: id,
+          to_stage: updates.pipeline_stage,
+          changed_by: "admin",
+        } as any).then();
+      }
+      return data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["clients"] });

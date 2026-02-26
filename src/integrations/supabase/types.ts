@@ -111,6 +111,7 @@ export type Database = {
           dog_details: Json | null
           dog_names: Json | null
           email: string | null
+          first_free_used: boolean | null
           first_name: string
           follow_up_date: string | null
           form_part2_completed: boolean | null
@@ -144,6 +145,7 @@ export type Database = {
           promo_code: string | null
           quarterly_billing: boolean | null
           referral_code: string | null
+          referral_discount_used: boolean | null
           referral_source: string | null
           referred_by: string | null
           service_frequency: string | null
@@ -171,6 +173,7 @@ export type Database = {
           dog_details?: Json | null
           dog_names?: Json | null
           email?: string | null
+          first_free_used?: boolean | null
           first_name: string
           follow_up_date?: string | null
           form_part2_completed?: boolean | null
@@ -204,6 +207,7 @@ export type Database = {
           promo_code?: string | null
           quarterly_billing?: boolean | null
           referral_code?: string | null
+          referral_discount_used?: boolean | null
           referral_source?: string | null
           referred_by?: string | null
           service_frequency?: string | null
@@ -231,6 +235,7 @@ export type Database = {
           dog_details?: Json | null
           dog_names?: Json | null
           email?: string | null
+          first_free_used?: boolean | null
           first_name?: string
           follow_up_date?: string | null
           form_part2_completed?: boolean | null
@@ -264,6 +269,7 @@ export type Database = {
           promo_code?: string | null
           quarterly_billing?: boolean | null
           referral_code?: string | null
+          referral_discount_used?: boolean | null
           referral_source?: string | null
           referred_by?: string | null
           service_frequency?: string | null
@@ -724,6 +730,44 @@ export type Database = {
             columns: ["intervention_id"]
             isOneToOne: false
             referencedRelation: "interventions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_history: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          client_id: string | null
+          from_stage: string | null
+          id: string
+          note: string | null
+          to_stage: string
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          client_id?: string | null
+          from_stage?: string | null
+          id?: string
+          note?: string | null
+          to_stage: string
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          client_id?: string | null
+          from_stage?: string | null
+          id?: string
+          note?: string | null
+          to_stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]

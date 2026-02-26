@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, CheckCircle2, Camera, Clock } from "lucide-react";
+import { Calendar, CheckCircle2, Camera, Clock, History } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,14 @@ export default function TabInterventions({ client, interventions, onUpdateClient
   const [pauseDate, setPauseDate] = useState<Date>();
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  const today = new Date().toISOString().split("T")[0];
+  const pastInterventions = interventions
+    .filter(i => i.scheduled_date < today || i.status === "completed")
+    .sort((a, b) => new Date(b.scheduled_date).getTime() - new Date(a.scheduled_date).getTime());
+  const futureInterventions = interventions
+    .filter(i => i.scheduled_date >= today && i.status !== "completed")
+    .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime());
+
   const handleAdd = async () => {
     if (!newDate) return;
     await onCreateIntervention({ client_id: client.id, scheduled_date: newDate });
@@ -50,13 +58,21 @@ export default function TabInterventions({ client, interventions, onUpdateClient
   };
 
   const handleDaySelect = async (day: string) => {
-    await onUpdateClient({ preferred_day: day });
-    toast({ title: "Jour de visite mis à jour !" });
+    try {
+      await onUpdateClient({ preferred_day: day });
+      toast({ title: "✅ Jour de visite mis à jour !" });
+    } catch (e: any) {
+      toast({ title: "❌ Erreur", description: e.message, variant: "destructive" });
+    }
   };
 
   const handleFreqChange = async (freq: string) => {
-    await onUpdateClient({ service_frequency: freq });
-    toast({ title: "Fréquence mise à jour !" });
+    try {
+      await onUpdateClient({ service_frequency: freq });
+      toast({ title: "✅ Fréquence mise à jour !" });
+    } catch (e: any) {
+      toast({ title: "❌ Erreur", description: e.message, variant: "destructive" });
+    }
   };
 
   const handlePause = async () => {
@@ -70,56 +86,74 @@ export default function TabInterventions({ client, interventions, onUpdateClient
     toast({ title: "Pause annulée ▶️" });
   };
 
+  const renderIntervention = (i: any, readonly = false) => (
+    <div key={i.id} className={`p-3 rounded-lg border ${i.status === "completed" ? "bg-accent/30 border-accent" : "bg-card border-border"}`}>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">{format(new Date(i.scheduled_date), "d MMM yyyy", { locale: fr })}</span>
+        <div className="flex items-center gap-2">
+          {i.tech_name && <span className="text-xs text-muted-foreground">👷 {i.tech_name}</span>}
+          <Badge variant={i.status === "completed" ? "default" : "secondary"}>
+            {i.status === "completed" ? "Terminé ✅" : i.job_started_at && !i.completed_at ? "En cours 🔄" : "Planifié 🗓️"}
+          </Badge>
+        </div>
+      </div>
+      {i.photo_url && <img src={i.photo_url} alt="Photo" className="mt-2 rounded-lg max-h-24 object-cover" />}
+      {i.completion_message && <p className="text-xs text-muted-foreground mt-1">{i.completion_message}</p>}
+      {!readonly && i.status !== "completed" && completingId !== i.id && (
+        <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => setCompletingId(i.id)}>
+          <CheckCircle2 className="w-3 h-3 mr-1" /> Marquer comme terminé
+        </Button>
+      )}
+      {completingId === i.id && (
+        <div className="mt-2 space-y-2 p-2 bg-muted/30 rounded-lg">
+          <Input placeholder="Message (optionnel)" value={completionMsg} onChange={e => setCompletionMsg(e.target.value)} />
+          <input type="file" accept="image/*" capture="environment" ref={photoInputRef} className="hidden" onChange={e => setCompletionPhoto(e.target.files?.[0] || null)} />
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => photoInputRef.current?.click()}>
+              <Camera className="w-3 h-3 mr-1" /> {completionPhoto ? completionPhoto.name.slice(0, 15) : "Photo"}
+            </Button>
+            <Button variant="cta" size="sm" className="flex-1" onClick={() => handleComplete(i.id)} disabled={isCompleting}>Confirmer</Button>
+          </div>
+          <Button variant="ghost" size="sm" className="w-full" onClick={() => { setCompletingId(null); setCompletionPhoto(null); }}>Annuler</Button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Interventions list */}
-      <div className="lg:col-span-2">
+      {/* Two cards side by side */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Future interventions */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="font-display text-base flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-primary" /> Interventions ({interventions.length})
+              <Calendar className="w-4 h-4 text-primary" /> Passages à venir ({futureInterventions.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
-              <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} />
+              <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} min={today} />
               <Button size="sm" onClick={handleAdd} disabled={!newDate}>+ Planifier</Button>
             </div>
-            <div className="max-h-[500px] overflow-y-auto space-y-2">
-              {interventions.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Aucune intervention</p>}
-              {interventions.map(i => (
-                <div key={i.id} className={`p-3 rounded-lg border ${i.status === "completed" ? "bg-accent/30 border-accent" : "bg-card border-border"}`}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{format(new Date(i.scheduled_date), "d MMM yyyy", { locale: fr })}</span>
-                    <div className="flex items-center gap-2">
-                      {i.tech_name && <span className="text-xs text-muted-foreground">👷 {i.tech_name}</span>}
-                      <Badge variant={i.status === "completed" ? "default" : "secondary"}>
-                        {i.status === "completed" ? "Terminé ✅" : i.job_started_at && !i.completed_at ? "En cours 🔄" : "Planifié 🗓️"}
-                      </Badge>
-                    </div>
-                  </div>
-                  {i.photo_url && <img src={i.photo_url} alt="Photo" className="mt-2 rounded-lg max-h-24 object-cover" />}
-                  {i.completion_message && <p className="text-xs text-muted-foreground mt-1">{i.completion_message}</p>}
-                  {i.status !== "completed" && completingId !== i.id && (
-                    <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => setCompletingId(i.id)}>
-                      <CheckCircle2 className="w-3 h-3 mr-1" /> Marquer comme terminé
-                    </Button>
-                  )}
-                  {completingId === i.id && (
-                    <div className="mt-2 space-y-2 p-2 bg-muted/30 rounded-lg">
-                      <Input placeholder="Message (optionnel)" value={completionMsg} onChange={e => setCompletionMsg(e.target.value)} />
-                      <input type="file" accept="image/*" capture="environment" ref={photoInputRef} className="hidden" onChange={e => setCompletionPhoto(e.target.files?.[0] || null)} />
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="flex-1" onClick={() => photoInputRef.current?.click()}>
-                          <Camera className="w-3 h-3 mr-1" /> {completionPhoto ? completionPhoto.name.slice(0, 15) : "Photo"}
-                        </Button>
-                        <Button variant="cta" size="sm" className="flex-1" onClick={() => handleComplete(i.id)} disabled={isCompleting}>Confirmer</Button>
-                      </div>
-                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setCompletingId(null); setCompletionPhoto(null); }}>Annuler</Button>
-                    </div>
-                  )}
-                </div>
-              ))}
+            <div className="max-h-[400px] overflow-y-auto space-y-2">
+              {futureInterventions.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Aucun passage planifié</p>}
+              {futureInterventions.map(i => renderIntervention(i))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Past interventions */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="font-display text-base flex items-center gap-2">
+              <History className="w-4 h-4 text-primary" /> Historique des passages ({pastInterventions.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-[400px] overflow-y-auto space-y-2">
+              {pastInterventions.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Aucun passage effectué</p>}
+              {pastInterventions.map(i => renderIntervention(i, true))}
             </div>
           </CardContent>
         </Card>
@@ -157,8 +191,12 @@ export default function TabInterventions({ client, interventions, onUpdateClient
                       variant={client.preferred_day_2 === dayValues[idx] ? "default" : "outline"}
                       size="sm"
                       onClick={async () => {
-                        await onUpdateClient({ preferred_day_2: dayValues[idx] });
-                        toast({ title: "Jour 2 mis à jour !" });
+                        try {
+                          await onUpdateClient({ preferred_day_2: dayValues[idx] });
+                          toast({ title: "✅ Jour 2 mis à jour !" });
+                        } catch (e: any) {
+                          toast({ title: "❌ Erreur", description: e.message, variant: "destructive" });
+                        }
                       }}
                     >
                       {label}

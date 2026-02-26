@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { translateAuthError } from "@/lib/authErrors";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const ResetPassword = () => {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        toast.error(error.message);
+        toast.error(translateAuthError(error.message));
       } else {
         toast.success("Mot de passe mis à jour avec succès ! 🐾");
         navigate("/login");
