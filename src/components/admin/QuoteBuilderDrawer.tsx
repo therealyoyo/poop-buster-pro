@@ -51,6 +51,10 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
   const [promoFirstFree, setPromoFirstFree] = useState(false);
   const [referralAmount, setReferralAmount] = useState(25);
 
+  // Promo flags from client
+  const referralAlreadyUsed = !!(client as any).referral_discount_used;
+  const firstFreeAlreadyUsed = !!(client as any).first_free_used;
+
   // Preview
   const [showPreview, setShowPreview] = useState(false);
 
@@ -73,10 +77,12 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
   const lineItemsTotal = lineItems.reduce((s, li) => s + li.price, 0);
   const totalPrice = basePrice + lineItemsTotal;
 
-  // Promos
+  // Promos - non-cumulable
+  const canCheckReferral = !referralAlreadyUsed && !promoFirstFree;
+  const canApplyFirstFree = frequency !== "onetime";
+  const canCheckFirstFree = !firstFreeAlreadyUsed && !promoReferral;
   const referralDiscount = promoReferral ? referralAmount : 0;
   const firstPassageValue = basePrice / (freqDivisor[frequency] || 1);
-  const canApplyFirstFree = frequency !== "onetime";
   const firstFreeDiscount = (promoFirstFree && canApplyFirstFree) ? firstPassageValue : 0;
   const totalDiscount = referralDiscount + firstFreeDiscount;
   const totalPriceAfterDiscount = Math.max(0, totalPrice - totalDiscount);
@@ -116,6 +122,14 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
       });
 
       await updateClient.mutateAsync({ id: client.id, pipeline_stage: "quote_sent" });
+
+      // Update promo flags on client
+      if (promoReferral) {
+        await supabase.from("clients").update({ referral_discount_used: true }).eq("id", client.id);
+      }
+      if (promoFirstFree && canApplyFirstFree) {
+        await supabase.from("clients").update({ first_free_used: true }).eq("id", client.id);
+      }
 
       if (send) {
         const { data: emailRes, error: emailErr } = await supabase.functions.invoke("send-quote-email", { body: { quote_id: quote.id } });
@@ -268,8 +282,12 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Checkbox checked={promoReferral} onCheckedChange={v => setPromoReferral(!!v)} />
-                  <Label className="text-sm">Réduction parrainage</Label>
+                  <Checkbox checked={promoReferral} onCheckedChange={v => setPromoReferral(!!v)} disabled={!canCheckReferral} />
+                  <Label className="text-sm">
+                    Réduction parrainage
+                    {referralAlreadyUsed && <span className="text-xs text-destructive ml-1">(déjà utilisée)</span>}
+                    {promoFirstFree && !referralAlreadyUsed && <span className="text-xs text-muted-foreground ml-1">(non cumulable)</span>}
+                  </Label>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-muted-foreground">-€</span>
@@ -287,11 +305,13 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
                 <Checkbox
                   checked={promoFirstFree}
                   onCheckedChange={v => setPromoFirstFree(!!v)}
-                  disabled={!canApplyFirstFree}
+                  disabled={!canApplyFirstFree || !canCheckFirstFree}
                 />
                 <Label className="text-sm">
                   1er passage gratuit{" "}
-                  {canApplyFirstFree && <span className="text-xs text-muted-foreground">(-€{firstPassageValue.toFixed(2)})</span>}
+                  {firstFreeAlreadyUsed && <span className="text-xs text-destructive">(déjà utilisée)</span>}
+                  {promoReferral && !firstFreeAlreadyUsed && <span className="text-xs text-muted-foreground">(non cumulable)</span>}
+                  {!firstFreeAlreadyUsed && canApplyFirstFree && canCheckFirstFree && <span className="text-xs text-muted-foreground">(-€{firstPassageValue.toFixed(2)})</span>}
                   {!canApplyFirstFree && <span className="text-xs text-muted-foreground">(non disponible pour passage unique)</span>}
                 </Label>
               </div>

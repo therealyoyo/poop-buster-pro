@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, UserPlus, Filter, MessageSquare } from "lucide-react";
+import { Search, UserPlus, Filter, MessageSquare, Download, UserMinus } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import PawIcon from "@/components/PawIcon";
@@ -14,19 +14,19 @@ import type { Lead } from "@/hooks/useClients";
 import { useUnreadCount } from "@/hooks/useMessages";
 import AddClientDialog from "@/components/admin/AddClientDialog";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const statusLabels: Record<string, string> = {
   prospect: "Prospect", active: "Actif", paused: "En pause", cancelled: "Annulé", inactive: "Inactif",
 };
 const frequencyLabels: Record<string, string> = {
-  weekly: "Hebdo", biweekly: "Aux 2 sem.", monthly: "Mensuel", one_time: "Ponctuel",
+  weekly: "Hebdo", biweekly: "Aux 2 sem.", monthly: "Mensuel", one_time: "Ponctuel", twice_weekly: "2x/sem.",
 };
 
 const leadTypeOptions = [
   { value: "early_lead", label: "Prospect early", color: "bg-amber-100 text-amber-800" },
   { value: "qualified_lead", label: "Qualifié", color: "bg-green-100 text-green-800" },
   { value: "b2b", label: "B2B", color: "bg-blue-100 text-blue-800" },
-  { value: "newsletter", label: "Newsletter", color: "bg-gray-100 text-gray-700" },
 ];
 
 const getLeadTypeColor = (type: string | null) => {
@@ -51,6 +51,46 @@ const AdminCRM = () => {
       onSuccess: () => toast.success("Catégorie mise à jour ✓"),
       onError: () => toast.error("Erreur lors de la mise à jour"),
     });
+  };
+
+  // Newsletter contacts: deduplicated by email
+  const newsletterContacts = (() => {
+    const fromClients = clients
+      .filter(c => (c as any).newsletter_sub || (c as any).mailing_consent)
+      .map(c => ({ ...c, contactType: "Client" as const }));
+    const fromLeads = leads
+      .filter(l => (l as any).mailing_consent)
+      .map(l => ({ ...l, contactType: "Lead" as const }));
+    const all = [...fromClients, ...fromLeads];
+    const seen = new Set<string>();
+    return all.filter(c => {
+      const e = (c as any).email;
+      if (!e || seen.has(e)) return false;
+      seen.add(e);
+      return true;
+    });
+  })();
+
+  const handleUnsubscribe = async (contact: any) => {
+    if (contact.contactType === "Client") {
+      await supabase.from("clients").update({ newsletter_sub: false, mailing_consent: false }).eq("id", contact.id);
+    } else {
+      await supabase.from("leads").update({ mailing_consent: false } as any).eq("id", contact.id);
+    }
+    toast.success(`${contact.email} désabonné(e) ✓`);
+  };
+
+  const handleExportCSV = () => {
+    const emails = newsletterContacts.map(c => (c as any).email).filter(Boolean);
+    const csv = "email\n" + emails.join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "newsletter-contacts.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${emails.length} emails exportés`);
   };
 
   return (
@@ -112,6 +152,7 @@ const AdminCRM = () => {
           <TabsList className="mb-4">
             <TabsTrigger value="clients">Clients ({clients.length})</TabsTrigger>
             <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
+            <TabsTrigger value="newsletter">Newsletter 📨 ({newsletterContacts.length})</TabsTrigger>
           </TabsList>
 
           {/* Clients Tab */}
@@ -230,6 +271,55 @@ const AdminCRM = () => {
                   <div className="text-center py-12 text-muted-foreground">
                     <PawIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
                     <p>Aucun lead trouvé.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Newsletter Tab */}
+          <TabsContent value="newsletter">
+            <Card className="shadow-card">
+              <CardContent className="p-0">
+                <div className="flex justify-end p-4 pb-0">
+                  <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={newsletterContacts.length === 0}>
+                    <Download className="w-4 h-4 mr-1" /> Exporter CSV
+                  </Button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Prénom</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Email</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Type</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Statut</th>
+                        <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {newsletterContacts.map((c: any) => (
+                        <tr key={c.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                          <td className="py-3 px-4 text-sm font-medium">{c.first_name || "—"}</td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground">{c.email}</td>
+                          <td className="py-3 px-4">
+                            <Badge variant={c.contactType === "Client" ? "default" : "secondary"}>{c.contactType}</Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground">{c.status || "—"}</td>
+                          <td className="py-3 px-4 text-center">
+                            <Button variant="ghost" size="sm" onClick={() => handleUnsubscribe(c)}>
+                              <UserMinus className="w-4 h-4 mr-1" /> Désinscrire
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {newsletterContacts.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <PawIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>Aucun abonné newsletter.</p>
                   </div>
                 )}
               </CardContent>

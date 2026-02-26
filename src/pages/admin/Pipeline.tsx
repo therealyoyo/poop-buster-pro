@@ -9,9 +9,10 @@ import PawIcon from "@/components/PawIcon";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import QuoteBuilderDrawer from "@/components/admin/QuoteBuilderDrawer";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
 
 const stages = [
   { key: "new_lead", label: "New Lead 🐾", color: "bg-amber-500/10 border-amber-500/30" },
@@ -35,17 +36,45 @@ const Pipeline = () => {
 
   const handleDrop = async (stage: string) => {
     if (!draggedId) return;
+    const client = clients.find(c => c.id === draggedId);
+    const fromStage = client?.pipeline_stage || "";
     try {
       await updateClient.mutateAsync({
         id: draggedId,
         pipeline_stage: stage,
         status: stageStatusMap[stage] || "prospect",
       });
+      // Log pipeline history (best-effort)
+      await supabase.from("pipeline_history").insert({
+        client_id: draggedId,
+        from_stage: fromStage,
+        to_stage: stage,
+        changed_by: "admin",
+      } as any).then();
       toast({ title: "Client déplacé !" });
     } catch {
       toast({ title: "Erreur", variant: "destructive" });
     }
     setDraggedId(null);
+  };
+
+  const handleMoveToStage = async (clientId: string, fromStage: string, toStage: string) => {
+    try {
+      await updateClient.mutateAsync({
+        id: clientId,
+        pipeline_stage: toStage,
+        status: stageStatusMap[toStage] || "prospect",
+      });
+      await supabase.from("pipeline_history").insert({
+        client_id: clientId,
+        from_stage: fromStage,
+        to_stage: toStage,
+        changed_by: "admin",
+      } as any).then();
+      toast({ title: `Déplacé vers ${stages.find(s => s.key === toStage)?.label || toStage}` });
+    } catch {
+      toast({ title: "Erreur", variant: "destructive" });
+    }
   };
 
   // Map old "new" stage to "new_lead" for display
@@ -114,7 +143,25 @@ const Pipeline = () => {
                                 <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="w-3 h-3" /></Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild><Link to={`/admin/clients/${c.id}`}>Voir fiche</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link to={`/admin/clients/${c.id}`}>👤 Voir fiche</Link></DropdownMenuItem>
+                                <DropdownMenuSub>
+                                  <DropdownMenuSubTrigger>Déplacer vers</DropdownMenuSubTrigger>
+                                  <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                      {stages
+                                        .filter(s => s.key !== stage.key)
+                                        .map(s => (
+                                          <DropdownMenuItem
+                                            key={s.key}
+                                            onClick={() => handleMoveToStage(c.id, stage.key, s.key)}
+                                          >
+                                            {s.label}
+                                          </DropdownMenuItem>
+                                        ))
+                                      }
+                                    </DropdownMenuSubContent>
+                                  </DropdownMenuPortal>
+                                </DropdownMenuSub>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>

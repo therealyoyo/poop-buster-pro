@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Calendar as CalendarIcon } from "lucide-react";
+import { RefreshCw, Calendar as CalendarIcon, History } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const pipelineStages = [
   { value: "new", label: "Nouveau lead", emoji: "🐾" },
@@ -26,10 +27,26 @@ interface TabCRMProps {
 
 export default function TabCRM({ client, onUpdateClient }: TabCRMProps) {
   const [followUpDate, setFollowUpDate] = useState(client.follow_up_date || "");
+  const [pipelineHistory, setPipelineHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("pipeline_history")
+      .select("*")
+      .eq("client_id", client.id)
+      .order("changed_at", { ascending: false })
+      .then(({ data }) => setPipelineHistory(data || []));
+  }, [client.id]);
 
   const handlePipelineChange = async (stage: string) => {
+    const fromStage = client.pipeline_stage;
     await onUpdateClient({ pipeline_stage: stage });
     toast({ title: "Pipeline mis à jour" });
+    // Refresh history
+    const { data } = await supabase.from("pipeline_history")
+      .select("*")
+      .eq("client_id", client.id)
+      .order("changed_at", { ascending: false });
+    setPipelineHistory(data || []);
   };
 
   const handleFollowUp = async () => {
@@ -69,6 +86,26 @@ export default function TabCRM({ client, onUpdateClient }: TabCRMProps) {
               </button>
             ))}
           </div>
+
+          {/* Pipeline History */}
+          {pipelineHistory.length > 0 && (
+            <div className="border-t border-border pt-4 mt-4">
+              <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1 mb-2">
+                <History className="w-3 h-3" /> Historique pipeline
+              </p>
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {pipelineHistory.map((h: any) => (
+                  <div key={h.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{format(new Date(h.changed_at), "d MMM HH:mm", { locale: fr })}</span>
+                    <span>→</span>
+                    <Badge variant="secondary" className="text-[10px]">{h.to_stage}</Badge>
+                    {h.from_stage && <span className="text-[10px]">(depuis {h.from_stage})</span>}
+                    <span className="text-[10px]">par {h.changed_by}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

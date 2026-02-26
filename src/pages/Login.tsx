@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { translateAuthError } from "@/lib/authErrors";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +22,6 @@ const Login = () => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Check if admin
         const { data: role } = await supabase
           .from("user_roles")
           .select("role")
@@ -55,7 +55,6 @@ const Login = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Check role to redirect
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           const { data: role } = await supabase
@@ -71,7 +70,7 @@ const Login = () => {
         }
       }
     } catch (err: any) {
-      toast.error(err.message || "Erreur de connexion");
+      toast.error(translateAuthError(err.message || ""));
     } finally {
       setLoading(false);
     }
