@@ -78,6 +78,28 @@ export function useCreateIntervention() {
   });
 }
 
+export function useRescheduleIntervention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ intervention_id, new_date, reason }: {
+      intervention_id: string;
+      new_date: string;
+      reason?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke("reschedule-intervention", {
+        body: { intervention_id, new_date, reason },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["interventions"] });
+      qc.invalidateQueries({ queryKey: ["messages"] });
+    },
+  });
+}
+
 export async function uploadInterventionPhoto(file: File): Promise<string> {
   const ext = file.name.split(".").pop();
   const path = `${crypto.randomUUID()}.${ext}`;

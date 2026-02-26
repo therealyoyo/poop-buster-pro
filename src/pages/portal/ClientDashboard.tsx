@@ -1,9 +1,10 @@
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import PawIcon from "@/components/PawIcon";
-import { Calendar, DollarSign, Star, MapPin, Dog, LogOut } from "lucide-react";
+import { Calendar, DollarSign, Star, MapPin, Dog, LogOut, CalendarClock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,11 +22,18 @@ interface ClientData {
   paused_until: string | null;
 }
 
+interface UpcomingIntervention {
+  id: string;
+  scheduled_date: string;
+  status: string;
+}
+
 const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel" };
 
 const ClientDashboard = () => {
   const [client, setClient] = useState<ClientData | null>(null);
   const [interventions, setInterventions] = useState<any[]>([]);
+  const [upcomingInterventions, setUpcomingInterventions] = useState<UpcomingIntervention[]>([]);
   const [nextVisit, setNextVisit] = useState<string | null>(null);
   const [totalVisits, setTotalVisits] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -56,17 +64,20 @@ const ClientDashboard = () => {
       setInterventions(completed || []);
       setTotalVisits((completed || []).length);
 
-      // Next scheduled
+      // All upcoming interventions
       const today = format(new Date(), "yyyy-MM-dd");
-      const { data: next } = await supabase
+      const { data: upcoming } = await supabase
         .from("interventions")
-        .select("scheduled_date")
+        .select("id, scheduled_date, status")
         .eq("client_id", clientData.id)
-        .eq("status", "scheduled")
+        .in("status", ["scheduled", "in_progress"])
         .gte("scheduled_date", today)
         .order("scheduled_date", { ascending: true })
-        .limit(1);
-      if (next?.length) setNextVisit(next[0].scheduled_date);
+        .limit(6);
+
+      const upcomingList = upcoming || [];
+      setUpcomingInterventions(upcomingList);
+      if (upcomingList.length > 0) setNextVisit(upcomingList[0].scheduled_date);
 
       setLoading(false);
     };
@@ -167,6 +178,32 @@ const ClientDashboard = () => {
                   <span className="text-muted-foreground flex items-center gap-1"><MapPin className="w-4 h-4" /> Adresse</span>
                   <span className="text-sm text-foreground">{client.address || "—"}</span>
                 </div>
+
+                {/* Upcoming interventions section */}
+                {upcomingInterventions.length > 0 && (
+                  <div className="pt-3 border-t border-border">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+                      <CalendarClock className="w-3.5 h-3.5" /> Passages planifiés
+                    </p>
+                    <div className="space-y-1.5">
+                      {upcomingInterventions.map((int) => (
+                        <div key={int.id} className="flex items-center justify-between bg-muted/50 rounded-md px-3 py-1.5 border border-border/50">
+                          <span className="text-sm font-medium text-foreground">
+                            {format(new Date(int.scheduled_date), "EEE d MMM", { locale: fr })}
+                          </span>
+                          <Badge variant={int.status === "in_progress" ? "secondary" : "outline"} className="text-[11px]">
+                            {int.status === "in_progress" ? "En cours" : "Planifié"}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {upcomingInterventions.length === 0 && (
+                  <div className="pt-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground text-center">Aucun passage planifié pour le moment</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
