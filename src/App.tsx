@@ -30,6 +30,7 @@ import About from "./pages/About";
 import PortalLogin from "./pages/portal/PortalLogin";
 import AuthCallback from "./pages/portal/AuthCallback";
 import Unsubscribe from "./pages/Unsubscribe";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/quote/accept/:token" element={<QuoteAccept />} />
           <Route path="/quote/success" element={<QuoteSuccess />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

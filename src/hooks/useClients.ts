@@ -97,8 +97,9 @@ export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (client: Omit<Client, "id" | "created_at" | "updated_at" | "zone_name">) => {
-      const { error } = await supabase.from("clients").insert(client);
+      const { data, error } = await supabase.from("clients").insert(client).select("id").single();
       if (error) throw error;
+      return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
   });
