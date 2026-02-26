@@ -641,12 +641,12 @@ sitekey={HCAPTCHA_SITE_KEY}
           <>
             {/* B2B flow */}
             {isB2B ? (
-              quoteSubmitted ? <B2BSuccessScreen /> : <B2BForm />
+              quoteSubmitted ? B2BSuccessScreen() : B2BForm()
             ) : (
               <>
                 {/* Residential success screen */}
                 {quoteSubmitted ? (
-                  isSpecialLead ? <SpecialLeadSuccessScreen /> : (
+                  isSpecialLead ? SpecialLeadSuccessScreen() : (
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-8 space-y-4">
                       <CheckCircle2 className="w-16 h-16 text-primary mx-auto" />
                       <h2 className="font-display text-2xl font-bold text-foreground">C'est tout bon ! 🎉</h2>
