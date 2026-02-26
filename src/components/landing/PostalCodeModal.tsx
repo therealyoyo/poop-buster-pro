@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -124,6 +125,16 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
   const [oozComment, setOozComment] = useState("");
   const [oozSubmitting, setOozSubmitting] = useState(false);
 
+  // hCaptcha tokens
+  const [captchaTokenFinal, setCaptchaTokenFinal] = useState<string | null>(null);
+  const [captchaTokenB2B, setCaptchaTokenB2B] = useState<string | null>(null);
+  const [captchaTokenOoz, setCaptchaTokenOoz] = useState<string | null>(null);
+
+  // hCaptcha refs
+  const captchaRefFinal = useRef<HCaptcha | null>(null);
+  const captchaRefB2B = useRef<HCaptcha | null>(null);
+  const captchaRefOoz = useRef<HCaptcha | null>(null);
+
   const resetAll = () => {
     setStep("check");
     setCodePostal("");
@@ -159,6 +170,12 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     setTermsAccepted(false);
     setQuarterlyBilling(false);
     setCompanyName("");
+    setCaptchaTokenFinal(null);
+    setCaptchaTokenB2B(null);
+    setCaptchaTokenOoz(null);
+    captchaRefFinal.current?.resetCaptcha();
+    captchaRefB2B.current?.resetCaptcha();
+    captchaRefOoz.current?.resetCaptcha();
   };
 
   const handleCheck = async () => {
@@ -317,6 +334,10 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       toast.error("Veuillez remplir tous les champs obligatoires.");
       return;
     }
+    if (!captchaTokenB2B) {
+      toast.error("Veuillez compléter la vérification anti-robot.");
+      return;
+    }
     setSubmitting(true);
     try {
       const address = `${streetName} ${streetNumber}, ${codePostal}`.trim().replace(/^,/, "").trim();
@@ -331,6 +352,8 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       } as any);
 
       setQuoteSubmitted(true);
+      setCaptchaTokenB2B(null);
+      captchaRefB2B.current?.resetCaptcha();
       toast.success("Demande B2B envoyée ! 🏢");
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de l'envoi.");
@@ -359,6 +382,10 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     setAttempted(true);
     if (phase1HasErrors || !termsAccepted) {
       toast.error("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+    if (!captchaTokenFinal) {
+      toast.error("Veuillez compléter la vérification anti-robot.");
       return;
     }
     setSubmitting(true);
@@ -405,6 +432,8 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       if (leadError) throw leadError;
 
       setQuoteSubmitted(true);
+      setCaptchaTokenFinal(null);
+      captchaRefFinal.current?.resetCaptcha();
       toast.success("Votre demande de devis a bien été reçue ! Nous vous contacterons rapidement. 🐾");
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de l'envoi.");
@@ -418,6 +447,10 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       toast.error("Veuillez remplir les champs obligatoires.");
       return;
     }
+    if (!captchaTokenOoz) {
+      toast.error("Veuillez compléter la vérification anti-robot.");
+      return;
+    }
     setOozSubmitting(true);
     try {
       const { error } = await supabase.from("contact_requests").insert({
@@ -428,6 +461,8 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       });
       if (error) throw error;
       toast.success("Merci ! Nous vous tiendrons informé dès que votre zone sera couverte. 🐾");
+      setCaptchaTokenOoz(null);
+      captchaRefOoz.current?.resetCaptcha();
       resetAll();
       onOpenChange(false);
     } catch (e: any) {
@@ -549,6 +584,18 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         <label htmlFor="mailing-b2b" className="text-xs text-muted-foreground leading-tight cursor-pointer">
           J'accepte de recevoir des communications commerciales de Crotte &amp; Go.
         </label>
+      </div>
+
+      {/* hCaptcha — B2B */}
+      <div className="flex justify-center">
+        <HCaptcha
+          ref={captchaRefB2B}
+          sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+          onVerify={(token) => setCaptchaTokenB2B(token)}
+          onExpire={() => setCaptchaTokenB2B(null)}
+          onError={() => setCaptchaTokenB2B(null)}
+          languageOverride="fr"
+        />
       </div>
 
       <Button className="w-full" variant="cta" size="lg" onClick={handleB2BSubmit} disabled={submitting}>
@@ -959,12 +1006,16 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                             <FieldError show={attempted && errors.termsAccepted} msg="Vous devez accepter les conditions générales pour continuer." />
                           </div>
 
-                          {/* hCaptcha placeholder */}
-                          <div className="border border-border rounded-xl p-4 bg-muted/30 text-center">
-                            <p className="text-xs text-muted-foreground">🤖 Vérification anti-robot (hCaptcha)</p>
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              Intégrez hCaptcha ici avec la librairie @hcaptcha/react-hcaptcha
-                            </p>
+                          {/* hCaptcha — Phase 2 résidentiel */}
+                          <div className="flex justify-center">
+                            <HCaptcha
+                              ref={captchaRefFinal}
+                              sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+                              onVerify={(token) => setCaptchaTokenFinal(token)}
+                              onExpire={() => setCaptchaTokenFinal(null)}
+                              onError={() => setCaptchaTokenFinal(null)}
+                              languageOverride="fr"
+                            />
                           </div>
 
                           {/* Final CTA */}
@@ -1017,6 +1068,18 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                 <Label>Commentaire</Label>
                 <Textarea value={oozComment} onChange={(e) => setOozComment(e.target.value)} rows={3} />
               </div>
+              {/* hCaptcha — Hors zone */}
+              <div className="flex justify-center">
+                <HCaptcha
+                  ref={captchaRefOoz}
+                  sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+                  onVerify={(token) => setCaptchaTokenOoz(token)}
+                  onExpire={() => setCaptchaTokenOoz(null)}
+                  onError={() => setCaptchaTokenOoz(null)}
+                  languageOverride="fr"
+                />
+              </div>
+
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep("check")} className="flex-1">
                   <ArrowLeft className="w-4 h-4 mr-1" /> Modifier mon code postal
