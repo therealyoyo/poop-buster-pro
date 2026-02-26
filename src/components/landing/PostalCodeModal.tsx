@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
+
+const HCAPTCHA_SITE_KEY = "c8248c0e-73bc-4c3c-a184-56be575e1efe";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -590,7 +592,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
       <div className="flex justify-center">
         <HCaptcha
           ref={captchaRefB2B}
-          sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+sitekey={HCAPTCHA_SITE_KEY}
           onVerify={(token) => setCaptchaTokenB2B(token)}
           onExpire={() => setCaptchaTokenB2B(null)}
           onError={() => setCaptchaTokenB2B(null)}
@@ -1010,7 +1012,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                           <div className="flex justify-center">
                             <HCaptcha
                               ref={captchaRefFinal}
-                              sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+sitekey={HCAPTCHA_SITE_KEY}
                               onVerify={(token) => setCaptchaTokenFinal(token)}
                               onExpire={() => setCaptchaTokenFinal(null)}
                               onError={() => setCaptchaTokenFinal(null)}
@@ -1072,7 +1074,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
               <div className="flex justify-center">
                 <HCaptcha
                   ref={captchaRefOoz}
-                  sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+                  sitekey={HCAPTCHA_SITE_KEY}
                   onVerify={(token) => setCaptchaTokenOoz(token)}
                   onExpire={() => setCaptchaTokenOoz(null)}
                   onError={() => setCaptchaTokenOoz(null)}
