@@ -445,9 +445,19 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     }
   };
 
+  const isValidOozEmail = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(oozEmail.trim());
+
   const handleOozSubmit = async () => {
     if (!oozFirstName || !oozLastName || !oozEmail) {
       toast.error("Veuillez remplir les champs obligatoires.");
+      return;
+    }
+    if (!isValidOozEmail) {
+      toast.error("Veuillez entrer un email valide.");
+      return;
+    }
+    if (oozPhone && !isValidBelgianPhone(oozPhone)) {
+      toast.error("Numéro de téléphone belge requis (ex: 0470 12 34 56).");
       return;
     }
     if (!captchaTokenOoz) {

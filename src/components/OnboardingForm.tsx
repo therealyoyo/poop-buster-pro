@@ -16,11 +16,24 @@ interface DogEntry {
   breed: string;
 }
 
+const isValidBelgianPhone = (value: string): boolean => {
+  const cleaned = value.replace(/[\s.\-()]/g, "");
+  return (
+    /^\+32[1-9][0-9]{7,8}$/.test(cleaned) ||
+    /^0032[1-9][0-9]{7,8}$/.test(cleaned) ||
+    /^0[1-9][0-9]{7,8}$/.test(cleaned)
+  );
+};
+
+const isValidEmailAddr = (value: string): boolean =>
+  /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(value.trim());
+
 const OnboardingForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [gateEntryType, setGateEntryType] = useState("");
   const [dogs, setDogs] = useState<DogEntry[]>([{ name: "", breed: "" }]);
   const [submitting, setSubmitting] = useState(false);
+  const [attempted, setAttempted] = useState(false);
 
   const addDog = () => setDogs([...dogs, { name: "", breed: "" }]);
   const removeDog = (index: number) => setDogs(dogs.filter((_, i) => i !== index));
@@ -34,9 +47,20 @@ const OnboardingForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitting(true);
+    setAttempted(true);
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const emailVal = formData.get("email") as string;
+    const phoneVal = formData.get("phone") as string;
+    if (!isValidEmailAddr(emailVal)) {
+      toast.error("Veuillez entrer un email valide.");
+      return;
+    }
+    if (!isValidBelgianPhone(phoneVal)) {
+      toast.error("Numéro de téléphone belge requis (ex: 0470 12 34 56).");
+      return;
+    }
+    setSubmitting(true);
 
     const dogDetails = dogs.filter(d => d.name.trim() !== "");
 

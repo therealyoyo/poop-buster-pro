@@ -9,9 +9,25 @@ import { useServiceZones } from "@/hooks/useClients";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
+const isValidBelgianPhone = (value: string): boolean => {
+  if (!value.trim()) return true; // optional field
+  const cleaned = value.replace(/[\s.\-()]/g, "");
+  return (
+    /^\+32[1-9][0-9]{7,8}$/.test(cleaned) ||
+    /^0032[1-9][0-9]{7,8}$/.test(cleaned) ||
+    /^0[1-9][0-9]{7,8}$/.test(cleaned)
+  );
+};
+
+const isValidEmail = (value: string): boolean => {
+  if (!value.trim()) return true; // optional field
+  return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(value.trim());
+};
+
 const AddClientDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const { data: zones = [] } = useServiceZones();
   const createClient = useCreateClient();
+  const [attempted, setAttempted] = useState(false);
   const [form, setForm] = useState({
     first_name: "", last_name: "", email: "", phone: "", address: "",
     zone_id: null as string | null, dog_count: 1, garden_size: "",
@@ -19,12 +35,21 @@ const AddClientDialog = ({ open, onClose }: { open: boolean; onClose: () => void
     service_frequency: null as string | null, internal_notes: "", user_id: null,
   });
 
+  const emailError = attempted && form.email && !isValidEmail(form.email);
+  const phoneError = attempted && form.phone && !isValidBelgianPhone(form.phone);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAttempted(true);
+    if ((form.email && !isValidEmail(form.email)) || (form.phone && !isValidBelgianPhone(form.phone))) {
+      toast({ title: "Erreur de validation", description: "Vérifiez l'email et/ou le numéro de téléphone.", variant: "destructive" });
+      return;
+    }
     try {
       await createClient.mutateAsync(form as any);
       toast({ title: "Client ajouté !" });
       onClose();
+      setAttempted(false);
       setForm({ first_name: "", last_name: "", email: "", phone: "", address: "", zone_id: null, dog_count: 1, garden_size: "", gate_code: "", status: "prospect", pipeline_stage: "new", service_frequency: null, internal_notes: "", user_id: null });
     } catch {
       toast({ title: "Erreur", description: "Impossible d'ajouter le client.", variant: "destructive" });
@@ -43,8 +68,16 @@ const AddClientDialog = ({ open, onClose }: { open: boolean; onClose: () => void
             <div><Label>Nom *</Label><Input required value={form.last_name} onChange={e => set("last_name", e.target.value)} /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><Label>Email</Label><Input type="email" value={form.email || ""} onChange={e => set("email", e.target.value)} /></div>
-            <div><Label>Téléphone</Label><Input value={form.phone || ""} onChange={e => set("phone", e.target.value)} /></div>
+            <div>
+              <Label>Email</Label>
+              <Input type="email" value={form.email || ""} onChange={e => set("email", e.target.value)} className={emailError ? "border-destructive" : ""} placeholder="jean@exemple.com" />
+              {emailError && <p className="text-xs text-destructive mt-1">Veuillez entrer un email valide</p>}
+            </div>
+            <div>
+              <Label>Téléphone</Label>
+              <Input type="tel" value={form.phone || ""} onChange={e => set("phone", e.target.value)} className={phoneError ? "border-destructive" : ""} placeholder="0470 12 34 56" />
+              {phoneError && <p className="text-xs text-destructive mt-1">Numéro belge requis (ex: 0470 12 34 56)</p>}
+            </div>
           </div>
           <div><Label>Adresse</Label><Input value={form.address || ""} onChange={e => set("address", e.target.value)} /></div>
           <div className="grid grid-cols-2 gap-3">
