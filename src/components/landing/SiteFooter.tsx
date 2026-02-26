@@ -30,7 +30,7 @@ const SiteFooter = () => (
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/about" className="hover:text-primary transition-colors">À propos</Link></li>
             <li><a href="#faq" className="hover:text-primary transition-colors">FAQ</a></li>
-            <li><Link to="/login" className="hover:text-primary transition-colors">Espace client</Link></li>
+            <li><Link to="/portal/login" className="hover:text-primary transition-colors">Espace client</Link></li>
           </ul>
         </div>
       </div>

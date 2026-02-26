@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.winback-campaign]
 verify_jwt = false
+
+[functions.send-job-done-notification]
+verify_jwt = false

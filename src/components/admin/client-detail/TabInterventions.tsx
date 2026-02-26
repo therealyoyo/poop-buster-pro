@@ -13,7 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { useState, useRef } from "react";
 import { uploadInterventionPhoto } from "@/hooks/useInterventions";
 
-const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel" };
+const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel", twice_weekly: "2x/semaine" };
 const dayLabels = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 const dayValues = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
@@ -134,7 +134,9 @@ export default function TabInterventions({ client, interventions, onUpdateClient
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-2">Jour préféré</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">
+              Jour préféré {client.service_frequency === 'twice_weekly' ? '(Jour 1)' : ''}
+            </p>
             <div className="grid grid-cols-3 gap-2">
               {dayLabels.map((label, idx) => (
                 <Button key={dayValues[idx]} variant={client.preferred_day === dayValues[idx] ? "default" : "outline"} size="sm" onClick={() => handleDaySelect(dayValues[idx])}>
@@ -143,6 +145,29 @@ export default function TabInterventions({ client, interventions, onUpdateClient
               ))}
             </div>
           </div>
+          {client.service_frequency === 'twice_weekly' && (
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Jour préféré (Jour 2)</p>
+              <div className="grid grid-cols-3 gap-2">
+                {dayLabels.map((label, idx) => {
+                  if (dayValues[idx] === client.preferred_day) return null;
+                  return (
+                    <Button
+                      key={dayValues[idx]}
+                      variant={client.preferred_day_2 === dayValues[idx] ? "default" : "outline"}
+                      size="sm"
+                      onClick={async () => {
+                        await onUpdateClient({ preferred_day_2: dayValues[idx] });
+                        toast({ title: "Jour 2 mis à jour !" });
+                      }}
+                    >
+                      {label}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-2">Fréquence</p>
             <Select value={client.service_frequency || "weekly"} onValueChange={handleFreqChange}>

@@ -32,16 +32,16 @@ serve(async (req) => {
     const siteUrl = Deno.env.get("SITE_URL") || Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovable.app") || "https://example.com";
 
     const lineItemsHtml = lineItems.map((li: any) =>
-      `<tr><td style="padding:8px;border-bottom:1px solid #eee">${li.label}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">€${Number(li.price).toFixed(2)}</td></tr>`
+      `<tr><td style="padding:8px;border-bottom:1px solid #eee">${li.label}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${li.price < 0 ? '-' : ''}€${Math.abs(Number(li.price)).toFixed(2)}</td></tr>`
     ).join("");
 
     const gardenLabels: Record<string, string> = { small: "Petit jardin", medium: "Jardin moyen", large: "Grand jardin", xl: "Très grand jardin" };
-    const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel" };
+    const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel", twice_weekly: "2x/semaine" };
 
     const html = `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
         <h1 style="color:#1a3a52">Bonjour ${client.first_name} 🐾</h1>
-        <p>Votre devis Poop Buster Pro est prêt !</p>
+        <p>Votre devis Crotte & Go est prêt !</p>
         <table style="width:100%;border-collapse:collapse;margin:20px 0">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Jardin</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${gardenLabels[quote.garden_size] || quote.garden_size}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Chiens</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${quote.dog_count} 🐕</td></tr>
@@ -57,20 +57,21 @@ serve(async (req) => {
       </div>
     `;
 
-    // Try Resend if available
+    // Resend is mandatory
     const resendKey = Deno.env.get("RESEND_API_KEY");
-    if (resendKey) {
-      const { Resend } = await import("npm:resend@4.0.0");
-      const resend = new Resend(resendKey);
-      await resend.emails.send({
-        from: "Poop Buster Pro <noreply@resend.dev>",
-        to: [client.email],
-        subject: "Votre devis Poop Buster Pro est prêt 🐾",
-        html,
-      });
-    }
+    if (!resendKey) throw new Error("RESEND_API_KEY not configured in Supabase secrets");
 
-    // Mark quote as sent
+    const { Resend } = await import("npm:resend@4.0.0");
+    const resend = new Resend(resendKey);
+    await resend.emails.send({
+      from: "Crotte & Go Facturation <billing@support.crotteandgo.be>",
+      reply_to: "yoni@crotteandgo.be",
+      to: [client.email],
+      subject: `📋 Votre devis Crotte & Go n°${quote_id.slice(0,8).toUpperCase()} — €${Number(quote.total_price).toFixed(2)}/mois`,
+      html,
+    });
+
+    // Mark quote as sent — only after successful email
     await supabase.from("quotes").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", quote_id);
 
     return new Response(JSON.stringify({ success: true }), {

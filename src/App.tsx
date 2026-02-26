@@ -27,6 +27,7 @@ import QuoteAccept from "./pages/QuoteAccept";
 import QuoteSuccess from "./pages/QuoteSuccess";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
+import PortalLogin from "./pages/portal/PortalLogin";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
           <Route path="/admin/zones" element={<AdminRoute><ZonesService /></AdminRoute>} />
           <Route path="/admin/field" element={<AdminRoute><FieldApp /></AdminRoute>} />
           <Route path="/admin/pricing" element={<AdminRoute><Pricing /></AdminRoute>} />
+          <Route path="/portal/login" element={<PortalLogin />} />
           <Route path="/portal" element={<ClientRoute><ClientDashboard /></ClientRoute>} />
           <Route path="/portal/messages" element={<ClientRoute><ClientMessages /></ClientRoute>} />
           <Route path="/portal/invoices" element={<ClientRoute><ClientInvoices /></ClientRoute>} />
