@@ -140,6 +140,7 @@ export type Database = {
           pipeline_stage: string
           postal_code: string | null
           preferred_day: string | null
+          preferred_day_2: string | null
           promo_code: string | null
           quarterly_billing: boolean | null
           referral_code: string | null
@@ -199,6 +200,7 @@ export type Database = {
           pipeline_stage?: string
           postal_code?: string | null
           preferred_day?: string | null
+          preferred_day_2?: string | null
           promo_code?: string | null
           quarterly_billing?: boolean | null
           referral_code?: string | null
@@ -258,6 +260,7 @@ export type Database = {
           pipeline_stage?: string
           postal_code?: string | null
           preferred_day?: string | null
+          preferred_day_2?: string | null
           promo_code?: string | null
           quarterly_billing?: boolean | null
           referral_code?: string | null

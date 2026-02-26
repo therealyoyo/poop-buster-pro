@@ -51,7 +51,7 @@ serve(async (req) => {
     const resend = new Resend(resendKey);
 
     const resendPayload: any = {
-      from: "Crotte & Go <yoni@crotteandgo.be>",
+      from: "Crotte & Go <chat@support.crotteandgo.be>",
       reply_to: "yoni@crotteandgo.be",
       to: [client.email],
       subject: emailSubject,
@@ -79,13 +79,17 @@ serve(async (req) => {
         .eq("id", message_id);
     }
 
-    // Log in email_logs
-    await supabase.from("email_logs").insert({
-      client_id,
-      email_type: "manual_chat",
-      subject: emailSubject,
-      status: "sent",
-    });
+    // Log in email_logs (best-effort, non-blocking)
+    try {
+      await supabase.from("email_logs").insert({
+        client_id,
+        email_type: "manual_chat",
+        subject: emailSubject,
+        status: "sent",
+      });
+    } catch (logErr) {
+      console.warn("email_logs insert failed:", logErr);
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

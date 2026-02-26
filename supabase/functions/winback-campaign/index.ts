@@ -63,7 +63,7 @@ serve(async (req) => {
 
       try {
         await resend.emails.send({
-          from: "Crotte & Go <yoni@crotteandgo.be>",
+          from: "Crotte & Go <billing@support.crotteandgo.be>",
           reply_to: "yoni@crotteandgo.be",
           to: [client.email],
           subject: "🔄 Votre jardin vous manque ? -20% pour votre retour !",

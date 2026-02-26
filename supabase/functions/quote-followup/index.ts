@@ -76,7 +76,7 @@ serve(async (req) => {
 
       try {
         await resend.emails.send({
-          from: "Crotte & Go <yoni@crotteandgo.be>",
+          from: "Crotte & Go Facturation <billing@support.crotteandgo.be>",
           reply_to: "yoni@crotteandgo.be",
           to: [client.email],
           subject: "📋 Rappel : votre devis Crotte & Go vous attend",

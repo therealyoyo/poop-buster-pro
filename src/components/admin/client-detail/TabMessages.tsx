@@ -34,11 +34,17 @@ export default function TabMessages({ clientId, clientEmail, messages, onSendMes
     try {
       await onSendMessage({ client_id: clientId, content: msg, sender_role: "admin" });
       if (clientEmail) {
-        try {
-          await supabase.functions.invoke("send-client-email", { body: { client_id: clientId, message: msg } });
-        } catch (emailErr) {
-          console.error("Email send failed:", emailErr);
-          toast({ title: "Message envoyé mais erreur d'envoi email", variant: "destructive" });
+        const { data: emailRes, error: emailErr } = await supabase.functions.invoke("send-client-email", {
+          body: { client_id: clientId, message: msg }
+        });
+        if (emailErr || emailRes?.error) {
+          toast({
+            title: "⚠️ Message sauvegardé, email non envoyé",
+            description: emailRes?.error || "Vérifiez la configuration email",
+            variant: "destructive"
+          });
+        } else {
+          toast({ title: "✅ Message envoyé par email !" });
         }
       }
     } catch {

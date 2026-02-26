@@ -10,25 +10,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-const Login = () => {
+const PortalLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [adminError, setAdminError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Check if admin
         const { data: role } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", session.user.id)
           .maybeSingle();
         if (role?.role === "admin") {
-          navigate("/admin", { replace: true });
+          setAdminError(true);
         } else {
           navigate("/portal", { replace: true });
         }
@@ -41,33 +40,24 @@ const Login = () => {
     e.preventDefault();
     if (!email || !password) return;
     setLoading(true);
+    setAdminError(false);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        toast.success("Vérifiez votre email pour confirmer votre inscription !");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
 
-        // Check role to redirect
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const { data: role } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", session.user.id)
-            .maybeSingle();
-          if (role?.role === "admin") {
-            navigate("/admin", { replace: true });
-          } else {
-            navigate("/portal", { replace: true });
-          }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: role } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (role?.role === "admin") {
+          setAdminError(true);
+          await supabase.auth.signOut();
+        } else {
+          navigate("/portal", { replace: true });
         }
       }
     } catch (err: any) {
@@ -90,37 +80,48 @@ const Login = () => {
         <Card className="shadow-card">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-xl">
-              Connexion administrateur
+              Mon espace Crotte & Go 🐾
             </CardTitle>
             <CardDescription>
-              Accédez au tableau de bord d'administration
+              Consultez vos passages, factures et messages
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label>Email</Label>
-                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="votre@email.com" required />
+            {adminError ? (
+              <div className="text-center space-y-4">
+                <div className="bg-destructive/10 text-destructive rounded-lg p-4 text-sm">
+                  Ce portail est réservé aux clients. Accédez à l'admin{" "}
+                  <Link to="/admin-login" className="underline font-medium">ici →</Link>
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>Mot de passe</Label>
-                <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
-              </div>
-              <Button type="submit" variant="cta" className="w-full rounded-full" disabled={loading}>
-                {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                {isSignUp ? "S'inscrire" : "Se connecter"}
-              </Button>
-            </form>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label>Email</Label>
+                    <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="votre@email.com" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Mot de passe</Label>
+                    <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
+                  </div>
+                  <Button type="submit" variant="cta" className="w-full rounded-full" disabled={loading}>
+                    {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                    Se connecter
+                  </Button>
+                </form>
 
-            <div className="mt-4 text-center space-y-2">
-              {!isSignUp && (
-                <div>
+                <div className="mt-4 text-center space-y-2">
                   <Link to="/reset-password" className="text-sm text-muted-foreground hover:underline">
                     Mot de passe oublié ?
                   </Link>
                 </div>
-              )}
-            </div>
+
+                <p className="mt-6 text-xs text-muted-foreground text-center">
+                  Votre compte est créé automatiquement lors de l'acceptation de votre devis.
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -128,4 +129,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default PortalLogin;
