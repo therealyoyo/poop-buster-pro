@@ -5,11 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, UserPlus, Filter, MessageSquare, Download, UserMinus } from "lucide-react";
+import { Search, UserPlus, Filter, MessageSquare, Download, UserMinus, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PawIcon from "@/components/PawIcon";
-import { useClients, useServiceZones, useLeads, useUpdateLead } from "@/hooks/useClients";
+import { useClients, useServiceZones, useLeads, useUpdateLead, useCreateClient } from "@/hooks/useClients";
 import type { Lead } from "@/hooks/useClients";
 import { useUnreadCount } from "@/hooks/useMessages";
 import AddClientDialog from "@/components/admin/AddClientDialog";
@@ -39,18 +39,46 @@ const AdminCRM = () => {
   const [zoneFilter, setZoneFilter] = useState("all");
   const [freqFilter, setFreqFilter] = useState("all");
   const [showAdd, setShowAdd] = useState(false);
+  const navigate = useNavigate();
 
   const { data: clients = [], isLoading } = useClients({ search, status: statusFilter, zone: zoneFilter, frequency: freqFilter });
   const { data: leads = [], isLoading: leadsLoading } = useLeads({ search, status: statusFilter });
   const { data: zones = [] } = useServiceZones();
   const { data: unreadCount = 0 } = useUnreadCount();
   const updateLead = useUpdateLead();
+  const createClient = useCreateClient();
 
   const handleLeadTypeChange = (leadId: string, newType: string) => {
     updateLead.mutate({ id: leadId, lead_type: newType } as any, {
       onSuccess: () => toast.success("Catégorie mise à jour ✓"),
       onError: () => toast.error("Erreur lors de la mise à jour"),
     });
+  };
+
+  const handleConvertLead = async (lead: Lead) => {
+    try {
+      const result = await createClient.mutateAsync({
+        first_name: lead.first_name || "—",
+        last_name: lead.last_name || "",
+        email: lead.email,
+        phone: lead.phone || null,
+        address: lead.address || null,
+        dog_count: lead.dog_count || 1,
+        garden_size: lead.garden_size || null,
+        service_frequency: lead.service_frequency || null,
+        pipeline_stage: "new_lead",
+        status: "prospect",
+        user_id: null,
+        zone_id: null,
+        gate_code: null,
+        internal_notes: null,
+      } as any);
+      await updateLead.mutateAsync({ id: lead.id, status: "converted" } as any);
+      toast.success("Lead converti en client ✓");
+      navigate(`/admin/clients/${result.id}`);
+    } catch {
+      toast.error("Erreur lors de la conversion");
+    }
   };
 
   // Newsletter contacts: deduplicated by email
@@ -227,8 +255,8 @@ const AdminCRM = () => {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden md:table-cell">Code postal</th>
                         <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Chiens</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Fréquence</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Catégorie</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Date</th>
+                        <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -256,6 +284,20 @@ const AdminCRM = () => {
                           </td>
                           <td className="py-3 px-4 text-sm text-muted-foreground">
                             {l.created_at ? new Date(l.created_at).toLocaleDateString("fr-BE") : "—"}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {l.status === "converted" ? (
+                              <Badge className="bg-green-100 text-green-800 border-0">Converti ✓</Badge>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleConvertLead(l)}
+                                disabled={createClient.isPending}
+                              >
+                                Convertir <ArrowRight className="w-3 h-3 ml-1" />
+                              </Button>
+                            )}
                           </td>
                         </tr>
                       ))}
