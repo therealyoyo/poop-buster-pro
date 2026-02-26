@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Residential from "./pages/Residential";
 import Commercial from "./pages/Commercial";
@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminCRM from "./pages/admin/CRM";
 import AdminBilling from "./pages/admin/Billing";
 import AdminRoute from "./components/AdminRoute";
+import ClientRoute from "./components/ClientRoute";
 import ClientDetail from "./pages/admin/ClientDetail";
 import Pipeline from "./pages/admin/Pipeline";
 import ZonesService from "./pages/admin/ZonesService";
@@ -51,10 +52,10 @@ const App = () => (
           <Route path="/admin/zones" element={<AdminRoute><ZonesService /></AdminRoute>} />
           <Route path="/admin/field" element={<AdminRoute><FieldApp /></AdminRoute>} />
           <Route path="/admin/pricing" element={<AdminRoute><Pricing /></AdminRoute>} />
-          <Route path="/portal" element={<Navigate to="/" replace />} />
-          <Route path="/portal/messages" element={<Navigate to="/" replace />} />
-          <Route path="/portal/invoices" element={<Navigate to="/" replace />} />
-          <Route path="/portal/settings" element={<Navigate to="/" replace />} />
+          <Route path="/portal" element={<ClientRoute><ClientDashboard /></ClientRoute>} />
+          <Route path="/portal/messages" element={<ClientRoute><ClientMessages /></ClientRoute>} />
+          <Route path="/portal/invoices" element={<ClientRoute><ClientInvoices /></ClientRoute>} />
+          <Route path="/portal/settings" element={<ClientRoute><ClientSettings /></ClientRoute>} />
           <Route path="/quote/accept/:token" element={<QuoteAccept />} />
           <Route path="/quote/success" element={<QuoteSuccess />} />
           <Route path="*" element={<NotFound />} />

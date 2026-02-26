@@ -24,6 +24,11 @@ const ClientSettings = () => {
   const [pauseDate, setPauseDate] = useState<Date>();
   const [loading, setLoading] = useState(true);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -31,15 +36,20 @@ const ClientSettings = () => {
       if (!session) { setLoading(false); return; }
       const { data } = await supabase
         .from("clients")
-        .select("id, gate_entry_type, gate_code, gate_special_instructions, paused_until")
+        .select("id, first_name, last_name, email, phone, address, gate_entry_type, gate_code, gate_special_instructions, paused_until")
         .eq("user_id", session.user.id)
         .maybeSingle();
       if (data) {
         setClientId(data.id);
+        setFirstName(data.first_name);
+        setLastName(data.last_name);
+        setEmail(data.email || "");
+        setPhone(data.phone || "");
+        setAddress(data.address || "");
         setGateEntryType(data.gate_entry_type || "side_gate");
         setGateCode(data.gate_code || "");
         setGateInstructions(data.gate_special_instructions || "");
-        setPausedUntil((data as any).paused_until || null);
+        setPausedUntil(data.paused_until || null);
       }
       setLoading(false);
     };
@@ -48,7 +58,12 @@ const ClientSettings = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Paramètres mis à jour ! 🐾");
+    if (!clientId) return;
+    const { error } = await supabase.from("clients").update({
+      phone: phone || null,
+    }).eq("id", clientId);
+    if (error) toast.error("Erreur lors de la mise à jour.");
+    else toast.success("Paramètres mis à jour ! 🐾");
   };
 
   const handleGateSave = async () => {
@@ -91,14 +106,14 @@ const ClientSettings = () => {
             <CardContent>
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5"><Label>Prénom</Label><Input defaultValue="Sophie" /></div>
-                  <div className="space-y-1.5"><Label>Nom</Label><Input defaultValue="Tremblay" /></div>
+                  <div className="space-y-1.5"><Label>Prénom</Label><Input value={firstName} disabled /></div>
+                  <div className="space-y-1.5"><Label>Nom</Label><Input value={lastName} disabled /></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5"><Label>Courriel</Label><Input type="email" defaultValue="sophie@courriel.com" /></div>
-                  <div className="space-y-1.5"><Label>Téléphone</Label><Input type="tel" defaultValue="(514) 123-4567" /></div>
+                  <div className="space-y-1.5"><Label>Courriel</Label><Input type="email" value={email} disabled /></div>
+                  <div className="space-y-1.5"><Label>Téléphone</Label><Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} /></div>
                 </div>
-                <div className="space-y-1.5"><Label>Adresse de service</Label><Input defaultValue="123 rue des Chênes, Montréal, H2X 1Y4" /></div>
+                <div className="space-y-1.5"><Label>Adresse de service</Label><Input value={address} disabled /></div>
                 <Button type="submit" variant="cta" className="rounded-full">Enregistrer les modifications</Button>
               </form>
             </CardContent>
