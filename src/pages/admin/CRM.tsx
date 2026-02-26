@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, UserPlus, Filter, MessageSquare, Download, UserMinus, ArrowRight } from "lucide-react";
+import { Search, UserPlus, Filter, MessageSquare, Download, UserMinus, ArrowRight, FileText } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PawIcon from "@/components/PawIcon";
@@ -15,6 +15,7 @@ import { useUnreadCount } from "@/hooks/useMessages";
 import AddClientDialog from "@/components/admin/AddClientDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import QuoteBuilderDrawer from "@/components/admin/QuoteBuilderDrawer";
 
 const statusLabels: Record<string, string> = {
   prospect: "Prospect", active: "Actif", paused: "En pause", cancelled: "Annulé", inactive: "Inactif",
@@ -39,6 +40,7 @@ const AdminCRM = () => {
   const [zoneFilter, setZoneFilter] = useState("all");
   const [freqFilter, setFreqFilter] = useState("all");
   const [showAdd, setShowAdd] = useState(false);
+  const [quoteClient, setQuoteClient] = useState<any>(null);
   const navigate = useNavigate();
 
   const { data: clients = [], isLoading } = useClients({ search, status: statusFilter, zone: zoneFilter, frequency: freqFilter });
@@ -216,10 +218,13 @@ const AdminCRM = () => {
                               {statusLabels[c.status] || c.status}
                             </Badge>
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-3 px-4 text-center flex items-center justify-center gap-1">
                             <Link to={`/admin/clients/${c.id}`}>
                               <Button variant="ghost" size="icon"><MessageSquare className="w-4 h-4" /></Button>
                             </Link>
+                            <Button variant="ghost" size="sm" onClick={() => setQuoteClient(c)}>
+                              <FileText className="w-4 h-4 mr-1" /> Devis
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -371,6 +376,13 @@ const AdminCRM = () => {
       </div>
 
       <AddClientDialog open={showAdd} onClose={() => setShowAdd(false)} />
+      {quoteClient && (
+        <QuoteBuilderDrawer
+          open={!!quoteClient}
+          onOpenChange={(o) => { if (!o) setQuoteClient(null); }}
+          client={quoteClient}
+        />
+      )}
     </div>
   );
 };
