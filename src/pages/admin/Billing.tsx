@@ -1,37 +1,90 @@
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import PawIcon from "@/components/PawIcon";
-import { DollarSign, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { DollarSign, TrendingUp, Wallet, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
-const invoices = [
-  { id: "FAC-001", client: "Sophie Tremblay", amount: 180, status: "Payée", date: "1 fév. 2026", due: "15 fév. 2026" },
-  { id: "FAC-002", client: "Marc Leblanc", amount: 80, status: "Payée", date: "1 fév. 2026", due: "15 fév. 2026" },
-  { id: "FAC-003", client: "Émilie Gagnon", amount: 290, status: "En attente", date: "1 fév. 2026", due: "15 fév. 2026" },
-  { id: "FAC-004", client: "Jacques Morin", amount: 400, status: "En attente", date: "1 fév. 2026", due: "15 fév. 2026" },
-  { id: "FAC-005", client: "Thomas Roy", amount: 45, status: "En retard", date: "1 jan. 2026", due: "15 jan. 2026" },
-  { id: "FAC-006", client: "Lisa Côté", amount: 180, status: "Payée", date: "1 fév. 2026", due: "15 fév. 2026" },
-  { id: "FAC-007", client: "David Lavoie", amount: 90, status: "En attente", date: "1 fév. 2026", due: "28 fév. 2026" },
-  { id: "FAC-008", client: "Anne Bouchard", amount: 60, status: "En retard", date: "1 déc. 2025", due: "15 déc. 2025" },
-];
-
-const stats = [
-  { label: "Payées ce mois", value: "440 $", icon: CheckCircle, count: 3 },
-  { label: "En attente", value: "780 $", icon: Clock, count: 3 },
-  { label: "En retard", value: "105 $", icon: AlertTriangle, count: 2 },
-];
+interface FinancialRow {
+  id: string;
+  amount: number;
+  type: string;
+  description: string | null;
+  paid_at: string | null;
+  created_at: string | null;
+  clients: { first_name: string; last_name: string } | null;
+}
 
 const AdminBilling = () => {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Payée": return <Badge variant="default">{status}</Badge>;
-      case "En attente": return <Badge variant="secondary">{status}</Badge>;
-      case "En retard": return <Badge variant="destructive">{status}</Badge>;
-      default: return <Badge>{status}</Badge>;
+  const { data: financials = [], isLoading } = useQuery({
+    queryKey: ["billing-financials"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("financials")
+        .select("id, amount, type, description, paid_at, created_at, clients(first_name, last_name)")
+        .order("paid_at", { ascending: false });
+      if (error) throw error;
+      return (data || []) as FinancialRow[];
+    },
+  });
+
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+  const revenueThisMonth = financials
+    .filter(f => (f.paid_at || f.created_at || "") >= monthStart)
+    .reduce((s, f) => s + Number(f.amount), 0);
+
+  const subscriptionRevenue = financials
+    .filter(f => f.type === "subscription")
+    .reduce((s, f) => s + Number(f.amount), 0);
+
+  const totalRevenue = financials.reduce((s, f) => s + Number(f.amount), 0);
+
+  const stats = [
+    { label: "Revenu ce mois", value: `${revenueThisMonth.toFixed(0)} €`, icon: TrendingUp },
+    { label: "Abonnements (total)", value: `${subscriptionRevenue.toFixed(0)} €`, icon: DollarSign },
+    { label: "Revenu total", value: `${totalRevenue.toFixed(0)} €`, icon: Wallet },
+  ];
+
+  const renderRows = (rows: FinancialRow[]) => {
+    if (rows.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+            Aucune transaction trouvée.
+          </TableCell>
+        </TableRow>
+      );
     }
+    return rows.map((f, idx) => (
+      <TableRow key={f.id}>
+        <TableCell className="font-mono text-xs text-muted-foreground">#{idx + 1}</TableCell>
+        <TableCell>{f.clients ? `${f.clients.first_name} ${f.clients.last_name}` : "—"}</TableCell>
+        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+          {f.paid_at ? format(new Date(f.paid_at), "d MMM yyyy", { locale: fr }) : "—"}
+        </TableCell>
+        <TableCell>
+          {f.type === "subscription" ? (
+            <Badge variant="default">Abonnement</Badge>
+          ) : (
+            <Badge variant="secondary">Unique</Badge>
+          )}
+        </TableCell>
+        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{f.description || "—"}</TableCell>
+        <TableCell className="text-right font-medium">{Number(f.amount).toFixed(2)} €</TableCell>
+      </TableRow>
+    ));
   };
+
+  const subscriptions = financials.filter(f => f.type === "subscription");
+  const oneOffs = financials.filter(f => f.type !== "subscription");
 
   return (
     <div className="min-h-screen bg-background">
@@ -42,11 +95,9 @@ const AdminBilling = () => {
             <DollarSign className="w-7 h-7 text-primary" />
             Facturation
           </h1>
-          <Button variant="cta" size="sm" className="rounded-full">
-            <DollarSign className="w-4 h-4" /> Créer une facture
-          </Button>
         </div>
 
+        {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {stats.map(s => (
             <Card key={s.label} className="shadow-card">
@@ -56,53 +107,86 @@ const AdminBilling = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{s.label}</p>
-                  <p className="text-xl font-display font-bold text-foreground">{s.value}</p>
-                  <p className="text-xs text-muted-foreground">{s.count} factures</p>
+                  {isLoading ? (
+                    <Skeleton className="h-7 w-24 mt-1" />
+                  ) : (
+                    <p className="text-xl font-display font-bold text-foreground">{s.value}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
+        {/* Table */}
         <Card className="shadow-card">
           <CardHeader>
             <Tabs defaultValue="all">
               <TabsList>
-                <TabsTrigger value="all">Toutes</TabsTrigger>
-                <TabsTrigger value="paid">Payées</TabsTrigger>
-                <TabsTrigger value="pending">En attente</TabsTrigger>
-                <TabsTrigger value="overdue">En retard</TabsTrigger>
+                <TabsTrigger value="all">Tous ({financials.length})</TabsTrigger>
+                <TabsTrigger value="sub">Abonnements ({subscriptions.length})</TabsTrigger>
+                <TabsTrigger value="one">Uniques ({oneOffs.length})</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="all">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead className="hidden sm:table-cell">Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="hidden md:table-cell">Description</TableHead>
+                      <TableHead className="text-right">Montant</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          {Array.from({ length: 6 }).map((_, j) => (
+                            <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : renderRows(financials)}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+
+              <TabsContent value="sub">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead className="hidden sm:table-cell">Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="hidden md:table-cell">Description</TableHead>
+                      <TableHead className="text-right">Montant</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>{isLoading ? null : renderRows(subscriptions)}</TableBody>
+                </Table>
+              </TabsContent>
+
+              <TabsContent value="one">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead className="hidden sm:table-cell">Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="hidden md:table-cell">Description</TableHead>
+                      <TableHead className="text-right">Montant</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>{isLoading ? null : renderRows(oneOffs)}</TableBody>
+                </Table>
+              </TabsContent>
             </Tabs>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Facture</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Client</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden md:table-cell">Échéance</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Statut</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-muted-foreground">Montant</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoices.map(inv => (
-                    <tr key={inv.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
-                      <td className="py-3 px-4 font-mono text-sm text-primary font-medium">{inv.id}</td>
-                      <td className="py-3 px-4 text-foreground">{inv.client}</td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground hidden sm:table-cell">{inv.date}</td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{inv.due}</td>
-                      <td className="py-3 px-4">{getStatusBadge(inv.status)}</td>
-                      <td className="py-3 px-4 text-right font-medium text-foreground">{inv.amount} $</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
         </Card>
       </div>
     </div>

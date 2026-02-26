@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Settings as SettingsIcon, Key, Pause, Play, CalendarDays } from "lucide-react";
+import { Settings as SettingsIcon, Key, Pause, Play, CalendarDays, XCircle } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
@@ -37,6 +38,9 @@ const ClientSettings = () => {
   const [preferredDay, setPreferredDay] = useState("");
   const [preferredDay2, setPreferredDay2] = useState("");
   const [serviceFrequency, setServiceFrequency] = useState("");
+  const [stripeSubId, setStripeSubId] = useState<string | null>(null);
+  const [cancelPending, setCancelPending] = useState(false);
+  const [cancelDate, setCancelDate] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -44,7 +48,7 @@ const ClientSettings = () => {
       if (!session) { setLoading(false); return; }
       const { data } = await supabase
         .from("clients")
-        .select("id, first_name, last_name, email, phone, address, gate_entry_type, gate_code, gate_special_instructions, paused_until, preferred_day, preferred_day_2, service_frequency")
+        .select("id, first_name, last_name, email, phone, address, gate_entry_type, gate_code, gate_special_instructions, paused_until, preferred_day, preferred_day_2, service_frequency, stripe_subscription_id")
         .eq("user_id", session.user.id)
         .maybeSingle();
       if (data) {
@@ -61,6 +65,7 @@ const ClientSettings = () => {
         setPreferredDay(data.preferred_day || "");
         setPreferredDay2(data.preferred_day_2 || "");
         setServiceFrequency(data.service_frequency || "");
+        setStripeSubId(data.stripe_subscription_id || null);
       }
       setLoading(false);
     };
@@ -113,6 +118,21 @@ const ClientSettings = () => {
   };
 
   const isTwiceWeekly = serviceFrequency === "twice_weekly";
+
+  const handleCancelSubscription = async () => {
+    setCancelPending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cancel-stripe-subscription");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setCancelDate(data.current_period_end);
+      toast.success("Votre abonnement ne sera pas renouvelé.");
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de l'annulation.");
+    } finally {
+      setCancelPending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -274,6 +294,57 @@ const ClientSettings = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Cancel Subscription */}
+        {stripeSubId && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card className="shadow-card border-destructive/30">
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2 text-destructive">
+                  <XCircle className="w-5 h-5" /> Annuler mon abonnement
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {cancelDate ? (
+                  <div className="bg-accent/50 border border-primary/20 rounded-xl p-4">
+                    <p className="text-sm">
+                      Votre abonnement sera actif jusqu'au{" "}
+                      <strong>{format(new Date(cancelDate), "d MMMM yyyy", { locale: fr })}</strong>,
+                      puis ne sera pas renouvelé.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Votre abonnement restera actif jusqu'à la fin de la période en cours (mensuelle ou trimestrielle). Aucun remboursement partiel ne sera effectué.
+                    </p>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="rounded-full w-full" disabled={cancelPending}>
+                          {cancelPending ? "Annulation en cours..." : "Annuler mon abonnement"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmer l'annulation</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Votre abonnement ne sera pas renouvelé à la fin de la période en cours. Vous conserverez l'accès jusqu'à cette date.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Garder mon abonnement</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleCancelSubscription} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Confirmer l'annulation
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
     </div>
   );

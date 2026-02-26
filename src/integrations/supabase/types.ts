@@ -908,6 +908,7 @@ export type Database = {
           admin_notes: string | null
           agreement_type: string | null
           base_price: number
+          billing_cycle: string | null
           client_id: string
           created_at: string | null
           dog_count: number
@@ -936,6 +937,7 @@ export type Database = {
           admin_notes?: string | null
           agreement_type?: string | null
           base_price: number
+          billing_cycle?: string | null
           client_id: string
           created_at?: string | null
           dog_count: number
@@ -964,6 +966,7 @@ export type Database = {
           admin_notes?: string | null
           agreement_type?: string | null
           base_price?: number
+          billing_cycle?: string | null
           client_id?: string
           created_at?: string | null
           dog_count?: number

@@ -107,10 +107,52 @@ serve(async (req) => {
 
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object as Stripe.Subscription;
-    await supabase.from("clients").update({
-      status: "inactive",
-      pipeline_stage: "inactive",
-    }).eq("stripe_subscription_id", subscription.id);
+    
+    // Find client by subscription ID
+    const { data: client } = await supabase.from("clients")
+      .select("id")
+      .eq("stripe_subscription_id", subscription.id)
+      .maybeSingle();
+
+    if (client) {
+      await supabase.from("clients").update({
+        status: "inactive",
+        pipeline_stage: "inactive",
+        inactivated_at: new Date().toISOString(),
+      }).eq("id", client.id);
+
+      // Log pipeline change
+      await supabase.from("pipeline_history").insert({
+        client_id: client.id,
+        from_stage: "active",
+        to_stage: "inactive",
+        changed_by: "system",
+        note: "Abonnement Stripe expiré",
+      });
+    }
+  }
+
+  // Handle subscription updated (cancel_at_period_end)
+  if (event.type === "customer.subscription.updated") {
+    const subscription = event.data.object as Stripe.Subscription;
+    
+    if (subscription.cancel_at_period_end) {
+      const { data: client } = await supabase.from("clients")
+        .select("id")
+        .eq("stripe_subscription_id", subscription.id)
+        .maybeSingle();
+
+      if (client) {
+        // Mark as pending cancellation but still active
+        await supabase.from("pipeline_history").insert({
+          client_id: client.id,
+          from_stage: "active",
+          to_stage: "active",
+          changed_by: "system",
+          note: `Annulation demandée — actif jusqu'au ${new Date((subscription.current_period_end || 0) * 1000).toISOString().split("T")[0]}`,
+        });
+      }
+    }
   }
 
   return new Response(JSON.stringify({ received: true }), {
