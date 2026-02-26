@@ -661,7 +661,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
                   <>
                     {/* Green banner */}
                     <div className="bg-primary text-primary-foreground text-center py-2 px-4 rounded-t-lg -mx-6 -mt-6 mb-4 font-display font-bold text-sm">
-                      ⚡ Réclamez votre premier ramassage GRATUIT !
+                      ⚡ Profitez de votre premier ramassage GRATUIT !
                     </div>
                     <DialogHeader>
                       <DialogTitle className="text-lg">Votre devis gratuit</DialogTitle>
