@@ -10,7 +10,7 @@ import ResidentialDetailSection from "@/components/landing/ResidentialDetailSect
 import PromoSection from "@/components/landing/PromoSection";
 import CommercialSection from "@/components/landing/CommercialSection";
 import WhyChooseUsSection from "@/components/landing/WhyChooseUsSection";
-import ServiceAreasSection from "@/components/landing/ServiceAreasSection";
+
 
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FAQSection from "@/components/landing/FAQSection";
@@ -41,7 +41,7 @@ const Index = () => {
       <PromiseSection />
       <AboutSection />
       <ResidentialDetailSection onOpenQuote={openQuote} />
-      <ServiceAreasSection />
+      
       <PromoSection onOpenQuote={openQuote} />
       <CommercialSection onOpenQuote={openQuote} />
       <WhyChooseUsSection />

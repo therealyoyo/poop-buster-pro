@@ -67,21 +67,6 @@ interface PostalCodeModalProps {
   isB2B?: boolean;
 }
 
-/** Non-blocking newsletter insert when mailing consent is checked */
-const insertNewsletterLead = async (data: { email: string; first_name: string; last_name: string }) => {
-  try {
-    await supabase.from("leads").insert({
-      email: data.email,
-      first_name: data.first_name,
-      last_name: data.last_name,
-      mailing_consent: true,
-      data_processing_consent: true,
-      status: "new",
-      lead_type: "newsletter",
-      additional_comments: "Inscrit à la mailing list via formulaire devis",
-    } as any);
-  } catch { /* silent */ }
-};
 
 const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalProps) => {
   const [step, setStep] = useState<Step>("check");
@@ -316,11 +301,6 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         lead_type: "early_lead",
       } as any);
 
-      // Newsletter insert if mailing consent
-      if (mailing) {
-        insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
-      }
-
       setQuoteSubmitted(true);
       toast.success("Votre demande a été envoyée ! Nous vous contacterons rapidement. 🐾");
     } catch (e: any) {
@@ -350,11 +330,6 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         additional_comments: "Lead B2B — Devis sur mesure",
       } as any);
 
-      // Newsletter insert if mailing consent
-      if (mailing) {
-        insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
-      }
-
       setQuoteSubmitted(true);
       toast.success("Demande B2B envoyée ! 🏢");
     } catch (e: any) {
@@ -364,34 +339,13 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
     }
   };
 
-  // Phase 1 CTA handler — inserts early_lead non-blocking
+  // Phase 1 CTA handler
   const handlePhase1Submit = () => {
     setAttempted(true);
     if (phase1HasErrors) {
       toast.error("Veuillez remplir tous les champs obligatoires.");
       return;
     }
-
-    // Non-blocking early_lead insert for ALL Phase 1 submissions
-    try {
-      const address = `${streetName} ${streetNumber}, ${codePostal}`.trim().replace(/^,/, "").trim();
-      supabase.from("leads").insert({
-        first_name: firstName, last_name: lastName, email, phone,
-        address: address || null, street_name: streetName || null, street_number: streetNumber || null,
-        city: zone, postal_code: codePostal,
-        dog_count: dogCount[0], garden_size: selectedGardenSize,
-        service_frequency: freqKey,
-        referral_source: referralSource || null,
-        mailing_consent: mailing, data_processing_consent: true, status: "new",
-        promo_code: promoCode || null,
-        lead_type: "early_lead",
-      } as any).then(() => {
-        // Newsletter insert if mailing consent (for non-special leads going to Phase 2)
-        if (mailing && !isSpecialLead) {
-          insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
-        }
-      });
-    } catch { /* non-blocking */ }
 
     if (isSpecialLead) {
       handleSpecialLeadSubmit();
@@ -449,11 +403,6 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         lead_type: "qualified_lead",
       } as any);
       if (leadError) throw leadError;
-
-      // Newsletter insert if mailing consent
-      if (mailing) {
-        insertNewsletterLead({ email, first_name: firstName, last_name: lastName });
-      }
 
       setQuoteSubmitted(true);
       toast.success("Votre demande de devis a bien été reçue ! Nous vous contacterons rapidement. 🐾");

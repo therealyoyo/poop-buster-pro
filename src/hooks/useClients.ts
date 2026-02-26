@@ -142,6 +142,17 @@ export function useLeads(filters?: { search?: string; status?: string }) {
   });
 }
 
+export function useUpdateLead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<Lead> & { id: string }) => {
+      const { error } = await supabase.from("leads").update(updates).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
+  });
+}
+
 export function useServiceZones() {
   return useQuery({
     queryKey: ["service_zones"],
