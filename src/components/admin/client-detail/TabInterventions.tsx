@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, CheckCircle2, Camera, Clock, History, CalendarClock, X } from "lucide-react";
+import { Calendar, CheckCircle2, Camera, Clock, History, CalendarClock, X, Send } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -13,10 +13,14 @@ import { fr } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
 import { useState, useRef } from "react";
 import { uploadInterventionPhoto, useRescheduleIntervention } from "@/hooks/useInterventions";
+import { supabase } from "@/integrations/supabase/client";
 
 const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel", twice_weekly: "2x/semaine" };
 const dayLabels = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 const dayValues = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+const dayFullLabels: Record<string, string> = {
+  monday: "Lundi", tuesday: "Mardi", wednesday: "Mercredi", thursday: "Jeudi", friday: "Vendredi", saturday: "Samedi",
+};
 
 interface TabInterventionsProps {
   client: any;
@@ -40,6 +44,11 @@ export default function TabInterventions({ client, interventions, onUpdateClient
   const [rescheduleDate, setRescheduleDate] = useState<Date>();
   const [rescheduleReason, setRescheduleReason] = useState("");
   const reschedule = useRescheduleIntervention();
+
+  // Pending day change state
+  const [pendingDay, setPendingDay] = useState<string | null>(null);
+  const [pendingDay2, setPendingDay2] = useState<string | null>(null);
+  const [sendingDayEmail, setSendingDayEmail] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
   const pastInterventions = interventions
@@ -81,14 +90,50 @@ export default function TabInterventions({ client, interventions, onUpdateClient
     }
   };
 
-  const handleDaySelect = async (day: string) => {
+  const handleDaySelect = (day: string) => {
+    setPendingDay(day);
+  };
+
+  const handleDay2Select = (day: string) => {
+    setPendingDay2(day);
+  };
+
+  const handleConfirmDays = async () => {
+    setSendingDayEmail(true);
     try {
-      await onUpdateClient({ preferred_day: day });
-      toast({ title: "✅ Jour de visite mis à jour !" });
+      const updates: any = {};
+      if (pendingDay) updates.preferred_day = pendingDay;
+      if (pendingDay2) updates.preferred_day_2 = pendingDay2;
+      await onUpdateClient(updates);
+
+      const day1 = pendingDay || client.preferred_day;
+      const day2 = pendingDay2 || client.preferred_day_2;
+      const isTwice = client.service_frequency === "twice_weekly" && day1 && day2;
+      const message = isTwice
+        ? `Bonjour,\n\nVos nouveaux jours de ramassage sont le ${dayFullLabels[day1]} et le ${dayFullLabels[day2]}.\n\nL'équipe Crotte & Go®`
+        : `Bonjour,\n\nVotre nouveau jour de ramassage est le ${dayFullLabels[day1 || ""]}.\n\nL'équipe Crotte & Go®`;
+
+      await supabase.functions.invoke("send-client-email", {
+        body: {
+          client_id: client.id,
+          subject: "📅 Mise à jour de votre jour de ramassage",
+          message,
+        },
+      });
+
+      toast({ title: `✅ Jours confirmés et email envoyé à ${client.email}` });
+      setPendingDay(null);
+      setPendingDay2(null);
     } catch (e: any) {
       toast({ title: "❌ Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setSendingDayEmail(false);
     }
   };
+
+  const hasPendingChange = pendingDay !== null || pendingDay2 !== null;
+  const effectiveDay = pendingDay ?? client.preferred_day;
+  const effectiveDay2 = pendingDay2 ?? client.preferred_day_2;
 
   const handleFreqChange = async (freq: string) => {
     try {
@@ -135,7 +180,6 @@ export default function TabInterventions({ client, interventions, onUpdateClient
         </div>
       )}
 
-      {/* Completion panel */}
       {completingId === i.id && (
         <div className="mt-2 space-y-2 p-2 bg-muted/30 rounded-lg">
           <Input placeholder="Message (optionnel)" value={completionMsg} onChange={e => setCompletionMsg(e.target.value)} />
@@ -150,7 +194,6 @@ export default function TabInterventions({ client, interventions, onUpdateClient
         </div>
       )}
 
-      {/* Reschedule panel */}
       {reschedulingId === i.id && (
         <div className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg border border-border">
           <div className="flex items-center justify-between">
@@ -200,7 +243,6 @@ export default function TabInterventions({ client, interventions, onUpdateClient
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
-        {/* Future interventions */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="font-display text-base flex items-center gap-2">
@@ -219,7 +261,6 @@ export default function TabInterventions({ client, interventions, onUpdateClient
           </CardContent>
         </Card>
 
-        {/* Past interventions */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="font-display text-base flex items-center gap-2">
@@ -235,7 +276,6 @@ export default function TabInterventions({ client, interventions, onUpdateClient
         </Card>
       </div>
 
-      {/* Planning sidebar */}
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="font-display text-base flex items-center gap-2">
@@ -249,7 +289,7 @@ export default function TabInterventions({ client, interventions, onUpdateClient
             </p>
             <div className="grid grid-cols-3 gap-2">
               {dayLabels.map((label, idx) => (
-                <Button key={dayValues[idx]} variant={client.preferred_day === dayValues[idx] ? "default" : "outline"} size="sm" onClick={() => handleDaySelect(dayValues[idx])}>
+                <Button key={dayValues[idx]} variant={effectiveDay === dayValues[idx] ? "default" : "outline"} size="sm" onClick={() => handleDaySelect(dayValues[idx])}>
                   {label}
                 </Button>
               ))}
@@ -260,20 +300,13 @@ export default function TabInterventions({ client, interventions, onUpdateClient
               <p className="text-xs font-semibold text-muted-foreground mb-2">Jour préféré (Jour 2)</p>
               <div className="grid grid-cols-3 gap-2">
                 {dayLabels.map((label, idx) => {
-                  if (dayValues[idx] === client.preferred_day) return null;
+                  if (dayValues[idx] === effectiveDay) return null;
                   return (
                     <Button
                       key={dayValues[idx]}
-                      variant={client.preferred_day_2 === dayValues[idx] ? "default" : "outline"}
+                      variant={effectiveDay2 === dayValues[idx] ? "default" : "outline"}
                       size="sm"
-                      onClick={async () => {
-                        try {
-                          await onUpdateClient({ preferred_day_2: dayValues[idx] });
-                          toast({ title: "✅ Jour 2 mis à jour !" });
-                        } catch (e: any) {
-                          toast({ title: "❌ Erreur", description: e.message, variant: "destructive" });
-                        }
-                      }}
+                      onClick={() => handleDay2Select(dayValues[idx])}
                     >
                       {label}
                     </Button>
@@ -282,6 +315,18 @@ export default function TabInterventions({ client, interventions, onUpdateClient
               </div>
             </div>
           )}
+
+          {hasPendingChange && (
+            <Button
+              className="w-full"
+              onClick={handleConfirmDays}
+              disabled={sendingDayEmail}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {sendingDayEmail ? "Envoi..." : "Confirmer et envoyer email au client"}
+            </Button>
+          )}
+
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-2">Fréquence</p>
             <Select value={client.service_frequency || "weekly"} onValueChange={handleFreqChange}>

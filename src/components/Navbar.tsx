@@ -4,6 +4,7 @@ import PawIcon from "@/components/PawIcon";
 import { Menu, X, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useUnreadCount } from "@/hooks/useMessages";
+import logo from "@/assets/logo.png";
 
 const Navbar = () => {
   const location = useLocation();
@@ -34,9 +35,15 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold text-primary">
-          <PawIcon className="w-7 h-7 animate-paw-bounce" />
-          Crotte & Go
+        <Link to={isAdmin ? "/admin" : "/"} className="flex items-center gap-2 font-display text-xl font-bold text-primary">
+          {isAdmin ? (
+            <img src={logo} alt="Crotte & Go" className="h-8 w-auto" />
+          ) : (
+            <>
+              <PawIcon className="w-7 h-7 animate-paw-bounce" />
+              Crotte & Go
+            </>
+          )}
         </Link>
 
         <div className="hidden md:flex items-center gap-2">

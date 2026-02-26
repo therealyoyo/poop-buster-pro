@@ -56,7 +56,7 @@ serve(async (req) => {
     // Insert message as client reply
     const { error: insertErr } = await supabase.from("messages").insert({
       client_id: client.id,
-      sender_id: client.user_id || client.id, // fallback to client.id if no user_id
+      sender_id: client.user_id || null,
       sender_role: "client",
       content: cleanContent,
       sender_name: emailData.from?.split("<")[0]?.trim() || fromEmail,

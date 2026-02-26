@@ -32,7 +32,15 @@ export default function TabProfile({ client, onUpdateClient }: TabProfileProps) 
         <CardContent className="space-y-3 text-sm">
           <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-muted-foreground" /> <span>{client.email || "—"}</span></div>
           <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /> <span>{client.phone || "—"}</span></div>
-          <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-muted-foreground" /> <span>{client.address || `${client.street_number || ""} ${client.street_name || ""}, ${client.postal_code || ""} ${client.city || ""}`.trim() || "—"}</span></div>
+          <div className="flex items-start gap-2">
+            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+            <div>
+              <span>{client.address || `${client.street_number || ""} ${client.street_name || ""}`.trim() || "—"}</span>
+              {(client.postal_code || client.city) && (
+                <p className="text-xs text-muted-foreground ml-0">{[client.postal_code, client.city].filter(Boolean).join(" ")}</p>
+              )}
+            </div>
+          </div>
           {client.company && <div className="flex items-center gap-2"><Building className="w-4 h-4 text-muted-foreground" /> <span>{client.company}</span></div>}
           <div className="flex items-center gap-2"><Ruler className="w-4 h-4 text-muted-foreground" /> <span>Jardin: {client.garden_size || "—"}</span></div>
           <div className="flex items-center gap-2"><Key className="w-4 h-4 text-muted-foreground" /> <span>Code portail: {client.gate_code || "—"}</span></div>

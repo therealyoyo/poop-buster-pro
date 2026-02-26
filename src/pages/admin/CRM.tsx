@@ -86,7 +86,7 @@ const AdminCRM = () => {
         dog_count: lead.dog_count || 1,
         garden_size: lead.garden_size || null,
         service_frequency: lead.service_frequency || null,
-        pipeline_stage: "new_lead",
+        pipeline_stage: "new",
         status: "prospect",
         user_id: null,
         zone_id: null,
