@@ -45,6 +45,7 @@ const SiteNavbar = ({ onOpenQuote }: { onOpenQuote?: () => void }) => {
           <Link to="/about" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">À propos</Link>
 
 
+          <Link to="/login" className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors">Espace client</Link>
           <Button variant="cta" size="sm" className="ml-2" onClick={onOpenQuote}>Devis gratuit</Button>
         </div>
 
@@ -66,6 +67,7 @@ const SiteNavbar = ({ onOpenQuote }: { onOpenQuote?: () => void }) => {
           )}
           <button onClick={handleFaqClick} className="px-3 py-2 text-sm font-medium text-foreground">FAQ</button>
           <Link to="/about" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">À propos</Link>
+          <Link to="/login" onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm font-medium text-foreground">Espace client</Link>
           <Button variant="cta" className="w-full mt-2" onClick={() => { setMobileOpen(false); onOpenQuote?.(); }}>Devis gratuit</Button>
         </div>
       )}
