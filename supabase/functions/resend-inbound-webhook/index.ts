@@ -13,9 +13,10 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("Resend inbound webhook received:", JSON.stringify(payload).slice(0, 500));
 
-    // Resend inbound sends: { from, to, subject, text, html, ... }
-    const fromEmail = extractEmail(payload.from);
-    const textContent = payload.text || payload.html?.replace(/<[^>]*>/g, '') || "";
+    // Resend wraps the email data inside a "data" object
+    const emailData = payload.data || payload;
+    const fromEmail = extractEmail(emailData.from);
+    const textContent = emailData.text || emailData.html?.replace(/<[^>]*>/g, '') || "";
 
     if (!fromEmail || !textContent.trim()) {
       console.log("Empty email or no sender, skipping");
@@ -58,7 +59,7 @@ serve(async (req) => {
       sender_id: client.user_id || client.id, // fallback to client.id if no user_id
       sender_role: "client",
       content: cleanContent,
-      sender_name: payload.from?.split("<")[0]?.trim() || fromEmail,
+      sender_name: emailData.from?.split("<")[0]?.trim() || fromEmail,
     });
 
     if (insertErr) {
