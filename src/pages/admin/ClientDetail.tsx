@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -83,8 +84,24 @@ const ClientDetail = () => {
 
   const handleSendMsg = async () => {
     if (!msgText.trim()) return;
-    await sendMessage.mutateAsync({ client_id: id!, content: msgText, sender_role: "admin" });
+    const msg = msgText;
     setMsgText("");
+    try {
+      await sendMessage.mutateAsync({ client_id: id!, content: msg, sender_role: "admin" });
+      // Send email to client
+      if (client.email) {
+        try {
+          await supabase.functions.invoke("send-client-email", {
+            body: { client_id: id!, message: msg },
+          });
+        } catch (emailErr) {
+          console.error("Email send failed:", emailErr);
+          toast({ title: "Message envoyé mais erreur d'envoi email", variant: "destructive" });
+        }
+      }
+    } catch {
+      toast({ title: "Erreur envoi message", variant: "destructive" });
+    }
   };
 
   const handleComplete = async (interventionId: string) => {
@@ -210,9 +227,14 @@ const ClientDetail = () => {
                       <div className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${m.sender_role === "admin" ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground"}`}>
                         <p>{m.content}</p>
                         {m.photo_url && <img src={m.photo_url} alt="Photo" className="mt-1 rounded-lg max-w-full max-h-32 object-cover" />}
-                        <p className={`text-[10px] mt-1 ${m.sender_role === "admin" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                          {format(new Date(m.created_at), "d MMM HH:mm", { locale: fr })}
-                        </p>
+                        <div className={`flex items-center gap-1 mt-1 ${m.sender_role === "admin" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                          <p className="text-[10px]">
+                            {format(new Date(m.created_at), "d MMM HH:mm", { locale: fr })}
+                          </p>
+                          {m.sender_role === "admin" && (m as any).email_sent_at && (
+                            <span className="text-[10px]">✉️</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
