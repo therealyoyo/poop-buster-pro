@@ -478,7 +478,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
         status: "hors_zone",
       });
       if (error) throw error;
-      toast.success("Merci ! Nous reviendrons vers vous.");
+      toast.success("Merci ! Nous vous tiendrons informé dès que votre zone sera couverte. 🐾");
       resetAll();
       onOpenChange(false);
     } catch (e: any) {
@@ -1040,7 +1040,7 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <p className="text-sm text-muted-foreground">
-                Notre service n'est peut-être pas encore disponible dans votre région. Veuillez vérifier votre code postal. S'il est incorrect, revenez en arrière pour le corriger. Sinon, laissez-nous vos coordonnées et nous reviendrons vers vous.
+                Nous ne desservons pas encore votre région, mais nous nous développons rapidement ! Veuillez vérifier votre code postal. S'il est incorrect, revenez en arrière pour le corriger. Sinon, laissez-nous vos coordonnées et nous vous tiendrons informé.
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div>

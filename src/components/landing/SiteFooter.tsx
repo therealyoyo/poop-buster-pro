@@ -11,7 +11,7 @@ const SiteFooter = () => (
             <img src={logo} alt="Crotte & Go" className="h-10" />
           </div>
           <p className="text-sm text-muted-foreground mb-1">Belgique</p>
-          <p className="text-sm text-muted-foreground mb-1">info@crottego.be</p>
+          <p className="text-sm text-muted-foreground mb-1">hello@crotteandgo.be</p>
           <p className="text-sm text-muted-foreground">+32 2 123 45 67</p>
         </div>
 

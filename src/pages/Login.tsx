@@ -31,7 +31,7 @@ const Login = () => {
             </p>
             <p className="text-sm text-muted-foreground">
               Une question ? Contactez-nous à{" "}
-              <a href="mailto:contact@crotteetgo.be" className="text-primary underline">contact@crotteetgo.be</a>
+              <a href="mailto:hello@crotteandgo.be" className="text-primary underline">hello@crotteandgo.be</a>
             </p>
           </CardContent>
         </Card>

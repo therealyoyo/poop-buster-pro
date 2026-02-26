@@ -242,13 +242,13 @@ const QuoteAccept = () => {
               <p>Le Client s'engage à permettre l'accès au jardin, à fournir les informations d'accès nécessaires et à signaler tout animal agressif. En cas d'accès impossible imputable au Client, la prestation est facturée. Crotte & Go ne peut être tenu responsable des dommages causés par un animal non signalé.</p>
 
               <p className="font-semibold">ARTICLE 6 — RÉSILIATION ET SUSPENSION</p>
-              <p>Résiliation possible à tout moment sans frais avec 7 jours de préavis (email à contact@crotteetgo.be). Suspension temporaire possible jusqu'à 3 mois/an sur notification écrite. Crotte & Go peut résilier en cas de non-paiement, comportement abusif ou informations fausses.</p>
+              <p>Résiliation possible à tout moment sans frais avec 7 jours de préavis (email à hello@crotteandgo.be). Suspension temporaire possible jusqu'à 3 mois/an sur notification écrite. Crotte & Go peut résilier en cas de non-paiement, comportement abusif ou informations fausses.</p>
 
               <p className="font-semibold">ARTICLE 7 — RESPONSABILITÉS ET GARANTIES</p>
               <p>En cas de prestation insatisfaisante, le Client peut demander un repassage gratuit dans les 24h avec photo à l'appui. La responsabilité de Crotte & Go est limitée au montant de la prestation concernée. Crotte & Go est couvert par une assurance RC professionnelle.</p>
 
               <p className="font-semibold">ARTICLE 8 — PROTECTION DES DONNÉES (RGPD)</p>
-              <p>Crotte & Go traite les données personnelles du Client pour l'exécution du contrat, conformément au RGPD (UE) 2016/679 et à la loi belge du 30 juillet 2018. Données conservées 7 ans après résiliation. Droits d'accès, rectification, effacement et opposition exercés via privacy@crotteetgo.be. Réclamations possibles auprès de l'APD (autoriteprotectiondonnees.be).</p>
+              <p>Crotte & Go traite les données personnelles du Client pour l'exécution du contrat, conformément au RGPD (UE) 2016/679 et à la loi belge du 30 juillet 2018. Données conservées 7 ans après résiliation. Droits d'accès, rectification, effacement et opposition exercés via privacy@crotteandgo.be. Réclamations possibles auprès de l'APD (autoriteprotectiondonnees.be).</p>
 
               <p className="font-semibold">ARTICLE 9 — MODIFICATION DES CGS</p>
               <p>Toute modification est notifiée 30 jours à l'avance. En l'absence d'opposition, les nouvelles CGS sont réputées acceptées.</p>
@@ -259,7 +259,7 @@ const QuoteAccept = () => {
               <p className="font-semibold">ARTICLE 11 — DISPOSITIONS DIVERSES</p>
               <p>Le contrat est intuitu personae et non cessible sans accord écrit. Si une clause est nulle, les autres restent en vigueur. La version française fait foi.</p>
 
-              <p className="font-semibold">Crotte & Go — contact@crotteetgo.be — www.crotteetgo.be — Belgique</p>
+              <p className="font-semibold">Crotte & Go — hello@crotteandgo.be — www.crotteandgo.be — Belgique</p>
             </div>
 
             <div className="flex items-start gap-2">
