@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, CheckCircle2, Camera, Clock, History } from "lucide-react";
+import { Calendar, CheckCircle2, Camera, Clock, History, CalendarClock, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
 import { useState, useRef } from "react";
-import { uploadInterventionPhoto } from "@/hooks/useInterventions";
+import { uploadInterventionPhoto, useRescheduleIntervention } from "@/hooks/useInterventions";
 
 const freqLabels: Record<string, string> = { weekly: "Hebdomadaire", biweekly: "Bi-mensuel", monthly: "Mensuel", onetime: "Ponctuel", twice_weekly: "2x/semaine" };
 const dayLabels = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
@@ -34,6 +35,12 @@ export default function TabInterventions({ client, interventions, onUpdateClient
   const [pauseDate, setPauseDate] = useState<Date>();
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  // Reschedule state
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState<Date>();
+  const [rescheduleReason, setRescheduleReason] = useState("");
+  const reschedule = useRescheduleIntervention();
+
   const today = new Date().toISOString().split("T")[0];
   const pastInterventions = interventions
     .filter(i => i.scheduled_date < today || i.status === "completed")
@@ -55,6 +62,23 @@ export default function TabInterventions({ client, interventions, onUpdateClient
     await onCompleteIntervention({ id, photo_url: photoUrl, completion_message: completionMsg || undefined, client_id: client.id });
     toast({ title: "Intervention terminée !" });
     setCompletingId(null); setCompletionMsg(""); setCompletionPhoto(null);
+  };
+
+  const handleReschedule = async (interventionId: string) => {
+    if (!rescheduleDate) return;
+    try {
+      await reschedule.mutateAsync({
+        intervention_id: interventionId,
+        new_date: format(rescheduleDate, "yyyy-MM-dd"),
+        reason: rescheduleReason || undefined,
+      });
+      toast({ title: "✅ Passage reprogrammé — Le client a été notifié par email." });
+      setReschedulingId(null);
+      setRescheduleDate(undefined);
+      setRescheduleReason("");
+    } catch (e: any) {
+      toast({ title: "❌ Erreur", description: e.message, variant: "destructive" });
+    }
   };
 
   const handleDaySelect = async (day: string) => {
@@ -99,11 +123,19 @@ export default function TabInterventions({ client, interventions, onUpdateClient
       </div>
       {i.photo_url && <img src={i.photo_url} alt="Photo" className="mt-2 rounded-lg max-h-24 object-cover" />}
       {i.completion_message && <p className="text-xs text-muted-foreground mt-1">{i.completion_message}</p>}
-      {!readonly && i.status !== "completed" && completingId !== i.id && (
-        <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => setCompletingId(i.id)}>
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Marquer comme terminé
-        </Button>
+
+      {!readonly && i.status !== "completed" && completingId !== i.id && reschedulingId !== i.id && (
+        <div className="flex gap-2 mt-2">
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => setCompletingId(i.id)}>
+            <CheckCircle2 className="w-3 h-3 mr-1" /> Marquer terminé
+          </Button>
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => { setReschedulingId(i.id); setRescheduleDate(undefined); setRescheduleReason(""); }}>
+            <CalendarClock className="w-3 h-3 mr-1" /> Reprogrammer
+          </Button>
+        </div>
       )}
+
+      {/* Completion panel */}
       {completingId === i.id && (
         <div className="mt-2 space-y-2 p-2 bg-muted/30 rounded-lg">
           <Input placeholder="Message (optionnel)" value={completionMsg} onChange={e => setCompletionMsg(e.target.value)} />
@@ -117,12 +149,56 @@ export default function TabInterventions({ client, interventions, onUpdateClient
           <Button variant="ghost" size="sm" className="w-full" onClick={() => { setCompletingId(null); setCompletionPhoto(null); }}>Annuler</Button>
         </div>
       )}
+
+      {/* Reschedule panel */}
+      {reschedulingId === i.id && (
+        <div className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg border border-border">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">📅 Reprogrammer ce passage</span>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setReschedulingId(null)}>
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("w-full justify-start text-left", !rescheduleDate && "text-muted-foreground")}>
+                <Calendar className="w-3 h-3 mr-2" />
+                {rescheduleDate ? format(rescheduleDate, "PPP", { locale: fr }) : "Choisir une nouvelle date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={rescheduleDate}
+                onSelect={setRescheduleDate}
+                disabled={(d) => d < new Date()}
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          <Textarea
+            placeholder="Raison (optionnel) — ex: météo, congés..."
+            value={rescheduleReason}
+            onChange={e => setRescheduleReason(e.target.value)}
+            className="text-sm min-h-[60px]"
+          />
+          <Button
+            variant="cta"
+            size="sm"
+            className="w-full"
+            disabled={!rescheduleDate || reschedule.isPending}
+            onClick={() => handleReschedule(i.id)}
+          >
+            {reschedule.isPending ? "Envoi..." : "Confirmer & notifier le client ✉️"}
+          </Button>
+          <p className="text-[11px] text-muted-foreground text-center">Un email sera automatiquement envoyé au client</p>
+        </div>
+      )}
     </div>
   );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Two cards side by side */}
       <div className="lg:col-span-2 space-y-6">
         {/* Future interventions */}
         <Card className="shadow-card">
