@@ -8,23 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { motion } from "framer-motion";
-import PawIcon from "@/components/PawIcon";
 import { CalendarIcon, Loader2, Check } from "lucide-react";
 import { useQuoteByToken, type LineItem } from "@/hooks/useQuotes";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo.png";
 
 const freqLabels: Record<string, string> = {
   weekly: "Hebdomadaire (4 visites/mois)", biweekly: "Bi-mensuel (2 visites/mois)",
-  monthly: "Mensuel (1 visite/mois)", onetime: "Visite unique",
+  monthly: "Mensuel (1 visite/mois)", onetime: "Visite unique", twice_weekly: "2x/semaine (8 visites/mois)",
 };
 const gardenLabels: Record<string, string> = { small: "Petit jardin", medium: "Jardin moyen", large: "Grand jardin", xl: "Très grand jardin" };
 const dayLabels = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 const dayValues = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-
-// Full CGS rendered inline in Step 3
 
 const QuoteAccept = () => {
   const { token } = useParams<{ token: string }>();
@@ -50,7 +48,7 @@ const QuoteAccept = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="shadow-card max-w-md w-full"><CardContent className="py-12 text-center">
-          <PawIcon className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <img src={logo} alt="Crotte & Go®" className="h-14 w-auto mx-auto mb-3" />
           <h2 className="font-display text-xl font-bold mb-2">Devis introuvable</h2>
           <p className="text-muted-foreground text-sm">Ce lien n'est plus valide ou le devis a été supprimé.</p>
         </CardContent></Card>
@@ -67,7 +65,7 @@ const QuoteAccept = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="shadow-card max-w-md w-full"><CardContent className="py-12 text-center">
-          <Check className="w-12 h-12 text-secondary mx-auto mb-3" />
+          <img src={logo} alt="Crotte & Go®" className="h-14 w-auto mx-auto mb-3" />
           <h2 className="font-display text-xl font-bold mb-2">Devis déjà accepté ✅</h2>
           <p className="text-muted-foreground text-sm">Ce devis a été accepté le {format(new Date(quote.accepted_at!), "d MMMM yyyy", { locale: fr })}.</p>
         </CardContent></Card>
@@ -79,7 +77,7 @@ const QuoteAccept = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="shadow-card max-w-md w-full"><CardContent className="py-12 text-center">
-          <PawIcon className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <img src={logo} alt="Crotte & Go®" className="h-14 w-auto mx-auto mb-3" />
           <h2 className="font-display text-xl font-bold mb-2">Devis expiré</h2>
           <p className="text-muted-foreground text-sm">Ce devis est valable 14 jours. Contactez-nous pour un nouveau devis.</p>
         </CardContent></Card>
@@ -88,6 +86,15 @@ const QuoteAccept = () => {
   }
 
   const lineItems = (quote.line_items || []) as LineItem[];
+
+  // TVA calculations
+  const TVA_RATE = 0.21;
+  const totalHTVA = Number(quote.total_price) / (1 + TVA_RATE);
+  const montantTVA = Number(quote.total_price) - totalHTVA;
+  const freqDivisorMap: Record<string, number> = { onetime: 1, monthly: 1, biweekly: 2, weekly: 4, twice_weekly: 8 };
+  const passagesParMois = freqDivisorMap[quote.frequency] || 1;
+  const prixParPassage = Number(quote.total_price) / passagesParMois;
+  const isQuarterly = (quote as any).billing_cycle === "quarterly";
 
   const handleCheckout = async () => {
     setCheckoutLoading(true);
@@ -111,8 +118,8 @@ const QuoteAccept = () => {
       <div className="sticky top-0 z-50 bg-card border-b border-border">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <PawIcon className="w-5 h-5 text-primary" />
-            <span className="font-display font-bold text-sm">Crotte & Go</span>
+            <img src={logo} alt="Crotte & Go®" className="h-8 w-auto" />
+            <span className="font-display font-bold text-sm">Crotte & Go®</span>
           </div>
           <span className="text-xs text-muted-foreground">Étape {step} sur 4</span>
         </div>
@@ -126,7 +133,7 @@ const QuoteAccept = () => {
         {step === 1 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div>
-              <h1 className="font-display text-2xl font-bold">Bonjour {clientName}, voici votre devis 🐾</h1>
+              <h1 className="font-display text-2xl font-bold">Bonjour {clientName}, voici votre devis Crotte & Go® 🐾</h1>
             </div>
 
             <Card className="shadow-card">
@@ -155,9 +162,32 @@ const QuoteAccept = () => {
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-border pt-3 flex justify-between">
-                  <span className="font-display font-bold text-lg">Total</span>
-                  <span className="font-display font-bold text-lg">€{Number(quote.total_price).toFixed(2)}</span>
+                <div className="border-t border-border pt-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total HTVA</span>
+                    <span>€{totalHTVA.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">TVA 21%</span>
+                    <span>€{montantTVA.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-display font-bold text-lg">Total TVAC</span>
+                    <span className="font-display font-bold text-lg text-green-600">€{Number(quote.total_price).toFixed(2)}/mois</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Par passage</span>
+                    <span>€{prixParPassage.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Passages/mois</span>
+                    <span>{passagesParMois} visite(s)</span>
+                  </div>
+                  {isQuarterly && (
+                    <Badge className="bg-green-100 text-green-800 border-0 w-full justify-center py-2 text-xs">
+                      Facturation trimestrielle — {passagesParMois * 3} passages sur 3 mois — Économie 10% incluse ✅
+                    </Badge>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -223,7 +253,7 @@ const QuoteAccept = () => {
             <h2 className="font-display text-xl font-bold">Conditions générales 📜</h2>
 
             <div className="max-h-64 overflow-y-auto border rounded p-3 text-xs text-muted-foreground space-y-2 bg-muted/30">
-              <p className="font-bold text-foreground">CROTTE & GO — CONDITIONS GÉNÉRALES DE SERVICES</p>
+              <p className="font-bold text-foreground">CROTTE & GO® — CONDITIONS GÉNÉRALES DE SERVICES</p>
               <p className="font-semibold">Version 1.0</p>
 
               <p className="font-semibold">ARTICLE 1 — IDENTIFICATION DES PARTIES ET CHAMP D'APPLICATION</p>
@@ -259,7 +289,7 @@ const QuoteAccept = () => {
               <p className="font-semibold">ARTICLE 11 — DISPOSITIONS DIVERSES</p>
               <p>Le contrat est intuitu personae et non cessible sans accord écrit. Si une clause est nulle, les autres restent en vigueur. La version française fait foi.</p>
 
-              <p className="font-semibold">Crotte & Go — hello@crotteandgo.be — www.crotteandgo.be — Belgique</p>
+              <p className="font-semibold">Crotte & Go® — hello@crotteandgo.be — www.crotteandgo.be — Belgique</p>
             </div>
 
             <div className="flex items-start gap-2">
@@ -293,7 +323,7 @@ const QuoteAccept = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12 space-y-4">
             {searchParams.get("cancelled") ? (
               <>
-                <PawIcon className="w-12 h-12 text-muted-foreground mx-auto" />
+                <img src={logo} alt="Crotte & Go®" className="h-14 w-auto mx-auto" />
                 <h2 className="font-display text-xl font-bold">Pas de souci !</h2>
                 <p className="text-muted-foreground">Votre devis est toujours valide. Réessayez quand vous le souhaitez.</p>
                 <Button variant="cta" className="rounded-full" onClick={() => setStep(1)}>← Revoir le devis</Button>
