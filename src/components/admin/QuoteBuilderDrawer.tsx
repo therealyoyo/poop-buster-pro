@@ -45,6 +45,7 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
   const [adminNotes, setAdminNotes] = useState("");
   const [manualPrice, setManualPrice] = useState<number | null>(null);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "quarterly">("monthly");
 
   // Promos
   const [promoReferral, setPromoReferral] = useState(false);
@@ -68,6 +69,7 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
     setPromoReferral(false);
     setPromoFirstFree(false);
     setReferralAmount(25);
+    setBillingCycle("monthly");
   }, [client.id, open]);
 
   const matchedRule = findMatchingPrice(rules, gardenSize, frequency);
@@ -85,7 +87,11 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
   const firstPassageValue = basePrice / (freqDivisor[frequency] || 1);
   const firstFreeDiscount = (promoFirstFree && canApplyFirstFree) ? firstPassageValue : 0;
   const totalDiscount = referralDiscount + firstFreeDiscount;
-  const totalPriceAfterDiscount = Math.max(0, totalPrice - totalDiscount);
+  const totalPriceBeforeCycle = Math.max(0, totalPrice - totalDiscount);
+  const isSubscription = frequency !== "onetime";
+  const quarterlyDiscount = (billingCycle === "quarterly" && isSubscription) ? totalPriceBeforeCycle * 0.10 : 0;
+  const totalPriceAfterDiscount = Math.max(0, totalPriceBeforeCycle - quarterlyDiscount);
+  const quarterlyTotal = billingCycle === "quarterly" ? totalPriceAfterDiscount * 3 : null;
 
   // TVA
   const totalHTVA = totalPriceAfterDiscount / (1 + TVA_RATE);
@@ -119,6 +125,8 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
         admin_notes: adminNotes || null,
         terms_text: null,
         preferred_day: null,
+        billing_cycle: billingCycle,
+        quarterly_price: quarterlyTotal,
       });
 
       await updateClient.mutateAsync({ id: client.id, pipeline_stage: "quote_sent" });
@@ -314,7 +322,37 @@ const QuoteBuilderDrawer = ({ open, onOpenChange, client }: QuoteBuilderDrawerPr
                   {!firstFreeAlreadyUsed && canApplyFirstFree && canCheckFirstFree && <span className="text-xs text-muted-foreground">(-€{firstPassageValue.toFixed(2)})</span>}
                   {!canApplyFirstFree && <span className="text-xs text-muted-foreground">(non disponible pour passage unique)</span>}
                 </Label>
+            </div>
+
+            {/* Billing Cycle */}
+            {frequency !== "onetime" && (
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Cycle de facturation</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={billingCycle === "monthly" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setBillingCycle("monthly")}
+                    type="button"
+                  >
+                    Mensuel
+                  </Button>
+                  <Button
+                    variant={billingCycle === "quarterly" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setBillingCycle("quarterly")}
+                    type="button"
+                  >
+                    Trimestriel (-10%)
+                  </Button>
+                </div>
+                {billingCycle === "quarterly" && (
+                  <p className="text-xs text-green-600">
+                    Réduction trimestrielle : -€{quarterlyDiscount.toFixed(2)}/mois • Facturé €{quarterlyTotal?.toFixed(2)} / 3 mois
+                  </p>
+                )}
               </div>
+            )}
 
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm font-medium text-green-600 pt-2 border-t border-border">

@@ -45,21 +45,51 @@ serve(async (req) => {
     const siteUrl = Deno.env.get("SITE_URL") || "https://example.com";
     const isSubscription = quote.frequency !== "onetime";
     const amountCents = Math.round(Number(quote.total_price) * 100);
+    const billingCycle = quote.billing_cycle || "monthly";
+
+    // Determine Stripe interval
+    let interval: "week" | "month" = "month";
+    let intervalCount = 1;
+
+    if (isSubscription) {
+      if (billingCycle === "quarterly") {
+        // Quarterly billing: charge every 3 months
+        interval = "month";
+        intervalCount = 3;
+        // Amount is monthly price, multiply by 3 for quarterly
+      } else {
+        // Monthly billing: use frequency-based intervals
+        if (quote.frequency === "weekly") {
+          interval = "week";
+          intervalCount = 1;
+        } else if (quote.frequency === "biweekly") {
+          interval = "week";
+          intervalCount = 2;
+        } else {
+          interval = "month";
+          intervalCount = 1;
+        }
+      }
+    }
+
+    // For quarterly, the checkout amount should be 3x the monthly price
+    const checkoutAmountCents = (isSubscription && billingCycle === "quarterly")
+      ? amountCents * 3
+      : amountCents;
 
     // Create a dynamic price
     const price = await stripe.prices.create({
-      unit_amount: amountCents,
+      unit_amount: checkoutAmountCents,
       currency: "eur",
       ...(isSubscription
         ? {
             recurring: {
-              interval: quote.frequency === "weekly" ? "week" as const :
-                       quote.frequency === "biweekly" ? "week" as const : "month" as const,
-              ...(quote.frequency === "biweekly" ? { interval_count: 2 } : {}),
+              interval,
+              interval_count: intervalCount,
             },
           }
         : {}),
-      product_data: { name: `Poop Buster Pro — ${quote.frequency}` },
+      product_data: { name: `Poop Buster Pro — ${quote.frequency} (${billingCycle})` },
     });
 
     const session = await stripe.checkout.sessions.create({
@@ -73,6 +103,7 @@ serve(async (req) => {
         client_id: client.id,
         preferred_day: preferred_day || "",
         accepted_by_name: accepted_by_name || "",
+        billing_cycle: billingCycle,
       },
     });
 

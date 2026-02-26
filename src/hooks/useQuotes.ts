@@ -75,6 +75,7 @@ export function useCreateQuote() {
       client_id: string; status: string; garden_size: string; dog_count: number;
       frequency: string; base_price: number; line_items: LineItem[]; total_price: number;
       admin_notes: string | null; terms_text: string | null; preferred_day: string | null;
+      billing_cycle?: string; quarterly_price?: number | null;
     }) => {
       const { data, error } = await supabase.from("quotes").insert({
         ...quote,
