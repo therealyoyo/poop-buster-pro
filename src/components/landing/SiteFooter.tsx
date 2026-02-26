@@ -4,7 +4,7 @@ import logo from "@/assets/logo.png";
 const SiteFooter = () => (
   <footer className="border-t border-border bg-card py-12">
     <div className="container mx-auto px-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* Coordonnées */}
         <div>
           <div className="flex items-center gap-2 mb-4">
@@ -24,23 +24,12 @@ const SiteFooter = () => (
           </ul>
         </div>
 
-        {/* Zones */}
-        <div>
-          <h4 className="font-display font-bold text-foreground mb-4">Zones</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><a href="#zones" className="hover:text-primary transition-colors">Bruxelles</a></li>
-            <li><a href="#zones" className="hover:text-primary transition-colors">Brabant Wallon</a></li>
-          </ul>
-        </div>
-
         {/* À propos */}
         <div>
           <h4 className="font-display font-bold text-foreground mb-4">À propos</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/about" className="hover:text-primary transition-colors">À propos</Link></li>
             <li><a href="#faq" className="hover:text-primary transition-colors">FAQ</a></li>
-            <li><a href="#signup" className="hover:text-primary transition-colors">Contact</a></li>
-            
           </ul>
         </div>
       </div>

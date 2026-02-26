@@ -9,10 +9,11 @@ import { Search, UserPlus, Filter, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import PawIcon from "@/components/PawIcon";
-import { useClients, useServiceZones, useLeads } from "@/hooks/useClients";
+import { useClients, useServiceZones, useLeads, useUpdateLead } from "@/hooks/useClients";
 import type { Lead } from "@/hooks/useClients";
 import { useUnreadCount } from "@/hooks/useMessages";
 import AddClientDialog from "@/components/admin/AddClientDialog";
+import { toast } from "sonner";
 
 const statusLabels: Record<string, string> = {
   prospect: "Prospect", active: "Actif", paused: "En pause", cancelled: "Annulé", inactive: "Inactif",
@@ -21,12 +22,15 @@ const frequencyLabels: Record<string, string> = {
   weekly: "Hebdo", biweekly: "Aux 2 sem.", monthly: "Mensuel", one_time: "Ponctuel",
 };
 
-const leadTypeLabel = (type: string | null) => {
-  switch (type) {
-    case "qualified_lead": return { label: "Qualifié", variant: "default" as const };
-    case "b2b": return { label: "B2B", variant: "outline" as const };
-    default: return { label: "Devis demandé", variant: "secondary" as const };
-  }
+const leadTypeOptions = [
+  { value: "early_lead", label: "Prospect early", color: "bg-amber-100 text-amber-800" },
+  { value: "qualified_lead", label: "Qualifié", color: "bg-green-100 text-green-800" },
+  { value: "b2b", label: "B2B", color: "bg-blue-100 text-blue-800" },
+  { value: "newsletter", label: "Newsletter", color: "bg-gray-100 text-gray-700" },
+];
+
+const getLeadTypeColor = (type: string | null) => {
+  return leadTypeOptions.find(o => o.value === type)?.color || "bg-muted text-muted-foreground";
 };
 
 const AdminCRM = () => {
@@ -40,6 +44,14 @@ const AdminCRM = () => {
   const { data: leads = [], isLoading: leadsLoading } = useLeads({ search, status: statusFilter });
   const { data: zones = [] } = useServiceZones();
   const { data: unreadCount = 0 } = useUnreadCount();
+  const updateLead = useUpdateLead();
+
+  const handleLeadTypeChange = (leadId: string, newType: string) => {
+    updateLead.mutate({ id: leadId, lead_type: newType } as any, {
+      onSuccess: () => toast.success("Catégorie mise à jour ✓"),
+      onError: () => toast.error("Erreur lors de la mise à jour"),
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -174,32 +186,38 @@ const AdminCRM = () => {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground hidden md:table-cell">Code postal</th>
                         <th className="text-center py-3 px-4 text-sm font-semibold text-muted-foreground">Chiens</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Fréquence</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Type</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Catégorie</th>
                         <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">Date</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {leads.map((l: Lead) => {
-                        const lt = leadTypeLabel(l.lead_type);
-                        return (
-                          <tr key={l.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                            <td className="py-3 px-4">
-                              <p className="font-medium text-foreground">{l.first_name || "—"} {l.last_name || ""}</p>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground">{l.email}</td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{l.phone || "—"}</td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{l.postal_code || "—"}</td>
-                            <td className="py-3 px-4 text-center">{l.dog_count ?? "—"}</td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground">{l.service_frequency || "—"}</td>
-                            <td className="py-3 px-4">
-                              <Badge variant={lt.variant}>{lt.label}</Badge>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground">
-                              {l.created_at ? new Date(l.created_at).toLocaleDateString("fr-BE") : "—"}
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {leads.map((l: Lead) => (
+                        <tr key={l.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                          <td className="py-3 px-4">
+                            <p className="font-medium text-foreground">{l.first_name || "—"} {l.last_name || ""}</p>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground">{l.email}</td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{l.phone || "—"}</td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground hidden md:table-cell">{l.postal_code || "—"}</td>
+                          <td className="py-3 px-4 text-center">{l.dog_count ?? "—"}</td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground">{l.service_frequency || "—"}</td>
+                          <td className="py-3 px-4">
+                            <Select value={l.lead_type || "early_lead"} onValueChange={(v) => handleLeadTypeChange(l.id, v)}>
+                              <SelectTrigger className={`h-7 w-[140px] text-xs font-medium border-0 ${getLeadTypeColor(l.lead_type)}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {leadTypeOptions.map(o => (
+                                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground">
+                            {l.created_at ? new Date(l.created_at).toLocaleDateString("fr-BE") : "—"}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
