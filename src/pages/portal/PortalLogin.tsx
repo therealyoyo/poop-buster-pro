@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { translateAuthError } from "@/lib/authErrors";
+import { lovable } from "@/integrations/lovable/index";
 
 const PortalLogin = () => {
   const [email, setEmail] = useState("");
@@ -71,14 +72,11 @@ const PortalLogin = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/portal/auth-callback`,
-          queryParams: { prompt: "select_account" },
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/portal/auth-callback`,
+        extraParams: { prompt: "select_account" },
       });
-      if (error) throw error;
+      if (result.error) throw result.error;
     } catch (err: any) {
       toast.error(translateAuthError(err.message || ""));
       setLoading(false);
