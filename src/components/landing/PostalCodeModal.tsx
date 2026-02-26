@@ -261,8 +261,9 @@ const PostalCodeModal = ({ open, onOpenChange, isB2B = false }: PostalCodeModalP
   const extraDogs = Math.max(0, dogCount[0] - 1);
   const divisor = freqDivisor[freqKey] || 1;
   const perPassageBase = matchedRule ? matchedRule.base_price / divisor : null;
+  const dogSurchargePerPassage = dogSurcharge / divisor;
   const estimatedPrice = perPassageBase !== null
-    ? perPassageBase + extraDogs * dogSurcharge
+    ? perPassageBase + extraDogs * dogSurchargePerPassage
     : null;
   const displayPrice = quarterlyBilling && estimatedPrice
     ? Math.round(estimatedPrice * 0.9)

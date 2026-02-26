@@ -130,12 +130,12 @@ const Pricing = () => {
                     if (dogSurchargeRule) handleBlur(dogSurchargeRule.id, e.target.value);
                   }}
                 />
-                <span className="text-muted-foreground">€</span>
+                <span className="text-muted-foreground">€ / mois</span>
                 {savedId === dogSurchargeRule?.id && <Check className="w-4 h-4 text-secondary" />}
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Ce montant est ajouté par chien au-delà du premier, par passage.
+              Ce montant mensuel est ajouté par chien au-delà du premier, puis réparti sur chaque passage.
             </p>
           </CardContent>
         </Card>
