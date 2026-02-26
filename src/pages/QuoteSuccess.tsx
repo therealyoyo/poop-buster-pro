@@ -29,7 +29,7 @@ const QuoteSuccess = () => {
     const freq = quote.frequency === "weekly" ? "WEEKLY" : quote.frequency === "biweekly" ? "WEEKLY;INTERVAL=2" : "MONTHLY";
     const rrule = quote.frequency !== "onetime" ? `\nRRULE:FREQ=${freq}` : "";
 
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dateStr}\nDURATION:PT1H\nSUMMARY:Poop Buster Pro - Visite de service 🐾${rrule}\nDESCRIPTION:Visite de nettoyage programmée\nEND:VEVENT\nEND:VCALENDAR`;
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dateStr}\nDURATION:PT1H\nSUMMARY:Crotte & Go - Visite de service 🐾${rrule}\nDESCRIPTION:Visite de nettoyage programmée\nEND:VEVENT\nEND:VCALENDAR`;
 
     const blob = new Blob([ics], { type: "text/calendar" });
     const url = URL.createObjectURL(blob);
@@ -56,7 +56,7 @@ const QuoteSuccess = () => {
               <PawIcon className="w-16 h-16 text-primary mx-auto" />
             </motion.div>
             <h1 className="font-display text-2xl font-bold">
-              Bienvenue chez Poop Buster Pro, {clientName} !
+              Bienvenue chez Crotte & Go, {clientName} !
             </h1>
             {dayLabel && (
               <p className="text-muted-foreground">

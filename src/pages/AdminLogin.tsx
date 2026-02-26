@@ -76,7 +76,7 @@ const AdminLogin = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@crotteetgo.be"
+                placeholder="admin@crotteandgo.be"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

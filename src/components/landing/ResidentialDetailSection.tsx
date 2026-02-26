@@ -21,12 +21,12 @@ const services = [
   {
     icon: CalendarCheck,
     title: "2x par semaine",
-    desc: "Idéal pour les foyers avec plusieurs chiens ou en cas d'accumulation importante de déjections.\nPermet de maintenir un jardin propre et agréable en permanence tout en réduisant plus rapidement les odeurs et la prolifération des bactéries grâce à des interventions plus fréquente",
+    desc: "Idéal pour les foyers avec plusieurs chiens ou en cas d'accumulation importante de déjections.\nPermet de maintenir un jardin propre et agréable en permanence tout en réduisant plus rapidement les odeurs et la prolifération des bactéries grâce à des interventions plus fréquentes.",
   },
   {
     icon: Clock,
     title: "Hebdomadaire",
-    desc: "Notre service le plus populaire, parfait  pour les propriétaires d'animaux au quotidien bien rempli. Garantit une hygiène optimale en limitant les bactéries et les mauvaises odeurs. Idéal pour les foyers comptant 1 à 2 chiens.",
+    desc: "Notre service le plus populaire, parfait pour les propriétaires d'animaux de compagnie au quotidien chargé. Garantit une hygiène optimale en limitant les bactéries et les mauvaises odeurs. Idéal pour les foyers comptant 1 à 2 chiens.",
   },
   {
     icon: Sparkles,
@@ -36,7 +36,7 @@ const services = [
   {
     icon: Shield,
     title: "Passage ponctuel",
-    desc: "Besoin d'un nettoyage rapide de votre jardin ? Que ce soit pour un événement spécial ou un grand ménage de printemps, notre service ponctuel remet votre jardin en état. Parfait pour les propriétaires, les gestionnaires immobiliers ou les locataires qui emménagent ou déménagent",
+    desc: "Besoin d'un nettoyage rapide de votre jardin ? Que ce soit pour un événement spécial ou un grand ménage de printemps, notre service ponctuel remet votre jardin en état. Parfait pour les propriétaires, les gestionnaires immobiliers ou les locataires qui emménagent ou déménagent.",
   },
 ];
 
@@ -186,7 +186,7 @@ const ResidentialDetailSection = ({ onOpenQuote }: { onOpenQuote?: () => void })
           Les déjections canines ne sont pas seulement une nuisance visuelle ; elles sont considérées comme des déchets dangereux en raison des bactéries et des parasites nocifs qu'elles peuvent contenir.
         </p>
         <p className="text-muted-foreground leading-relaxed text-lg">
-          Lorsqu'elles ne sont pas ramassées, elles peuvent contaminer le sol et même polluer les cours d'eau locaux, posant de graves risques pour la santé des humains comme des animaux. En éliminant régulièrement ces déchets, un service professionnel aide à prévenir la propagation de maladies et garantit un environnement plus propre et plus sûr pour votre famille, vos animaux et votre communauté.
+          Lorsqu'elles ne sont pas ramassées, elles peuvent contaminer le sol et même polluer les cours d'eau locaux, posant de graves risques pour la santé des humains comme des animaux. Grâce à un ramassage régulier, notre service prévient la propagation de maladies et garantit un environnement plus propre et plus sûr pour votre famille, vos animaux et votre communauté.
         </p>
       </motion.div>
 
