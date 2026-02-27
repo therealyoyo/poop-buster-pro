@@ -148,7 +148,7 @@ const QuoteAccept = () => {
   const quarterlyTotal = isQuarterly ? Number((quote as any).quarterly_price || quote.total_price * 3) : null;
 
   const isTwiceWeekly = quote.frequency === "twice_weekly";
-  const signatureValid = signatureName.toLowerCase().trim().includes(clientLastName) && clientLastName.length > 0;
+  const signatureValid = signatureName.trim().length > 0;
 
   const toggleDay = (day: string) => {
     if (isTwiceWeekly) {
@@ -439,13 +439,9 @@ const QuoteAccept = () => {
               <Input
                 value={signatureName}
                 onChange={(e) => setSignatureName(e.target.value)}
-                placeholder="Votre nom de famille"
+                placeholder="Votre nom complet"
                 className="rounded-xl border-gray-200"
               />
-              <p className="text-xs text-gray-400 mt-1">La signature doit correspondre au nom de famille du devis.</p>
-              {signatureName.trim().length > 0 && !signatureValid && (
-                <p className="text-xs text-red-500 mt-1">Le nom saisi ne correspond pas au nom du devis.</p>
-              )}
             </div>
 
             <div className="flex gap-3">
