@@ -15,23 +15,14 @@ const PortalLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [adminError, setAdminError] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const { data: role } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-        if (role?.role === "admin") {
-          setAdminError(true);
-        } else {
-          navigate("/portal", { replace: true });
-        }
+        navigate("/portal", { replace: true });
       }
     };
     checkSession();
@@ -41,7 +32,7 @@ const PortalLogin = () => {
     e.preventDefault();
     if (!email || !password) return;
     setLoading(true);
-    setAdminError(false);
+    
 
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -49,17 +40,7 @@ const PortalLogin = () => {
 
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const { data: role } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-        if (role?.role === "admin") {
-          setAdminError(true);
-          await supabase.auth.signOut();
-        } else {
-          navigate("/portal", { replace: true });
-        }
+        navigate("/portal", { replace: true });
       }
     } catch (err: any) {
       toast.error(translateAuthError(err.message || ""));
@@ -107,15 +88,6 @@ const PortalLogin = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {adminError ? (
-              <div className="text-center space-y-4">
-                <div className="bg-destructive/10 text-destructive rounded-lg p-4 text-sm">
-                  Ce portail est réservé aux clients. Accédez à l'admin{" "}
-                  <Link to="/admin-login" className="underline font-medium">ici →</Link>
-                </div>
-              </div>
-            ) : (
-              <>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label>Email</Label>
@@ -131,14 +103,12 @@ const PortalLogin = () => {
                   </Button>
                 </form>
 
-                {/* Separator */}
                 <div className="flex items-center gap-3 my-4">
                   <div className="flex-1 h-px bg-border" />
                   <span className="text-xs text-muted-foreground">OU</span>
                   <div className="flex-1 h-px bg-border" />
                 </div>
 
-                {/* Google Button */}
                 <Button
                   variant="outline"
                   className="w-full rounded-full"
@@ -163,8 +133,6 @@ const PortalLogin = () => {
                 <p className="mt-6 text-xs text-muted-foreground text-center">
                   Votre compte est créé automatiquement lors de l'acceptation de votre devis.
                 </p>
-              </>
-            )}
           </CardContent>
         </Card>
       </motion.div>
