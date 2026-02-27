@@ -86,7 +86,7 @@ const ClientDashboard = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/portal/login");
   };
 
   if (loading) {
