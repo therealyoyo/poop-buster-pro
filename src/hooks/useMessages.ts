@@ -81,6 +81,8 @@ export function useUnreadCount() {
       if (error) throw error;
       return count || 0;
     },
+    staleTime: 60_000,
+    refetchInterval: 60_000,
   });
 }
 

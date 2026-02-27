@@ -14,10 +14,9 @@ const ClientRoute = ({ children }: ClientRouteProps) => {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate("/login", { replace: true });
+        navigate("/portal/login", { replace: true });
         return;
       }
-      // Check if user has a linked client record
       const { data: client } = await supabase
         .from("clients")
         .select("id")
@@ -25,7 +24,7 @@ const ClientRoute = ({ children }: ClientRouteProps) => {
         .maybeSingle();
 
       if (!client) {
-        navigate("/login", { replace: true });
+        navigate("/portal/login", { replace: true });
         return;
       }
       setAuthorized(true);
@@ -33,7 +32,7 @@ const ClientRoute = ({ children }: ClientRouteProps) => {
     check();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") navigate("/login", { replace: true });
+      if (event === "SIGNED_OUT") navigate("/portal/login", { replace: true });
     });
     return () => subscription.unsubscribe();
   }, [navigate]);

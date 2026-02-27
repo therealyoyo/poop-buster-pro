@@ -9,6 +9,8 @@ export interface Client {
   email: string | null;
   phone: string | null;
   address: string | null;
+  postal_code: string | null;
+  city: string | null;
   zone_id: string | null;
   dog_count: number;
   garden_size: string | null;
@@ -17,6 +19,7 @@ export interface Client {
   pipeline_stage: string;
   service_frequency: string | null;
   internal_notes: string | null;
+  additional_comments: string | null;
   created_at: string;
   updated_at: string;
   zone_name?: string;
@@ -97,6 +100,32 @@ export function useCreateClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (client: Omit<Client, "id" | "created_at" | "updated_at" | "zone_name">) => {
+      // Vérification doublon par email
+      if (client.email) {
+        const { data: existingByEmail } = await supabase
+          .from("clients")
+          .select("id, first_name, last_name, email")
+          .eq("email", client.email)
+          .maybeSingle();
+        if (existingByEmail) {
+          throw new Error(
+            `Un client avec cet email existe déjà : ${existingByEmail.first_name} ${existingByEmail.last_name} (${existingByEmail.email}). Ce lead est déjà converti.`
+          );
+        }
+      }
+      // Vérification doublon par téléphone
+      if (client.phone) {
+        const { data: existingByPhone } = await supabase
+          .from("clients")
+          .select("id, first_name, last_name, phone")
+          .eq("phone", client.phone)
+          .maybeSingle();
+        if (existingByPhone) {
+          throw new Error(
+            `Un client avec ce numéro de téléphone existe déjà : ${existingByPhone.first_name} ${existingByPhone.last_name} (${existingByPhone.phone}). Ce lead est déjà converti.`
+          );
+        }
+      }
       const { data, error } = await supabase.from("clients").insert(client).select("id").single();
       if (error) throw error;
       return data;
@@ -192,6 +221,39 @@ export function useServiceZones() {
       const { data, error } = await supabase.from("service_zones").select("*").order("name");
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+export function useArchiveClient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("clients")
+        .update({ status: "cancelled" } as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["client"] });
+    },
+  });
+}
+
+export function useDeleteClient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
     },
   });
 }
