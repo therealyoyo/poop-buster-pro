@@ -35,19 +35,6 @@ const AuthCallback = () => {
 
   const handlePostLogin = async (session: any) => {
     try {
-      const { data: role } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (role?.role === "admin") {
-        await supabase.auth.signOut();
-        toast.error("Ce portail est réservé aux clients.");
-        navigate("/portal/login");
-        return;
-      }
-
       const { data: client } = await supabase
         .from("clients")
         .select("id, status, user_id")
