@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.reschedule-intervention]
 verify_jwt = false
+
+[functions.get-stripe-invoices]
+verify_jwt = false
+
+[functions.create-stripe-portal-session]
+verify_jwt = false
