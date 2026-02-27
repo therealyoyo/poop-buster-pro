@@ -7,7 +7,7 @@ interface ClientRouteProps {
 }
 
 const ClientRoute = ({ children }: ClientRouteProps) => {
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [state, setState] = useState<"loading" | "authorized" | "no_session" | "no_client">("loading");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,23 +24,35 @@ const ClientRoute = ({ children }: ClientRouteProps) => {
         .maybeSingle();
 
       if (!client) {
-        navigate("/portal/login", { replace: true });
+        setState("no_client");
         return;
       }
-      setAuthorized(true);
+      setState("authorized");
     };
     check();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") navigate("/portal/login", { replace: true });
-    });
-    return () => subscription.unsubscribe();
   }, [navigate]);
 
-  if (authorized === null) {
+  if (state === "loading") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (state === "no_client") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4 p-6">
+          <p className="text-lg font-medium text-foreground">Aucun profil client associé à ce compte.</p>
+          <p className="text-muted-foreground">Veuillez contacter l'administrateur pour lier votre compte.</p>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); navigate("/portal/login", { replace: true }); }}
+            className="text-primary underline hover:opacity-80"
+          >
+            Se déconnecter
+          </button>
+        </div>
       </div>
     );
   }
