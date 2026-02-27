@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import PawIcon from "@/components/PawIcon";
-import { Calendar, Star, MapPin, Dog, LogOut, CalendarClock, User, Loader2, CreditCard } from "lucide-react";
+import { Calendar, Star, MapPin, Dog, LogOut, CalendarClock, User, Loader2, CreditCard, FileText, MessageCircle, Settings } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -163,7 +163,9 @@ const ClientDashboard = () => {
                 <h2 className="font-display text-xl font-bold">Votre bilan</h2>
               </div>
               <p className="text-primary-foreground/90 text-lg">
-                Votre jardin a été nettoyé <span className="font-bold text-primary-foreground">{totalVisits} fois</span> ! 💪🐕
+                {totalVisits === 0
+                  ? "Bienvenue ! Votre premier passage arrive bientôt 🐾"
+                  : <>Votre jardin a été nettoyé <span className="font-bold text-primary-foreground">{totalVisits} fois</span> ! 💪🐕</>}
               </p>
             </CardContent>
           </Card>
@@ -220,11 +222,6 @@ const ClientDashboard = () => {
                     </div>
                   </div>
                 )}
-                {upcomingInterventions.length === 0 && (
-                  <div className="pt-3 border-t border-border">
-                    <p className="text-xs text-muted-foreground text-center">Aucun passage planifié pour le moment</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -238,13 +235,13 @@ const ClientDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link to="/portal/invoices">
-                  <Button variant="outline" size="sm" className="w-full">Voir les factures →</Button>
+                  <Button variant="outline" size="sm" className="w-full"><FileText className="w-4 h-4 mr-1" /> Voir les factures →</Button>
                 </Link>
                 <Link to="/portal/messages">
-                  <Button variant="outline" size="sm" className="w-full mt-3">Messages →</Button>
+                  <Button variant="outline" size="sm" className="w-full mt-3"><MessageCircle className="w-4 h-4 mr-1" /> Messages →</Button>
                 </Link>
                 <Link to="/portal/settings">
-                  <Button variant="outline" size="sm" className="w-full mt-3">Paramètres →</Button>
+                  <Button variant="outline" size="sm" className="w-full mt-3"><Settings className="w-4 h-4 mr-1" /> Paramètres →</Button>
                 </Link>
                 {client.stripe_subscription_id && (
                   <Button
