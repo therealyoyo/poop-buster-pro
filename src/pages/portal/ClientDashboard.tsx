@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import PawIcon from "@/components/PawIcon";
-import { Calendar, DollarSign, Star, MapPin, Dog, LogOut, CalendarClock } from "lucide-react";
+import { Calendar, Star, MapPin, Dog, LogOut, CalendarClock, User, Loader2, CreditCard } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,7 @@ interface ClientData {
   service_frequency: string | null;
   paused_until: string | null;
   stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
 }
 
 interface UpcomingIntervention {
@@ -38,6 +40,7 @@ const ClientDashboard = () => {
   const [nextVisit, setNextVisit] = useState<string | null>(null);
   const [totalVisits, setTotalVisits] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,7 +50,7 @@ const ClientDashboard = () => {
 
       const { data: clientData } = await supabase
         .from("clients")
-        .select("id, first_name, last_name, dog_count, address, service_frequency, paused_until")
+        .select("id, first_name, last_name, dog_count, address, service_frequency, paused_until, stripe_customer_id, stripe_subscription_id")
         .eq("user_id", session.user.id)
         .maybeSingle();
 
@@ -88,6 +91,20 @@ const ClientDashboard = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/portal/login");
+  };
+
+  const handleBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-stripe-portal-session");
+      if (data?.portal_url) {
+        window.location.href = data.portal_url;
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
   if (loading) {
@@ -160,24 +177,27 @@ const ClientDashboard = () => {
                   <Calendar className="w-5 h-5 text-primary" /> Votre service
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Fréquence</span>
-                  <span className="font-medium text-foreground">{freqLabels[client.service_frequency || ""] || client.service_frequency || "—"}</span>
+              <CardContent className="space-y-0">
+                <div className="py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5">Fréquence</p>
+                  <p className="text-sm font-medium text-foreground">{freqLabels[client.service_frequency || ""] || client.service_frequency || "—"}</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Prochaine visite</span>
-                  <span className="font-medium text-foreground">
+                <Separator />
+                <div className="py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5">Prochaine visite</p>
+                  <p className="text-sm font-medium text-foreground">
                     {nextVisit ? format(new Date(nextVisit), "d MMM yyyy", { locale: fr }) : "Aucune planifiée"}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-1"><Dog className="w-4 h-4" /> Chiens</span>
-                  <span className="font-medium text-foreground">{client.dog_count}</span>
+                <Separator />
+                <div className="py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1"><Dog className="w-3.5 h-3.5" /> Chiens</p>
+                  <p className="text-sm font-medium text-foreground">{client.dog_count}</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-1"><MapPin className="w-4 h-4" /> Adresse</span>
-                  <span className="text-sm text-foreground">{client.address || "—"}</span>
+                <Separator />
+                <div className="py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Adresse</p>
+                  <p className="text-sm font-medium text-foreground">{client.address || "—"}</p>
                 </div>
 
                 {/* Upcoming interventions section */}
@@ -213,7 +233,7 @@ const ClientDashboard = () => {
             <Card className="shadow-card h-full">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-primary" /> Facturation
+                  <User className="w-5 h-5 text-primary" /> Mon espace
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -221,11 +241,22 @@ const ClientDashboard = () => {
                   <Button variant="outline" size="sm" className="w-full">Voir les factures →</Button>
                 </Link>
                 <Link to="/portal/messages">
-                  <Button variant="outline" size="sm" className="w-full">Messages →</Button>
+                  <Button variant="outline" size="sm" className="w-full mt-3">Messages →</Button>
                 </Link>
                 <Link to="/portal/settings">
-                  <Button variant="outline" size="sm" className="w-full">Paramètres →</Button>
+                  <Button variant="outline" size="sm" className="w-full mt-3">Paramètres →</Button>
                 </Link>
+                {client.stripe_subscription_id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-3"
+                    onClick={handleBillingPortal}
+                    disabled={portalLoading}
+                  >
+                    {portalLoading ? <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Chargement…</> : <><CreditCard className="w-4 h-4 mr-1" /> Gérer mon abonnement →</>}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </motion.div>
