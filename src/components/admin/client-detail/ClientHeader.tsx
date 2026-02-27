@@ -1,11 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowLeft, Archive, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import PawIcon from "@/components/PawIcon";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useArchiveClient, useDeleteClient } from "@/hooks/useClients";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const statusLabels: Record<string, string> = {
   prospect: "Prospect", active: "Actif", paused: "En pause", cancelled: "Annulé", inactive: "Inactif",
@@ -29,8 +42,32 @@ interface ClientHeaderProps {
 }
 
 export default function ClientHeader({ client, onStatusChange, onOpenQuoteBuilder, onClearPause }: ClientHeaderProps) {
+  const navigate = useNavigate();
+  const archiveClient = useArchiveClient();
+  const deleteClient = useDeleteClient();
+
   const canGenerateQuote = client.pipeline_stage === "new" || client.pipeline_stage === "new_lead" || client.pipeline_stage === "qualified_lead" || client.pipeline_stage === "quote_sent";
   const pipeline = pipelineLabels[client.pipeline_stage] || { label: client.pipeline_stage, emoji: "❓" };
+
+  const handleArchive = async () => {
+    try {
+      await archiveClient.mutateAsync(client.id);
+      toast({ title: "Client archivé (statut → Annulé) ✓" });
+      navigate("/admin/clients");
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteClient.mutateAsync(client.id);
+      toast({ title: "Client supprimé définitivement ✓" });
+      navigate("/admin/clients");
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
 
   return (
     <>
@@ -67,6 +104,50 @@ export default function ClientHeader({ client, onStatusChange, onOpenQuoteBuilde
               {Object.entries(statusLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
             </SelectContent>
           </Select>
+
+          {/* Bouton Archiver */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Archive className="w-4 h-4 mr-1" /> Archiver
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Archiver ce client ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Le statut du client sera mis à « Annulé ». Vous pourrez le retrouver et le réactiver à tout moment. Cette action est réversible.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={handleArchive}>Archiver</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Bouton Supprimer */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="w-4 h-4 mr-1" /> Supprimer
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible. Toutes les données liées à ce client (devis, passages, messages, historique) seront définitivement supprimées.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Supprimer définitivement
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </>

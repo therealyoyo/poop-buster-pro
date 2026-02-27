@@ -32,7 +32,22 @@ import AuthCallback from "./pages/portal/AuthCallback";
 import Unsubscribe from "./pages/Unsubscribe";
 import Terms from "./pages/Terms";
 
-const queryClient = new QueryClient();
+// QueryClient stable — créé UNE SEULE FOIS avec config robuste
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        if (error?.status === 401 || error?.status === 403) return false;
+        return failureCount < 2;
+      },
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
