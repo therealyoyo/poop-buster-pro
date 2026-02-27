@@ -20,6 +20,7 @@ interface ClientData {
   address: string | null;
   service_frequency: string | null;
   paused_until: string | null;
+  stripe_customer_id: string | null;
 }
 
 interface UpcomingIntervention {
